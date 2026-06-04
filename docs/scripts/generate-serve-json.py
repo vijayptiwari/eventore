@@ -33,6 +33,12 @@ redirects.append(
 redirects.append(
     {"source": "/guide/contributing/", "destination": "/about.html#contribute", "type": 301}
 )
+redirects.append(
+    {"source": "/guide/inspection", "destination": "/guide/streaming.html", "type": 301}
+)
+redirects.append(
+    {"source": "/guide/inspection/", "destination": "/guide/streaming.html", "type": 301}
+)
 
 for slug in [
     "kafka",

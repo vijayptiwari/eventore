@@ -5,7 +5,13 @@
   <meta http-equiv="refresh" content="0; url=streaming.html"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/streaming.html"/>
   <title>Redirecting — Eventore</title>
-  <script>location.replace('streaming.html');</script>
+  <script>
+    (function () {
+      var m = location.pathname.match(/^(.*)\/guide\//);
+      var base = m ? (m[1] ? m[1] : '') + '/' : '/';
+      location.replace(base + 'guide/streaming.html' + location.hash);
+    })();
+  </script>
 </head>
 <body>
   <p>Moved to <a href="streaming.html">Live streaming</a>. Per-protocol browse steps are in each <a href="index.html#streams">stream guide</a>.</p>

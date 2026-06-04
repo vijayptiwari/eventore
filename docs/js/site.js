@@ -48,11 +48,14 @@
     { href: 'index.html', label: 'Overview' },
     { href: 'getting-started.html', label: 'Getting started' },
     { href: 'architecture.html', label: 'Architecture' },
+    { href: 'control-data-plane.html', label: 'Control & data plane' },
     { href: 'configuration.html', label: 'Configuration' },
     { href: 'connections.html', label: 'Connections' },
+    { href: 'stream-platforms.html', label: 'All platforms' },
     { href: 'streaming.html', label: 'Live streaming' },
     { href: 'deployment.html', label: 'Deployment' },
     { href: 'mcp.html', label: 'MCP for agents' },
+    { href: 'local-development.html', label: 'Local development' },
   ];
 
   var streamGuideLinks = [
@@ -221,7 +224,7 @@
       .join('');
     var resourceList = [
       { href: GITHUB, label: 'GitHub', external: true },
-      { href: GITHUB + '/tree/main/helm', label: 'Helm charts', external: true },
+      { href: GITHUB + '/tree/main/deploy/helm', label: 'Helm charts', external: true },
       { href: guideHref('deployment.html'), label: 'Deploy' },
     ]
       .map(function (l) {

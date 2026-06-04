@@ -53,6 +53,10 @@
       location.replace(root + 'about.html#contribute' + location.hash);
       return true;
     }
+    if (path === root + 'guide/inspection' || path === root + 'guide/inspection.html') {
+      location.replace(root + 'guide/streaming.html' + location.hash);
+      return true;
+    }
 
     for (var i = 0; i < STREAM_SLUGS.length; i++) {
       var slug = STREAM_SLUGS[i];

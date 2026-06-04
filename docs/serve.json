@@ -2,7 +2,10 @@
   "cleanUrls": false,
   "directoryListing": false,
   "rewrites": [
-    { "source": "/", "destination": "/index.html" }
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
   ],
   "redirects": [
     {
@@ -218,6 +221,16 @@
     {
       "source": "/guide/contributing/",
       "destination": "/about.html#contribute",
+      "type": 301
+    },
+    {
+      "source": "/guide/inspection",
+      "destination": "/guide/streaming.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/inspection/",
+      "destination": "/guide/streaming.html",
       "type": 301
     },
     {

@@ -20,6 +20,10 @@
         location.replace(base + 'about.html#contribute' + location.search + location.hash);
         return;
       }
+      if (/\/guide\/inspection\/?$/i.test(path)) {
+        location.replace(base + 'guide/streaming.html' + location.search + location.hash);
+        return;
+      }
       if (path === base + 'about' || path === base + 'about/') {
         location.replace(base + 'about.html' + location.search + location.hash);
         return;

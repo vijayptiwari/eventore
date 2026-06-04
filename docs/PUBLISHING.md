@@ -40,7 +40,7 @@ https://vijayptiwari.github.io/eventore/
 ## 4. Verify
 
 - Home: `https://YOUR_GITHUB_USERNAME.github.io/eventore/`
-- Guide: `https://YOUR_GITHUB_USERNAME.github.io/eventore/guide/`
+- Guide: `https://YOUR_GITHUB_USERNAME.github.io/eventore/guide/index.html`
 - Deployment: `https://YOUR_GITHUB_USERNAME.github.io/eventore/guide/deployment.html`
 
 ## Optional: custom domain
