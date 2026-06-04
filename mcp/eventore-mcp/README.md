@@ -1,98 +1,114 @@
 # Eventore MCP Server
 
-Optional **Model Context Protocol (MCP)** layer for AI agents (Cursor, Claude Desktop, custom automations) to interact with messaging buses **through the Eventore API**. Deploy it separately from the main console when you only need programmatic/agent access.
+Optional **Model Context Protocol (MCP)** adapter for AI agents. Exposes Eventore **control plane** (provider registration, UI cascade) and **data plane** (connections, publish, inspect) through MCP tools, resources, and prompts.
 
 ## Architecture
 
 ```text
-  AI Agent (Cursor, etc.)
-        |  MCP (stdio or HTTP)
+  AI Agent (Cursor, Claude, HTTP MCP client)
+        |  MCP (stdio or HTTP :3100)
         v
-  eventore-mcp  -------- REST/SSE -------->  Eventore Backend  ---->  Kafka / MQTT / JMS / Pulsar / RabbitMQ
+  eventore-mcp  ---- REST + SSE ---->  Eventore Backend
+        |                              |
+        |                    control plane (/api/v1/control)
+        |                    data plane   (/api/v1/connections)
+        v                              v
+                              Kafka / MQTT / JMS / Pulsar / RabbitMQ / cloud streams
 ```
 
-The MCP server does **not** embed broker clients. It delegates to Eventore so deployment modes (ADMIN / DEV / READONLY) and connectors stay centralized.
+The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV / READONLY) is enforced on the backend.
 
-## Tools
+## Tools (24)
 
-| Tool | Purpose |
-|------|---------|
-| `eventore_get_config` | Deployment mode and allowed actions |
-| `eventore_list_connections` | List connection profiles |
-| `eventore_create_connection` | Register a broker connection |
-| `eventore_delete_connection` | Remove a connection |
-| `eventore_validate_connection` | Test connectivity |
-| `eventore_list_destinations` | Topics / queues / exchanges |
-| `eventore_publish_message` | Publish payload |
-| `eventore_consume_messages` | Short-lived subscribe + SSE sample |
-| `eventore_protocol_guide` | Smart hints per protocol or from natural-language hint |
-| `eventore_quick_probe` | Create → validate → list → optional sample → delete |
+### Control plane
+
+| Tool | Description |
+|------|-------------|
+| `eventore_get_control_plane` | Revisioned snapshot, active protocols, UI cascade |
+| `eventore_list_providers` | All provider descriptors |
+| `eventore_get_provider` | One protocol metadata |
+| `eventore_get_provider_status` | Registration and data-plane routability |
+| `eventore_register_provider` | Runtime register (ADMIN) |
+| `eventore_deregister_provider` | Runtime deregister (ADMIN) |
+
+### Data plane — core
+
+| Tool | Description |
+|------|-------------|
+| `eventore_get_config` | Mode, actions, modules, embedded `controlPlane` |
+| `eventore_list_connections` | Connection profiles |
+| `eventore_create_connection` | Create profile |
+| `eventore_update_connection` | Update profile |
+| `eventore_delete_connection` | Delete profile |
+| `eventore_validate_connection` | Connectivity test |
+| `eventore_list_destinations` | Topics / queues |
+| `eventore_publish_message` | Unified publish |
+| `eventore_consume_messages` | SSE sample window |
+| `eventore_protocol_guide` | Hints or NL protocol suggestion |
+| `eventore_quick_probe` | Ephemeral probe workflow |
+
+### Data plane — inspect & Kafka
+
+| Tool | Description |
+|------|-------------|
+| `eventore_inspect_cluster` | Cluster metadata |
+| `eventore_inspect_consumer_groups` | Groups / subscriptions |
+| `eventore_inspect_lag` | Consumer lag |
+| `eventore_inspect_search` | Topic search |
+| `eventore_kafka_publish` | Kafka produce with key/partition |
+| `eventore_kafka_create_topic` | Create topic |
+| `eventore_kafka_delete_topic` | Delete topic |
+| `eventore_kafka_list_acls` | List ACLs |
 
 ## Resources
 
-- `eventore://config`
-- `eventore://connections`
-- `eventore://protocol-guides`
+| URI | Content |
+|-----|---------|
+| `eventore://architecture` | Plane map and agent workflow |
+| `eventore://config` | Live `GET /config` |
+| `eventore://control-plane` | Live `GET /control/plane` |
+| `eventore://providers` | Live provider list |
+| `eventore://connections` | Live connections |
+| `eventore://protocol-guides` | Static hints (8 protocol types) |
+
+## Prompts
+
+| Prompt | Purpose |
+|--------|---------|
+| `eventore_discover` | Onboarding: config + control plane + architecture |
+| `eventore_probe_broker` | Playbook for `eventore_quick_probe` |
+| `eventore_kafka_inspection` | Cluster → groups → lag → search |
+| `eventore_control_plane_ops` | Register / deregister / status checklist |
 
 ## Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `EVENTORE_API_URL` | `http://localhost:8080/api/v1` | Eventore backend API base |
-| `MCP_TRANSPORT` | `stdio` | `stdio` (local) or `http` (remote/K8s) |
-| `MCP_PORT` | `3100` | HTTP listen port when `MCP_TRANSPORT=http` |
-| `MCP_AUTH_TOKEN` | (unset) | If set, requires `Authorization: Bearer <token>` on HTTP |
+| `EVENTORE_API_URL` | `http://localhost:8080/api/v1` | Backend API base |
+| `MCP_TRANSPORT` | `stdio` | `stdio` or `http` |
+| `MCP_PORT` | `3100` | HTTP port |
+| `MCP_AUTH_TOKEN` | (unset) | Bearer on `/mcp` (HTTP only) |
 
 ## Local usage (stdio)
-
-1. Start Eventore backend (`mvn spring-boot:run` in `backend/`).
-2. Build MCP server:
 
 ```bash
 cd mcp/eventore-mcp
 npm install && npm run build
 ```
 
-3. Add to Cursor **MCP settings** (see `cursor-mcp.json.example`):
+See `cursor-mcp.json.example` for Cursor MCP settings.
 
-```json
-{
-  "mcpServers": {
-    "eventore": {
-      "command": "node",
-      "args": ["C:/path/to/eventore/mcp/eventore-mcp/dist/index.js"],
-      "env": {
-        "EVENTORE_API_URL": "http://localhost:8080/api/v1"
-      }
-    }
-  }
-}
-```
-
-## HTTP deployment (separate container)
+## HTTP / Docker / Helm
 
 ```bash
-docker build -f docker/Dockerfile.mcp -t eventore/mcp:0.1.0 .
-docker run -p 3100:3100 \
-  -e MCP_TRANSPORT=http \
-  -e EVENTORE_API_URL=http://host.docker.internal:8080/api/v1 \
-  eventore/mcp:0.1.0
+docker build -f docker/Dockerfile.mcp -t eventore-mcp .
+docker run -p 3100:3100 -e MCP_TRANSPORT=http \
+  -e EVENTORE_API_URL=http://host.docker.internal:8080/api/v1 eventore-mcp
 ```
-
-Health: `GET http://localhost:3100/health`
-
-MCP endpoint: `POST/GET http://localhost:3100/mcp` (Streamable HTTP transport)
-
-## Helm (separate chart)
 
 ```bash
 helm install eventore-mcp deploy/helm/eventore-mcp \
-  --set eventore.apiUrl=http://eventore-dev-backend:8080/api/v1
+  --set eventore.apiUrl=http://eventore-backend:8080/api/v1
 ```
 
-Point `eventore.apiUrl` at your existing Eventore backend Service. MCP pods do not need direct broker network access if the backend already has it.
-
-## When to deploy MCP
-
-- **Yes:** Agents in Cursor/CI need to publish, consume samples, or probe brokers without the React UI.
-- **No:** Human operators only use the web console; skip MCP to reduce surface area.
+Product documentation: [MCP for AI agents](https://vijayptiwari.github.io/eventore/guide/mcp.html).

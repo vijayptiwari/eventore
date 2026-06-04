@@ -67,20 +67,19 @@ eventore.enabled-protocols=KAFKA,KINESIS</code></pre>
       <pre><code>mvn -DskipTests -Pkafka-kinesis -P!providers-all package</code></pre>
       <p>Pair with Spring profile <code>kafka-kinesis</code> in <code>application-kafka-kinesis.yml</code> for defaults.</p>
 
-      <h2>Helm values</h2>
+      <h2>Helm: stream providers</h2>
+      <p>Required list <code>eventore.streamProviders</code> drives runtime <code>enabled-protocols</code>, DEV allowed protocols, and the backend image tag. See <a href="deployment.html#published-artifacts">published artifacts</a>.</p>
       <pre><code>eventore:
-  deploymentMode: ADMIN
-  enabledProtocols: KAFKA,KINESIS
-  dev:
-    allowedProtocols:
-      - KAFKA
-      - KINESIS</code></pre>
-      <p>Slim install:</p>
+  streamProviders:
+    - KAFKA
+    - KINESIS
+  deploymentMode: ADMIN</code></pre>
+      <p>Image tag auto-derived: <code>kafka-kinesis</code>. Eight providers → tag <code>all</code>.</p>
       <pre><code>helm install eventore ./deploy/helm/eventore \
   -f deploy/helm/eventore/values-kafka-kinesis.yaml</code></pre>
-      <p>Build the backend image with:</p>
-      <pre><code>docker build --build-arg EVENTORE_MAVEN_PROFILES=kafka-kinesis \
-  -f docker/Dockerfile.backend .</code></pre>
+      <p>Custom Docker build:</p>
+      <pre><code>docker build -f docker/Dockerfile.backend \
+  --build-arg EVENTORE_STREAM_PROFILES=provider-kafka,provider-kinesis .</code></pre>
 
       <h2>Control plane API</h2>
       <pre><code># Snapshot (revision, providers, UI cascade)

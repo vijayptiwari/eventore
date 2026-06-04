@@ -102,9 +102,11 @@
 
       Local dev (all protocols): mvn package  (providers-all is active by default)
 
-      Kafka + Kinesis only:     mvn -Pkafka-kinesis -P!providers-all package
+      Kafka + Kinesis:          mvn -Pprovider-kafka -Pprovider-kinesis -P!providers-all package
 
       Single protocol:          mvn -Pprovider-kafka -P!providers-all package
+
+      Published Docker tags:    one image per provider (kafka, mqtt, …) — see deploy/ci-backend-images.json
 
     -->
 

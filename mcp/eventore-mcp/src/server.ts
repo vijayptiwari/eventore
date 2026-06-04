@@ -1,5 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { EventoreClient } from './eventore-client.js';
+import { registerControlTools } from './control-tools.js';
+import { registerPrompts } from './prompts.js';
 import { registerResources } from './resources.js';
 import { registerTools } from './tools.js';
 
@@ -8,22 +10,30 @@ export function createEventoreMcpServer(apiBaseUrl: string): McpServer {
   const server = new McpServer(
     {
       name: 'eventore-mcp',
-      version: '0.1.0',
+      version: '0.2.0',
     },
     {
       capabilities: {
         tools: {},
         resources: {},
+        prompts: {},
       },
-      instructions: `Eventore MCP bridges AI agents to Kafka, MQTT, JMS, Pulsar, and RabbitMQ via the Eventore API.
-Use eventore_protocol_guide or eventore_quick_probe before connecting to unfamiliar brokers.
-Deployment mode on the Eventore instance (ADMIN/DEV/READONLY) controls whether publish and connection CRUD are allowed.
-Set EVENTORE_API_URL to the Eventore backend (e.g. http://localhost:8080/api/v1).`,
+      instructions: `Eventore MCP is an optional agent adapter to the Eventore backend — not a broker client.
+
+Architecture:
+- Control plane (/api/v1/control): provider registration, UI cascade, revisioned snapshot. Tools: eventore_get_control_plane, eventore_*_provider*.
+- Data plane (/api/v1/connections): connections, publish, subscribe (SSE), inspect, Kafka admin.
+
+Always start with eventore_get_config or prompt eventore_discover, then confirm protocols are registered before creating connections.
+Deployment mode (ADMIN/DEV/READONLY) gates publish and connection CRUD on the backend.
+Set EVENTORE_API_URL (e.g. http://localhost:8080/api/v1). Resources: eventore://architecture, eventore://control-plane.`,
     },
   );
 
   registerTools(server, client);
+  registerControlTools(server, client);
   registerResources(server, client);
+  registerPrompts(server, client);
 
   return server;
 }

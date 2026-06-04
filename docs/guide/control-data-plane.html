@@ -58,6 +58,14 @@
       </ul>
       <p>Frontend: <code>useControlPlane()</code> prefers <code>/control/plane</code>, falls back to embedded config.</p>
 
+      <h2>MCP and the planes</h2>
+      <p>The optional MCP server mirrors this split:</p>
+      <ul>
+        <li>Control plane — <code>eventore_get_control_plane</code>, <code>eventore_register_provider</code>, resources <code>eventore://control-plane</code></li>
+        <li>Data plane — connections, publish, SSE consume, inspect, Kafka admin tools</li>
+      </ul>
+      <p>Agents should read <code>GET /config</code> and <code>GET /control/plane</code> before creating connections. Details: <a href="mcp.html">MCP for AI agents</a>.</p>
+
       <h2>Configuration</h2>
       <pre><code>eventore:
   control-plane:

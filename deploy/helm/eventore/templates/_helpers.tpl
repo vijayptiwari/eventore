@@ -27,3 +27,31 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/name: {{ include "eventore.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{- define "eventore.providerSlug" -}}
+{{- $protocol := . -}}
+{{- if eq $protocol "GCP_PUBSUB" -}}gcp-pubsub
+{{- else if eq $protocol "AZURE_SERVICE_BUS" -}}azure-servicebus
+{{- else -}}{{ $protocol | lower }}
+{{- end -}}
+{{- end }}
+
+{{- define "eventore.backendImageTag" -}}
+{{- if not .Values.eventore.streamProviders }}
+{{- fail "eventore.streamProviders is required (e.g. [KAFKA] or [KAFKA, KINESIS]). Backend image tag is derived from this list." }}
+{{- end }}
+{{- if .Values.image.backend.tag -}}
+{{- .Values.image.backend.tag -}}
+{{- else if eq (len .Values.eventore.streamProviders) 8 -}}all
+{{- else -}}
+{{- $slugs := list -}}
+{{- range $p := sortAlpha .Values.eventore.streamProviders -}}
+{{- $slugs = append $slugs (include "eventore.providerSlug" $p) -}}
+{{- end -}}
+{{- join "-" $slugs -}}
+{{- end -}}
+{{- end }}
+
+{{- define "eventore.enabledProtocolsCsv" -}}
+{{- join "," .Values.eventore.streamProviders -}}
+{{- end }}

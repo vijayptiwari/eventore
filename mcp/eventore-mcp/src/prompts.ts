@@ -1,0 +1,141 @@
+import { z } from 'zod';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { EventoreClient } from './eventore-client.js';
+import { MCP_ARCHITECTURE } from './architecture-context.js';
+import { ProtocolSchema } from './protocol-types.js';
+
+function promptText(text: string) {
+  return {
+    messages: [
+      {
+        role: 'user' as const,
+        content: { type: 'text' as const, text },
+      },
+    ],
+  };
+}
+
+export function registerPrompts(server: McpServer, client: EventoreClient): void {
+  server.prompt(
+    'eventore_discover',
+    'Onboarding: load deployment mode, control-plane registration, and which MCP tools apply.',
+    async () => {
+      const [config, plane] = await Promise.all([client.getConfig(), client.getControlPlane()]);
+      const text = [
+        'You are connected to Eventore via MCP. Follow this order:',
+        '',
+        '1. Deployment mode and allowed actions (from config):',
+        JSON.stringify(
+          {
+            deploymentMode: config.deploymentMode,
+            allowedActions: config.allowedActions,
+            loadedModules: config.loadedModules,
+          },
+          null,
+          2,
+        ),
+        '',
+        '2. Control plane revision and active protocols (must be registered before data-plane calls):',
+        JSON.stringify(
+          {
+            revision: plane.revision,
+            activeProtocols: plane.activeProtocols,
+            uiCascade: plane.uiCascade,
+          },
+          null,
+          2,
+        ),
+        '',
+        '3. Architecture map:',
+        JSON.stringify(MCP_ARCHITECTURE, null, 2),
+        '',
+        'Use eventore_list_connections only for protocols listed as active. Use eventore_protocol_guide for broker URL hints.',
+      ].join('\n');
+      return promptText(text);
+    },
+  );
+
+  server.prompt(
+    'eventore_probe_broker',
+    'Playbook: ephemeral connection probe (validate, list destinations, optional samples).',
+    {
+      protocol: ProtocolSchema.describe('Broker protocol'),
+      brokerUrl: z.string().describe('Broker URL (see eventore_protocol_guide)'),
+      destination: z.string().optional().describe('Topic/queue for sample consume'),
+      consumeSamples: z.boolean().optional().default(false),
+    },
+    async (args) => {
+      return promptText(
+        [
+          'Run a safe broker probe with Eventore MCP:',
+          '',
+          `Tool: eventore_quick_probe`,
+          `Arguments: ${JSON.stringify(args, null, 2)}`,
+          '',
+          'The tool creates a temporary connection, validates, lists destinations, optionally consumes up to 10 messages, then deletes the profile.',
+          'Check eventore_get_config first — READONLY mode blocks create/publish.',
+          'Confirm protocol is registered: eventore_get_provider_status with the same protocol.',
+        ].join('\n'),
+      );
+    },
+  );
+
+  server.prompt(
+    'eventore_kafka_inspection',
+    'Playbook: Kafka cluster metadata, consumer groups, lag, and topic search.',
+    {
+      connectionId: z.string().describe('Saved Kafka connection id'),
+      groupId: z.string().optional().describe('Consumer group for lag'),
+      topic: z.string().optional().describe('Topic for lag or search'),
+    },
+    async (args) => {
+      return promptText(
+        [
+          'Kafka inspection sequence (data plane; connection must be KAFKA and registered):',
+          '',
+          `1. eventore_inspect_cluster — connectionId=${args.connectionId}`,
+          '2. eventore_inspect_consumer_groups — same connectionId',
+          args.groupId
+            ? `3. eventore_inspect_lag — groupId=${args.groupId}${args.topic ? `, topic=${args.topic}` : ''}`
+            : '3. (optional) eventore_inspect_lag — pick a groupId from step 2',
+          args.topic
+            ? `4. eventore_inspect_search — topic=${args.topic}`
+            : '4. (optional) eventore_inspect_search — topic name required',
+          '',
+          'Admin topic/ACL changes require ADMIN mode: eventore_kafka_create_topic, eventore_kafka_delete_topic, eventore_kafka_list_acls.',
+        ].join('\n'),
+      );
+    },
+  );
+
+  server.prompt(
+    'eventore_control_plane_ops',
+    'Playbook: register or deregister stream providers (ADMIN + ADMIN_BROKER_OPS).',
+    {
+      protocol: ProtocolSchema.describe('Protocol to register or deregister'),
+      action: z.enum(['register', 'deregister', 'status']),
+    },
+    async (args) => {
+      const tool =
+        args.action === 'register'
+          ? 'eventore_register_provider'
+          : args.action === 'deregister'
+            ? 'eventore_deregister_provider'
+            : 'eventore_get_provider_status';
+      return promptText(
+        [
+          'Control plane operation (no direct broker I/O):',
+          '',
+          `Recommended tool: ${tool}`,
+          `protocol: ${args.protocol}`,
+          '',
+          'Before register: eventore_get_control_plane — implementation must exist on classpath (Maven profile).',
+          'After register: revision increments; UI cascade updates connectionProtocols / inspectProtocols.',
+          'Deregister fails if this is the last active provider.',
+          '',
+          'Data-plane connection CRUD is separate — use eventore_create_connection after the provider is active.',
+        ].join('\n'),
+      );
+    },
+  );
+}

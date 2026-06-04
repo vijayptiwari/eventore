@@ -11,6 +11,25 @@ Eventore connects to **Kafka**, **MQTT**, **JMS** (Artemis), **Pulsar**, **Rabbi
 - **MCP (pod 3, optional):** Separate Node MCP server for AI agents — see [`mcp/eventore-mcp`](mcp/eventore-mcp/README.md)
 - **Deployment:** Helm — chart `eventore` = 2 pods (backend + frontend); chart `eventore-mcp` = 1 pod. See [`deploy/README.md`](deploy/README.md)
 
+## Published artifacts (GHCR)
+
+GitHub Actions publishes **one backend image per stream provider** (tags `kafka`, `mqtt`, …) plus bundles (`kafka-kinesis`, `all`). Helm **`eventore.streamProviders`** selects the matching tag.
+
+| Backend tag | Stream providers |
+|-------------|------------------|
+| `kafka` | KAFKA |
+| `mqtt` | MQTT |
+| … | (see `deploy/ci-backend-images.json`) |
+| `kafka-kinesis` | KAFKA + KINESIS |
+| `all` | All eight |
+
+```bash
+helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.1.0 \
+  -f deploy/helm/eventore/values-stream-kafka.yaml
+```
+
+Docs: [Published images & Helm charts](https://vijayptiwari.github.io/eventore/guide/deployment.html#published-artifacts).
+
 ## Deployment modes
 
 | Mode | Connections CRUD | Subscribe | Publish |

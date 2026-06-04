@@ -25,20 +25,86 @@
 cd backend && mvn -pl eventore-server -am spring-boot:run -Dspring-boot.run.profiles=local
 cd frontend && npm install && npm run dev</code></pre>
 
-      <h2>Production image</h2>
-      <pre><code># All providers (default)
-docker build -f docker/Dockerfile.backend -t eventore-backend .
+      <h2 id="published-artifacts">Published Docker images &amp; Helm charts (CI)</h2>
+      <p>Every push to <code>main</code> and every tag <code>v*</code> runs <code>.github/workflows/publish-artifacts.yml</code>, which builds and pushes container images to <strong>GitHub Container Registry (GHCR)</strong> and Helm charts to <strong>GHCR OCI</strong>. You can deploy without building from source.</p>
 
-# Kafka + Kinesis only
-docker build --build-arg EVENTORE_MAVEN_PROFILES=kafka-kinesis \
-  -f docker/Dockerfile.backend -t eventore-backend:slim .</code></pre>
+      <div class="callout callout-info">
+        <strong>Registry:</strong> <a href="https://github.com/vijayptiwari?tab=packages">github.com/vijayptiwari — Packages</a>. On a public repo, set package visibility to <strong>Public</strong> if <code>docker pull</code> or <code>helm install oci://...</code> returns not found.
+      </div>
 
-      <h2>Helm (recommended for K8s)</h2>
-      <p>Chart <code>deploy/helm/eventore</code> deploys backend + frontend pods. Values files:</p>
+      <h3>Stream-provider backend images</h3>
+      <p>Backend images are tagged by <strong>which stream providers are in the JAR</strong>, not by a single <code>latest</code> “full” build. Helm <code>eventore.streamProviders</code> picks the tag automatically.</p>
+      <table>
+        <thead><tr><th>Image tag</th><th>Stream providers</th></tr></thead>
+        <tbody>
+          <tr><td><code>kafka</code>, <code>mqtt</code>, <code>jms</code>, <code>pulsar</code>, <code>rabbitmq</code>, <code>kinesis</code>, <code>gcp-pubsub</code>, <code>azure-servicebus</code></td><td>One provider each</td></tr>
+          <tr><td><code>kafka-kinesis</code></td><td>KAFKA + KINESIS</td></tr>
+          <tr><td><code>all</code></td><td>All eight providers</td></tr>
+        </tbody>
+      </table>
+      <p>Repository: <code>ghcr.io/vijayptiwari/eventore-backend:&lt;tag&gt;</code>. Matrix: <code>deploy/ci-backend-images.json</code>.</p>
+
+      <h3>Frontend &amp; MCP</h3>
+      <table>
+        <thead><tr><th>Image</th><th>Tags</th></tr></thead>
+        <tbody>
+          <tr><td><code>ghcr.io/vijayptiwari/eventore-frontend</code></td><td><code>latest</code>, git SHA, semver</td></tr>
+          <tr><td><code>ghcr.io/vijayptiwari/eventore-mcp</code></td><td><code>latest</code>, git SHA, semver</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Helm: <code>eventore.streamProviders</code></h3>
+      <pre><code>eventore:
+  streamProviders:
+    - KAFKA
+    - KINESIS   # → image tag kafka-kinesis</code></pre>
+      <p>Leave <code>image.backend.tag</code> empty to auto-select the tag. Override only for custom builds.</p>
+      <pre><code>helm install eventore ./deploy/helm/eventore \
+  -f deploy/helm/eventore/values-stream-kafka.yaml
+
+helm install eventore ./deploy/helm/eventore \
+  -f deploy/helm/eventore/values-kafka-kinesis.yaml</code></pre>
+
+      <h3>Pull images locally</h3>
+      <pre><code>docker pull ghcr.io/vijayptiwari/eventore-backend:kafka
+docker pull ghcr.io/vijayptiwari/eventore-frontend:latest
+docker pull ghcr.io/vijayptiwari/eventore-mcp:latest</code></pre>
+
+      <h3>Helm charts (OCI on GHCR)</h3>
+      <table>
+        <thead><tr><th>Chart</th><th>OCI reference</th><th>Workloads</th></tr></thead>
+        <tbody>
+          <tr><td><code>eventore</code></td><td><code>oci://ghcr.io/vijayptiwari/charts/eventore</code></td><td>Backend + frontend pods</td></tr>
+          <tr><td><code>eventore-mcp</code></td><td><code>oci://ghcr.io/vijayptiwari/charts/eventore-mcp</code></td><td>Optional MCP pod</td></tr>
+        </tbody>
+      </table>
+      <p>Chart version matches <code>Chart.yaml</code> (e.g. <code>0.1.0</code>).</p>
+      <pre><code>helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.1.0 \
+  -f deploy/helm/eventore/values-stream-kafka.yaml
+
+helm install eventore-mcp oci://ghcr.io/vijayptiwari/charts/eventore-mcp --version 0.1.0 \
+  --set eventore.apiUrl=http://eventore-backend:8080/api/v1</code></pre>
+      <p>New multi-provider combos: add an entry to <code>deploy/ci-backend-images.json</code> and merge to <code>main</code> so CI publishes that tag.</p>
+
+      <h3>Build from source (custom provider sets)</h3>
+      <pre><code>docker build -f docker/Dockerfile.backend \
+  --build-arg EVENTORE_STREAM_PROFILES=provider-kafka,provider-kinesis \
+  -t eventore-backend:custom .
+
+# Local dev — all providers (not published to GHCR)
+docker build -f docker/Dockerfile.backend \
+  --build-arg EVENTORE_STREAM_PROFILES=providers-all \
+  -t eventore-backend:dev .</code></pre>
+
+      <h2>Helm from repository (recommended for K8s)</h2>
+      <p>Charts under <code>deploy/helm/</code> deploy backend + frontend (and optionally MCP from the sibling chart). Same values as OCI installs — use a git checkout when you want to customize templates before install.</p>
+      <p>Values files:</p>
       <ul>
         <li><code>values.yaml</code> — defaults</li>
         <li><code>values-admin.yaml</code> — full admin mode</li>
-        <li><code>values-kafka-kinesis.yaml</code> — slim protocols</li>
+        <li><code>values-stream-kafka.yaml</code> — <code>streamProviders: [KAFKA]</code></li>
+        <li><code>values-kafka-kinesis.yaml</code> — Kafka + Kinesis</li>
+        <li><code>values-published.yaml</code> — OCI install example after CI</li>
       </ul>
       <pre><code>helm install eventore ./deploy/helm/eventore \
   --set ingress.enabled=true \
@@ -58,11 +124,13 @@ npx serve docs</code></pre>
       <p>See <code>docs/README.md</code> for details. The <code>.nojekyll</code> file ensures GitHub serves static HTML without Jekyll processing.</p>
 
       <h2>MCP server (optional)</h2>
-      <p>A separate Node MCP server (<code>mcp/eventore-mcp</code>) lets AI agents list connections, browse topics, and stream messages via tools. Deploy chart <code>eventore-mcp</code> when agents need programmatic access.</p>
+      <p>A separate Node MCP server (<code>mcp/eventore-mcp</code>) exposes <strong>control plane</strong> and <strong>data plane</strong> APIs to AI agents (Cursor, HTTP MCP clients). It does not connect to brokers directly.</p>
       <ul>
-        <li>Point MCP at the backend base URL</li>
-        <li>Respect the same deployment mode and auth as the UI</li>
+        <li>Image: <code>ghcr.io/vijayptiwari/eventore-mcp:latest</code> · Chart: <code>eventore-mcp</code></li>
+        <li>Set <code>EVENTORE_API_URL</code> to the backend Service (e.g. <code>http://eventore-backend:8080/api/v1</code>)</li>
+        <li>stdio for desktop; <code>MCP_TRANSPORT=http</code> on port 3100 in Kubernetes</li>
       </ul>
+      <p>Full tool, prompt, and resource catalog: <a href="mcp.html">MCP for AI agents</a>.</p>
 
       <h2>Health and observability</h2>
       <pre><code>GET /actuator/health

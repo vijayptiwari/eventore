@@ -19,6 +19,7 @@
     { href: 'getting-started.html', label: 'Getting started' },
     { href: 'architecture.html', label: 'Architecture' },
     { href: 'control-data-plane.html', label: 'Control & data plane' },
+    { href: 'mcp.html', label: 'MCP for AI agents' },
     { href: 'configuration.html', label: 'Configuration' },
     { href: 'connections.html', label: 'Connections' },
     { href: 'stream-platforms.html', label: 'Stream platforms' },

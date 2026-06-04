@@ -1,0 +1,27 @@
+# Canonical stream providers (keep in sync with deploy/ci-backend-images.json).
+# protocol: Eventore enum · imageSlug: GHCR tag segment · mavenProfile: backend/eventore-server Maven profile
+providers:
+  - protocol: KAFKA
+    imageSlug: kafka
+    mavenProfile: provider-kafka
+  - protocol: MQTT
+    imageSlug: mqtt
+    mavenProfile: provider-mqtt
+  - protocol: JMS
+    imageSlug: jms
+    mavenProfile: provider-jms
+  - protocol: PULSAR
+    imageSlug: pulsar
+    mavenProfile: provider-pulsar
+  - protocol: RABBITMQ
+    imageSlug: rabbitmq
+    mavenProfile: provider-rabbitmq
+  - protocol: KINESIS
+    imageSlug: kinesis
+    mavenProfile: provider-kinesis
+  - protocol: GCP_PUBSUB
+    imageSlug: gcp-pubsub
+    mavenProfile: provider-gcp-pubsub
+  - protocol: AZURE_SERVICE_BUS
+    imageSlug: azure-servicebus
+    mavenProfile: provider-azure-servicebus

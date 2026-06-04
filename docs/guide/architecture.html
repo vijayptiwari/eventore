@@ -50,6 +50,15 @@ eventore-api-codegen   OpenAPI → Spring controllers (per stream)
 eventore-provider-*    One module per protocol (connector + inspector)
 eventore-server        REST, WebSocket, security, delegates</code></pre>
 
+      <h2>MCP server (optional third workload)</h2>
+      <p><code>mcp/eventore-mcp</code> is a Node MCP adapter for AI clients. It proxies to the backend only:</p>
+      <ul>
+        <li><strong>Control plane tools</strong> — provider list, register/deregister, plane snapshot</li>
+        <li><strong>Data plane tools</strong> — connections, publish, SSE consume samples, inspect, Kafka admin</li>
+        <li><strong>Resources</strong> — <code>eventore://config</code>, <code>eventore://control-plane</code>, <code>eventore://architecture</code></li>
+      </ul>
+      <p>Deploy via <code>docker/Dockerfile.mcp</code> or Helm chart <code>eventore-mcp</code>. Full reference: <a href="mcp.html">MCP for AI agents</a>.</p>
+
       <h2>Frontend application</h2>
       <p>React + React Query. Routes:</p>
       <ul>
@@ -90,6 +99,8 @@ eventore-server        REST, WebSocket, security, delegates</code></pre>
         <li><a href="control-data-plane.html">Control plane &amp; data plane</a></li>
         <li><a href="stream-platforms.html">Stream platform presets</a></li>
         <li><a href="configuration.html">Configuration reference</a></li>
+        <li><a href="mcp.html">MCP for AI agents</a></li>
+        <li><a href="deployment.html#published-artifacts">Published GHCR images &amp; Helm charts</a></li>
         <li><a href="deployment.html">Deployment</a></li>
       </ul>
     </main>

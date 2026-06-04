@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>MCP for AI agents — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">MCP server for AI agents</h1>
+      <p class="page-subtitle">Optional Model Context Protocol layer that exposes Eventore control and data plane APIs to Cursor, Claude, and other MCP clients.</p>
+
+      <figure class="diagram">
+        <img src="../assets/diagrams/kubernetes-deploy.svg" alt="Three workloads: frontend, backend, optional MCP" width="920" height="460" loading="lazy" decoding="async"/>
+        <figcaption class="diagram-caption">Production layout: MCP is a third optional pod; it talks only to the backend API.</figcaption>
+      </figure>
+
+      <h2>Role in the architecture</h2>
+      <p>Eventore separates <strong>control plane</strong> (provider registration, UI cascade, no broker TCP) from <strong>data plane</strong> (connections, publish, subscribe, inspect). The MCP server is a thin <strong>agent adapter</strong> — it never embeds Kafka or MQTT clients. All broker I/O goes through the same backend delegates as the React UI.</p>
+      <pre><code>AI client ── MCP (stdio or HTTP) ──► eventore-mcp ── REST/SSE ──► Eventore backend
+                                              │
+                    control plane ◄───────────┼───────────► data plane
+                    /api/v1/control           │           /api/v1/connections
+                                              ▼
+                                         Brokers / cloud streams</code></pre>
+      <p>See also <a href="control-data-plane.html">Control &amp; data plane</a> and <a href="architecture.html">Architecture</a>.</p>
+
+      <div class="callout callout-info">
+        <strong>When to deploy MCP:</strong> Use it when agents need to probe brokers, publish test messages, or inspect Kafka lag without the web UI. Skip it if operators only use the console — fewer pods and less attack surface.
+      </div>
+
+      <h2>Package and transports</h2>
+      <p>Source: <code>mcp/eventore-mcp</code> (Node 20+, TypeScript). Published image: <code>ghcr.io/vijayptiwari/eventore-mcp</code>.</p>
+      <table>
+        <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>EVENTORE_API_URL</code></td><td><code>http://localhost:8080/api/v1</code></td><td>Backend API base (must include <code>/api/v1</code>)</td></tr>
+          <tr><td><code>MCP_TRANSPORT</code></td><td><code>stdio</code></td><td><code>stdio</code> for Cursor/desktop; <code>http</code> for Kubernetes</td></tr>
+          <tr><td><code>MCP_PORT</code></td><td><code>3100</code></td><td>HTTP listen port when <code>MCP_TRANSPORT=http</code></td></tr>
+          <tr><td><code>MCP_AUTH_TOKEN</code></td><td>(unset)</td><td>Optional Bearer token on <code>/mcp</code> (HTTP only; does not authenticate to backend)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Recommended agent workflow</h2>
+      <ol class="steps">
+        <li>Read <code>eventore://config</code> or call <code>eventore_get_config</code> — deployment mode and <code>controlPlane.uiCascade</code>.</li>
+        <li>Read <code>eventore://control-plane</code> or <code>eventore_get_control_plane</code> — confirm the target protocol is in <code>activeProtocols</code>.</li>
+        <li>Use prompt <code>eventore_discover</code> for a full onboarding brief, or <code>eventore_protocol_guide</code> for broker URL hints.</li>
+        <li>Data plane: <code>eventore_create_connection</code> → validate → list destinations → publish/consume/inspect.</li>
+        <li>Admins only: control-plane <code>eventore_register_provider</code> / <code>eventore_deregister_provider</code> (requires ADMIN mode and <code>ADMIN_BROKER_OPS</code>).</li>
+      </ol>
+
+      <h2>MCP tools</h2>
+      <h3>Control plane</h3>
+      <table>
+        <thead><tr><th>Tool</th><th>API</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>eventore_get_control_plane</code></td><td><code>GET /control/plane</code></td><td>Revision, providers, UI cascade</td></tr>
+          <tr><td><code>eventore_list_providers</code></td><td><code>GET /control/providers</code></td><td>All provider descriptors</td></tr>
+          <tr><td><code>eventore_get_provider</code></td><td><code>GET /control/providers/{protocol}</code></td><td>One provider metadata</td></tr>
+          <tr><td><code>eventore_get_provider_status</code></td><td><code>GET /control/providers/{protocol}/status</code></td><td>Registration and routability</td></tr>
+          <tr><td><code>eventore_register_provider</code></td><td><code>POST .../register</code></td><td>Runtime register (ADMIN)</td></tr>
+          <tr><td><code>eventore_deregister_provider</code></td><td><code>DELETE .../register</code></td><td>Runtime deregister (ADMIN)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Data plane — connections &amp; messaging</h3>
+      <table>
+        <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>eventore_get_config</code></td><td>Mode, allowed actions, modules, embedded control plane summary</td></tr>
+          <tr><td><code>eventore_list_connections</code></td><td>List connection profiles</td></tr>
+          <tr><td><code>eventore_create_connection</code></td><td>Create profile (protocol must be registered)</td></tr>
+          <tr><td><code>eventore_update_connection</code></td><td>Update profile fields</td></tr>
+          <tr><td><code>eventore_delete_connection</code></td><td>Remove profile and subscriptions</td></tr>
+          <tr><td><code>eventore_validate_connection</code></td><td>Connectivity test</td></tr>
+          <tr><td><code>eventore_list_destinations</code></td><td>Topics / queues / streams</td></tr>
+          <tr><td><code>eventore_publish_message</code></td><td>Unified publish</td></tr>
+          <tr><td><code>eventore_consume_messages</code></td><td>Short SSE sample (not WebSocket)</td></tr>
+          <tr><td><code>eventore_protocol_guide</code></td><td>Per-protocol hints or NL protocol suggestion</td></tr>
+          <tr><td><code>eventore_quick_probe</code></td><td>Ephemeral create → validate → list → optional samples → delete</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Data plane — inspect &amp; Kafka admin</h3>
+      <table>
+        <thead><tr><th>Tool</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>eventore_inspect_cluster</code></td><td>Cluster / broker metadata</td></tr>
+          <tr><td><code>eventore_inspect_consumer_groups</code></td><td>Consumer groups or Pulsar subscriptions</td></tr>
+          <tr><td><code>eventore_inspect_lag</code></td><td>Consumer lag (Kafka)</td></tr>
+          <tr><td><code>eventore_inspect_search</code></td><td>Topic message search / sample</td></tr>
+          <tr><td><code>eventore_kafka_publish</code></td><td>Kafka produce with key/partition headers</td></tr>
+          <tr><td><code>eventore_kafka_create_topic</code></td><td>Create topic (ADMIN)</td></tr>
+          <tr><td><code>eventore_kafka_delete_topic</code></td><td>Delete topic (ADMIN)</td></tr>
+          <tr><td><code>eventore_kafka_list_acls</code></td><td>List ACLs (ADMIN)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>MCP resources</h2>
+      <table>
+        <thead><tr><th>URI</th><th>Content</th></tr></thead>
+        <tbody>
+          <tr><td><code>eventore://architecture</code></td><td>Static map of planes, APIs, and tool groupings</td></tr>
+          <tr><td><code>eventore://config</code></td><td>Live <code>GET /config</code></td></tr>
+          <tr><td><code>eventore://control-plane</code></td><td>Live <code>GET /control/plane</code></td></tr>
+          <tr><td><code>eventore://providers</code></td><td>Live provider list</td></tr>
+          <tr><td><code>eventore://connections</code></td><td>Live connection profiles</td></tr>
+          <tr><td><code>eventore://protocol-guides</code></td><td>Static connection/publish hints (all eight protocol types)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>MCP prompts</h2>
+      <p>Prompts return ready-to-run playbooks for agents:</p>
+      <ul>
+        <li><code>eventore_discover</code> — loads config + control plane + architecture map</li>
+        <li><code>eventore_probe_broker</code> — ephemeral probe via <code>eventore_quick_probe</code></li>
+        <li><code>eventore_kafka_inspection</code> — cluster → groups → lag → search sequence</li>
+        <li><code>eventore_control_plane_ops</code> — register / deregister / status checklist</li>
+      </ul>
+
+      <h2>Cursor configuration (stdio)</h2>
+      <pre><code>cd mcp/eventore-mcp && npm install && npm run build</code></pre>
+      <p>Add to Cursor MCP settings (see <code>mcp/eventore-mcp/cursor-mcp.json.example</code>):</p>
+      <pre><code>{
+  "mcpServers": {
+    "eventore": {
+      "command": "node",
+      "args": ["C:/path/to/eventore/mcp/eventore-mcp/dist/index.js"],
+      "env": {
+        "EVENTORE_API_URL": "http://localhost:8080/api/v1",
+        "MCP_TRANSPORT": "stdio"
+      }
+    }
+  }
+}</code></pre>
+
+      <h2>Docker &amp; Helm (published artifacts)</h2>
+      <p>CI publishes <code>ghcr.io/vijayptiwari/eventore-mcp</code> and chart <code>oci://ghcr.io/vijayptiwari/charts/eventore-mcp</code>. Full image/chart list: <a href="deployment.html#published-artifacts">Published Docker images &amp; Helm charts</a>.</p>
+      <pre><code># Stack: backend + frontend + MCP
+docker compose -f docker/docker-compose.stack.yml up -d
+
+# Published MCP image only (backend elsewhere)
+docker pull ghcr.io/vijayptiwari/eventore-mcp:latest
+docker run -p 3100:3100 -e MCP_TRANSPORT=http \
+  -e EVENTORE_API_URL=http://host.docker.internal:8080/api/v1 \
+  ghcr.io/vijayptiwari/eventore-mcp:latest</code></pre>
+      <pre><code>helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.1.0 \
+  -f deploy/helm/eventore/values-published.yaml
+
+helm install eventore-mcp oci://ghcr.io/vijayptiwari/charts/eventore-mcp --version 0.1.0 \
+  --set eventore.apiUrl=http://eventore-backend:8080/api/v1</code></pre>
+      <p>HTTP health: <code>GET :3100/health</code>. MCP endpoint: <code>POST/GET :3100/mcp</code> (streamable HTTP).</p>
+
+      <h2>Policy and security</h2>
+      <ul>
+        <li><strong>Deployment mode</strong> on the backend applies to MCP the same as the UI — READONLY blocks publish and connection CRUD.</li>
+        <li><strong>MCP_AUTH_TOKEN</strong> protects the MCP HTTP endpoint only; configure Spring Security separately if the backend API must be authenticated.</li>
+        <li>MCP pods do not need broker network access if the backend already reaches brokers.</li>
+      </ul>
+
+      <h2>Limitations</h2>
+      <ul>
+        <li>Live streaming in the UI uses WebSocket <code>/ws/stream</code>; MCP consume tools use SSE for bounded samples.</li>
+        <li>Cloud protocols (Kinesis, GCP Pub/Sub, Azure Service Bus) are supported when the provider JAR is deployed and registered; inspect/admin tools vary by provider.</li>
+        <li>MCP does not replace the web console for multi-topic live view or export.</li>
+      </ul>
+
+      <p>Related: <a href="deployment.html">Deployment</a> · <a href="control-data-plane.html">Control &amp; data plane</a> · <code>mcp/eventore-mcp/README.md</code> in the repository.</p>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

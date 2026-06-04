@@ -1,9 +1,14 @@
 global:
   imageRegistry: ghcr.io/vijayptiwari
 
+# Required: which stream providers this deployment uses. Drives backend image tag and runtime config.
+# Examples: [KAFKA]  |  [KAFKA, KINESIS] → image tag kafka-kinesis  |  all eight → tag all
+# Published image tags: kafka, mqtt, jms, pulsar, rabbitmq, kinesis, gcp-pubsub, azure-servicebus,
+#   plus bundles kafka-kinesis and all (see deploy/ci-backend-images.json).
 eventore:
+  streamProviders:
+    - KAFKA
   deploymentMode: DEV
-  enabledProtocols: ""
   controlPlane:
     autoRegisterOnStartup: true
   dataPlane:
@@ -13,24 +18,15 @@ eventore:
     queueCapacity: 500
   dev:
     maxPublishBytes: 1048576
-    allowedProtocols:
-      - KAFKA
-      - MQTT
-      - JMS
-      - PULSAR
-      - RABBITMQ
-      - KINESIS
-      - GCP_PUBSUB
-      - AZURE_SERVICE_BUS
 
 image:
   backend:
     repository: ghcr.io/vijayptiwari/eventore-backend
-    tag: "0.1.0"
+    tag: ""  # empty = derive from eventore.streamProviders (e.g. kafka, kafka-kinesis, all)
     pullPolicy: IfNotPresent
   frontend:
     repository: ghcr.io/vijayptiwari/eventore-frontend
-    tag: "0.1.0"
+    tag: "latest"
     pullPolicy: IfNotPresent
 
 backend:

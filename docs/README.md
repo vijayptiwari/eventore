@@ -29,7 +29,8 @@ npx serve docs
 | Streaming & live view | `guide/streaming.html` |
 | Inspection | `guide/inspection.html` |
 | Kafka admin | `guide/kafka-admin.html` |
-| Deployment | `guide/deployment.html` |
+| Deployment (GHCR images & OCI Helm) | `guide/deployment.html` (#published-artifacts) |
+| MCP for AI agents | `guide/mcp.html` |
 
 ## Path resolution
 

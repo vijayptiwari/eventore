@@ -1,8 +1,6 @@
-# Slim deployment: Kafka + AWS Kinesis only (build image with EVENTORE_MAVEN_PROFILES=kafka-kinesis)
+# Kafka + Kinesis streams — image tag kafka-kinesis (CI-published bundle)
 eventore:
+  streamProviders:
+    - KAFKA
+    - KINESIS
   deploymentMode: ADMIN
-  enabledProtocols: KAFKA,KINESIS
-  dev:
-    allowedProtocols:
-      - KAFKA
-      - KINESIS

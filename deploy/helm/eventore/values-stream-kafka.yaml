@@ -1,0 +1,4 @@
+# Single stream: Kafka only — image tag kafka
+eventore:
+  streamProviders:
+    - KAFKA

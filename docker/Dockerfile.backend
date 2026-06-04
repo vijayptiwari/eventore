@@ -15,12 +15,19 @@ COPY backend/eventore-provider-azure-servicebus backend/eventore-provider-azure-
 COPY backend/eventore-server backend/eventore-server
 COPY backend/openapi backend/openapi
 WORKDIR /app/backend
-# Default: all providers. Slim: --build-arg EVENTORE_MAVEN_PROFILES=kafka-kinesis
-ARG EVENTORE_MAVEN_PROFILES=providers-all
-RUN if [ "$EVENTORE_MAVEN_PROFILES" = "providers-all" ]; then \
+# Comma-separated Maven profiles, e.g. provider-kafka or provider-kafka,provider-kinesis
+# Local all-providers dev build: EVENTORE_STREAM_PROFILES=providers-all
+ARG EVENTORE_STREAM_PROFILES=providers-all
+RUN set -eux; \
+    if [ "$EVENTORE_STREAM_PROFILES" = "providers-all" ]; then \
       mvn -B -DskipTests package; \
     else \
-      mvn -B -DskipTests -P"${EVENTORE_MAVEN_PROFILES}" -P!providers-all package; \
+      PROFILE_ARGS=""; \
+      IFS=','; \
+      for p in $EVENTORE_STREAM_PROFILES; do \
+        PROFILE_ARGS="$PROFILE_ARGS -P$(echo "$p" | tr -d ' ')"; \
+      done; \
+      mvn -B -DskipTests $PROFILE_ARGS -P!providers-all package; \
     fi
 
 FROM eclipse-temurin:21-jre-alpine

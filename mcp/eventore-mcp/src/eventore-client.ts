@@ -1,4 +1,6 @@
-export type ProtocolType = 'KAFKA' | 'MQTT' | 'JMS' | 'PULSAR' | 'RABBITMQ';
+import type { ProtocolType } from './protocol-types.js';
+
+export type { ProtocolType };
 
 export interface ConnectionProfile {
   id?: string;
@@ -9,10 +11,33 @@ export interface ConnectionProfile {
   credentials?: Record<string, string>;
 }
 
+export interface ControlPlaneUiCascade {
+  connectionProtocols?: string[];
+  inspectProtocols?: string[];
+  adminProtocols?: string[];
+  platformFilterProtocols?: string[];
+}
+
+export interface ControlPlaneSnapshot {
+  revision: number;
+  providers?: unknown[];
+  activeProtocols: string[];
+  openApiStreams?: string[];
+  uiCascade: ControlPlaneUiCascade;
+}
+
+export interface ControlPlaneView {
+  revision: number;
+  uiCascade: ControlPlaneUiCascade;
+  openApiStreams?: string[];
+}
+
 export interface AppConfig {
   deploymentMode: string;
   allowedActions: string[];
   supportedProtocols: ProtocolType[];
+  loadedModules?: string[];
+  controlPlane?: ControlPlaneView;
 }
 
 export interface TopicRef {
@@ -56,6 +81,30 @@ export class EventoreClient {
     return this.request<AppConfig>('/config');
   }
 
+  getControlPlane() {
+    return this.request<ControlPlaneSnapshot>('/control/plane');
+  }
+
+  listProviders() {
+    return this.request<unknown[]>('/control/providers');
+  }
+
+  getProvider(protocol: ProtocolType) {
+    return this.request<unknown>(`/control/providers/${protocol}`);
+  }
+
+  getProviderStatus(protocol: ProtocolType) {
+    return this.request<Record<string, unknown>>(`/control/providers/${protocol}/status`);
+  }
+
+  registerProvider(protocol: ProtocolType) {
+    return this.request<unknown>(`/control/providers/${protocol}/register`, { method: 'POST' });
+  }
+
+  deregisterProvider(protocol: ProtocolType) {
+    return this.request<unknown>(`/control/providers/${protocol}/register`, { method: 'DELETE' });
+  }
+
   listConnections() {
     return this.request<ConnectionProfile[]>('/connections');
   }
@@ -67,6 +116,13 @@ export class EventoreClient {
   createConnection(profile: ConnectionProfile) {
     return this.request<ConnectionProfile>('/connections', {
       method: 'POST',
+      body: JSON.stringify(profile),
+    });
+  }
+
+  updateConnection(id: string, profile: ConnectionProfile) {
+    return this.request<ConnectionProfile>(`/connections/${id}`, {
+      method: 'PUT',
       body: JSON.stringify(profile),
     });
   }
@@ -110,13 +166,6 @@ export class EventoreClient {
       `/connections/${connectionId}/subscribe/${subscriptionId}`,
       { method: 'DELETE' },
     );
-  }
-
-  updateConnection(id: string, profile: ConnectionProfile) {
-    return this.request<ConnectionProfile>(`/connections/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(profile),
-    });
   }
 
   inspectCluster(connectionId: string) {

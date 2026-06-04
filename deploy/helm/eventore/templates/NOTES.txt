@@ -1,5 +1,8 @@
 Eventore installed.
 
+  Stream providers: {{ join "," .Values.eventore.streamProviders }}
+  Backend image:    {{ .Values.image.backend.repository }}:{{ include "eventore.backendImageTag" . }}
+
 {{- if .Values.ingress.enabled }}
 
   UI:  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .Values.ingress.host }}/
@@ -13,10 +16,8 @@ Eventore installed.
 
 {{- end }}
 
-  Backend image:  {{ .Values.image.backend.repository }}:{{ .Values.image.backend.tag }}
-  Frontend image: {{ .Values.image.frontend.repository }}:{{ .Values.image.frontend.tag }}
+  Install from published OCI chart (example — Kafka only):
+    helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version {{ .Chart.Version }} \
+      -f deploy/helm/eventore/values-stream-kafka.yaml
 
-  Pull from GHCR (after CI publish):
-    helm upgrade --install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version {{ .Chart.Version }} \
-      -f deploy/helm/eventore/values-dev.yaml \
-      --set image.backend.tag=latest --set image.frontend.tag=latest
+  Image tags must match eventore.streamProviders (see deploy/ci-backend-images.json).

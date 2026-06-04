@@ -9,7 +9,7 @@ data:
     {
       "eventore": {
         "deployment-mode": {{ .Values.eventore.deploymentMode | quote }},
-        "enabled-protocols": {{ .Values.eventore.enabledProtocols | quote }},
+        "enabled-protocols": {{ include "eventore.enabledProtocolsCsv" . | quote }},
         "control-plane": {
           "auto-register-on-startup": {{ .Values.eventore.controlPlane.autoRegisterOnStartup }}
         },
@@ -22,7 +22,7 @@ data:
         },
         "dev": {
           "max-publish-bytes": {{ .Values.eventore.dev.maxPublishBytes }},
-          "allowed-protocols": {{ .Values.eventore.dev.allowedProtocols | toJson }}
+          "allowed-protocols": {{ .Values.eventore.streamProviders | toJson }}
         }
       }
     }

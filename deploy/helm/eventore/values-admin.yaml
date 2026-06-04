@@ -1,4 +1,13 @@
 eventore:
+  streamProviders:
+    - KAFKA
+    - MQTT
+    - JMS
+    - PULSAR
+    - RABBITMQ
+    - KINESIS
+    - GCP_PUBSUB
+    - AZURE_SERVICE_BUS
   deploymentMode: ADMIN
   subscriptions:
     maxConcurrent: 100

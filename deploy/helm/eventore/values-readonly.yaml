@@ -1,4 +1,6 @@
 eventore:
+  streamProviders:
+    - KAFKA
   deploymentMode: READONLY
   subscriptions:
     maxConcurrent: 25

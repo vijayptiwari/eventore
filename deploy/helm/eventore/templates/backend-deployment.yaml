@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: "{{ .Values.image.backend.repository }}:{{ .Values.image.backend.tag }}"
+          image: "{{ .Values.image.backend.repository }}:{{ include "eventore.backendImageTag" . }}"
           imagePullPolicy: {{ .Values.image.backend.pullPolicy }}
           ports:
             - containerPort: {{ .Values.backend.service.port }}

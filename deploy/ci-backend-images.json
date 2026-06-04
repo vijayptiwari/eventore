@@ -1,0 +1,20 @@
+[
+  { "name": "backend-kafka", "tag": "kafka", "profiles": "provider-kafka" },
+  { "name": "backend-mqtt", "tag": "mqtt", "profiles": "provider-mqtt" },
+  { "name": "backend-jms", "tag": "jms", "profiles": "provider-jms" },
+  { "name": "backend-pulsar", "tag": "pulsar", "profiles": "provider-pulsar" },
+  { "name": "backend-rabbitmq", "tag": "rabbitmq", "profiles": "provider-rabbitmq" },
+  { "name": "backend-kinesis", "tag": "kinesis", "profiles": "provider-kinesis" },
+  { "name": "backend-gcp-pubsub", "tag": "gcp-pubsub", "profiles": "provider-gcp-pubsub" },
+  { "name": "backend-azure-servicebus", "tag": "azure-servicebus", "profiles": "provider-azure-servicebus" },
+  {
+    "name": "backend-kafka-kinesis",
+    "tag": "kafka-kinesis",
+    "profiles": "provider-kafka,provider-kinesis"
+  },
+  {
+    "name": "backend-all",
+    "tag": "all",
+    "profiles": "provider-kafka,provider-mqtt,provider-jms,provider-pulsar,provider-rabbitmq,provider-kinesis,provider-gcp-pubsub,provider-azure-servicebus"
+  }
+]

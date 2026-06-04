@@ -1,14 +1,13 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { EventoreClient, type ConnectionProfile, type ProtocolType } from './eventore-client.js';
+import { EventoreClient, type ConnectionProfile } from './eventore-client.js';
 import { allGuides, getProtocolGuide, suggestProtocol } from './protocol-guide.js';
-
-const ProtocolSchema = z.enum(['KAFKA', 'MQTT', 'JMS', 'PULSAR', 'RABBITMQ']);
+import { ProtocolSchema, type ProtocolType } from './protocol-types.js';
 
 export function registerTools(server: McpServer, client: EventoreClient): void {
   server.tool(
     'eventore_get_config',
-    'Returns Eventore deployment mode (ADMIN/DEV/READONLY), allowed actions, and supported protocols.',
+    'Core config: deployment mode, allowed actions, supported protocols, loadedModules, and embedded controlPlane UI cascade.',
     {},
     async () => {
       const config = await client.getConfig();
@@ -20,7 +19,7 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
 
   server.tool(
     'eventore_list_connections',
-    'List all messaging connection profiles stored in Eventore.',
+    'Data plane: list saved broker connection profiles. Protocol must be active in the control plane.',
     {},
     async () => {
       const list = await client.listConnections();
@@ -32,7 +31,7 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
 
   server.tool(
     'eventore_create_connection',
-    'Create a connection profile for Kafka, MQTT, JMS, Pulsar, or RabbitMQ. Respects deployment mode (READONLY rejects).',
+    'Data plane: create a broker connection profile. Provider must be registered (see eventore_get_control_plane). READONLY rejects.',
     {
       name: z.string().describe('Human-readable connection name'),
       protocol: ProtocolSchema,
@@ -56,8 +55,33 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
   );
 
   server.tool(
+    'eventore_update_connection',
+    'Data plane: update an existing connection profile (name, brokerUrl, properties, credentials).',
+    {
+      connectionId: z.string(),
+      name: z.string(),
+      protocol: ProtocolSchema,
+      brokerUrl: z.string(),
+      properties: z.record(z.string()).optional(),
+      credentials: z.record(z.string()).optional(),
+    },
+    async (args) => {
+      const updated = await client.updateConnection(args.connectionId, {
+        name: args.name,
+        protocol: args.protocol as ProtocolType,
+        brokerUrl: args.brokerUrl,
+        properties: args.properties,
+        credentials: args.credentials,
+      });
+      return {
+        content: [{ type: 'text', text: JSON.stringify(updated, null, 2) }],
+      };
+    },
+  );
+
+  server.tool(
     'eventore_delete_connection',
-    'Delete a connection and stop its active subscriptions.',
+    'Data plane: delete a connection and stop its active subscriptions.',
     { connectionId: z.string() },
     async (args) => {
       await client.deleteConnection(args.connectionId);
@@ -69,7 +93,7 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
 
   server.tool(
     'eventore_validate_connection',
-    'Test broker connectivity for a saved connection without starting a long-lived consumer.',
+    'Data plane: test broker connectivity for a saved connection without starting a long-lived consumer.',
     { connectionId: z.string() },
     async (args) => {
       const result = await client.validateConnection(args.connectionId);
@@ -81,7 +105,7 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
 
   server.tool(
     'eventore_list_destinations',
-    'List topics, queues, or destinations available on a connection.',
+    'Data plane: list topics, queues, or destinations on a connection.',
     { connectionId: z.string() },
     async (args) => {
       const dests = await client.listDestinations(args.connectionId);
@@ -93,7 +117,7 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
 
   server.tool(
     'eventore_publish_message',
-    'Publish a message to a destination on a connection. Blocked in READONLY mode.',
+    'Data plane: publish a message to a destination. Blocked in READONLY mode.',
     {
       connectionId: z.string(),
       destination: z.string(),
@@ -114,7 +138,7 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
 
   server.tool(
     'eventore_consume_messages',
-    'Subscribe via Eventore, poll the SSE stream for a short window, return captured messages, then unsubscribe.',
+    'Data plane: subscribe via backend SSE (/api/v1/stream), collect samples, then unsubscribe. UI uses WebSocket; MCP uses SSE.',
     {
       connectionId: z.string(),
       destination: z.string(),

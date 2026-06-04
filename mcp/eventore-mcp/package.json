@@ -1,7 +1,7 @@
 {
   "name": "@eventore/mcp-server",
-  "version": "0.1.0",
-  "description": "MCP server for Eventore messaging bus integration (optional separate deployment)",
+  "version": "0.2.0",
+  "description": "MCP server for Eventore control plane and data plane APIs (optional separate deployment)",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

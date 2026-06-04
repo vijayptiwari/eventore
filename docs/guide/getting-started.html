@@ -66,6 +66,13 @@ npm run dev</code></pre>
         <strong>Tip:</strong> Streams are stored in browser cookies. Closing the tab and returning restores your workspace.
       </div>
 
+      <h2>Quick start (published images)</h2>
+      <p>Pick stream providers in Helm; the chart pulls the matching GHCR backend tag (<code>kafka</code>, <code>kafka-kinesis</code>, etc.). Details: <a href="deployment.html#published-artifacts">Published artifacts</a>.</p>
+      <pre><code>docker pull ghcr.io/vijayptiwari/eventore-backend:kafka
+
+helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.1.0 \
+  -f deploy/helm/eventore/values-stream-kafka.yaml</code></pre>
+
       <h2>Slim deployment (Kafka + Kinesis only)</h2>
       <pre><code>mvn -DskipTests -Pkafka-kinesis -P!providers-all -pl eventore-server -am package
 java -jar eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar \
@@ -76,6 +83,7 @@ java -jar eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar \
       <ul>
         <li><a href="architecture.html">Understand architecture</a></li>
         <li><a href="configuration.html">Tune deployment mode and protocols</a></li>
+        <li><a href="deployment.html#published-artifacts">Deploy published GHCR images &amp; Helm charts</a></li>
         <li><a href="kafka-admin.html">Kafka admin operations</a> (ADMIN mode)</li>
         <li><a href="connections.html">Connections &amp; presets</a></li>
         <li><a href="deployment.html">Deployment</a></li>

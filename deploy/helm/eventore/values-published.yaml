@@ -1,7 +1,10 @@
-# Example overlay after CI publish — set tags from GitHub Actions build (sha or release).
+# After CI publish: streamProviders selects the pre-built image tag (leave image.backend.tag empty).
+eventore:
+  streamProviders:
+    - KAFKA
+
 image:
   backend:
-    tag: "latest"
     pullPolicy: Always
   frontend:
     tag: "latest"

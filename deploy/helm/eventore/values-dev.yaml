@@ -1,11 +1,11 @@
 eventore:
+  streamProviders:
+    - KAFKA
+    - MQTT
+    - RABBITMQ
   deploymentMode: DEV
   dev:
     maxPublishBytes: 524288
-    allowedProtocols:
-      - KAFKA
-      - MQTT
-      - RABBITMQ
 
 backend:
   replicaCount: 1
