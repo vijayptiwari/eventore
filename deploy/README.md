@@ -6,9 +6,9 @@ Production-style Eventore runs as **three separate containers/pods**:
 
 | # | Workload | Image | Role |
 |---|----------|-------|------|
-| 1 | **Backend** | `eventore/backend` | Spring API, WebSocket, broker connectors (Kafka, MQTT, JMS, Pulsar, RabbitMQ) |
-| 2 | **Frontend** | `eventore/frontend` | React UI (nginx) — talks to backend via Ingress `/api` and `/ws` |
-| 3 | **MCP** (optional) | `eventore/mcp` | AI agent MCP over HTTP — talks to backend API only, not brokers directly |
+| 1 | **Backend** | `ghcr.io/vijayptiwari/eventore-backend` | Spring API, WebSocket, broker connectors |
+| 2 | **Frontend** | `ghcr.io/vijayptiwari/eventore-frontend` | React UI (nginx) — Ingress `/api` and `/ws` or in-pod proxy |
+| 3 | **MCP** (optional) | `ghcr.io/vijayptiwari/eventore-mcp` | AI agent MCP over HTTP |
 
 ```text
                     ┌─────────────────┐
@@ -69,3 +69,22 @@ docker compose -f docker/docker-compose.stack.yml up -d
 - UI: http://localhost:8088  
 - API: http://localhost:8080  
 - MCP: http://localhost:3100/health  
+
+## Published artifacts (GitHub Actions)
+
+Workflow `.github/workflows/publish-artifacts.yml` publishes on push to `main` and tags `v*`:
+
+| Artifact | Location |
+|----------|----------|
+| Backend (all providers) | `ghcr.io/vijayptiwari/eventore-backend:latest` |
+| Backend slim | `ghcr.io/vijayptiwari/eventore-backend:kafka-kinesis` |
+| Frontend | `ghcr.io/vijayptiwari/eventore-frontend:latest` |
+| MCP | `ghcr.io/vijayptiwari/eventore-mcp:latest` |
+| Helm charts | `oci://ghcr.io/vijayptiwari/charts/eventore` and `.../eventore-mcp` |
+
+```bash
+helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.1.0 \
+  -f deploy/helm/eventore/values-dev.yaml \
+  --set image.backend.tag=latest \
+  --set image.frontend.tag=latest
+```

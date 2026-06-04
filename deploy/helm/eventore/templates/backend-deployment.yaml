@@ -24,16 +24,11 @@ spec:
           ports:
             - containerPort: {{ .Values.backend.service.port }}
           env:
-            - name: EVENTORE_DEPLOYMENT_MODE
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "eventore.fullname" . }}-config
-                  key: EVENTORE_DEPLOYMENT_MODE
             - name: SPRING_APPLICATION_JSON
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "eventore.fullname" . }}-config
-                  key: APPLICATION_YAML
+                  key: SPRING_APPLICATION_JSON
           envFrom:
             - secretRef:
                 name: {{ include "eventore.fullname" . }}-broker

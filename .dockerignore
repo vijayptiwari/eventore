@@ -1,0 +1,12 @@
+**/.git
+**/.github
+**/target
+**/node_modules
+**/dist
+**/.idea
+**/*.iml
+**/.DS_Store
+docs/
+*.md
+!backend/README.md
+!deploy/README.md

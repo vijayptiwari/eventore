@@ -1,0 +1,11 @@
+# Example overlay after CI publish — set tags from GitHub Actions build (sha or release).
+image:
+  backend:
+    tag: "latest"
+    pullPolicy: Always
+  frontend:
+    tag: "latest"
+    pullPolicy: Always
+
+ingress:
+  host: eventore.example.com

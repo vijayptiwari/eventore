@@ -17,6 +17,8 @@ services:
     ports:
       - "8088:80"
     environment:
+      EVENTORE_BACKEND_HOST: eventore-backend
+      EVENTORE_BACKEND_PORT: "8080"
       EVENTORE_API_BASE_URL: /api/v1
       EVENTORE_WS_URL: ws://localhost:8088/ws/stream
     depends_on:

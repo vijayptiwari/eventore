@@ -24,6 +24,10 @@ spec:
           ports:
             - containerPort: {{ .Values.frontend.service.port }}
           env:
+            - name: EVENTORE_BACKEND_HOST
+              value: {{ include "eventore.fullname" . }}-backend
+            - name: EVENTORE_BACKEND_PORT
+              value: {{ .Values.backend.service.port | quote }}
             - name: EVENTORE_API_BASE_URL
               value: {{ .Values.frontend.env.apiBaseUrl | quote }}
             - name: EVENTORE_WS_URL

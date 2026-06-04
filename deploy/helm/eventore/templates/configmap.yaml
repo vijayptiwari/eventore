@@ -5,17 +5,27 @@ metadata:
   labels:
     {{- include "eventore.labels" . | nindent 4 }}
 data:
-  EVENTORE_DEPLOYMENT_MODE: {{ .Values.eventore.deploymentMode | quote }}
-  APPLICATION_YAML: |
-    eventore:
-      deployment-mode: {{ .Values.eventore.deploymentMode }}
-      enabled-protocols: {{ .Values.eventore.enabledProtocols | quote }}
-      subscriptions:
-        max-concurrent: {{ .Values.eventore.subscriptions.maxConcurrent }}
-        queue-capacity: {{ .Values.eventore.subscriptions.queueCapacity }}
-      dev:
-        max-publish-bytes: {{ .Values.eventore.dev.maxPublishBytes }}
-        allowed-protocols: {{ .Values.eventore.dev.allowedProtocols | toJson }}
+  SPRING_APPLICATION_JSON: |
+    {
+      "eventore": {
+        "deployment-mode": {{ .Values.eventore.deploymentMode | quote }},
+        "enabled-protocols": {{ .Values.eventore.enabledProtocols | quote }},
+        "control-plane": {
+          "auto-register-on-startup": {{ .Values.eventore.controlPlane.autoRegisterOnStartup }}
+        },
+        "data-plane": {
+          "require-control-plane-registration": {{ .Values.eventore.dataPlane.requireControlPlaneRegistration }}
+        },
+        "subscriptions": {
+          "max-concurrent": {{ .Values.eventore.subscriptions.maxConcurrent }},
+          "queue-capacity": {{ .Values.eventore.subscriptions.queueCapacity }}
+        },
+        "dev": {
+          "max-publish-bytes": {{ .Values.eventore.dev.maxPublishBytes }},
+          "allowed-protocols": {{ .Values.eventore.dev.allowedProtocols | toJson }}
+        }
+      }
+    }
   frontend-config.js: |
     window.__EVENTORE_CONFIG__ = {
       apiBaseUrl: {{ .Values.frontend.env.apiBaseUrl | quote }},

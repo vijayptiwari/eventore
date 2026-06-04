@@ -1,0 +1,22 @@
+Eventore installed.
+
+{{- if .Values.ingress.enabled }}
+
+  UI:  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .Values.ingress.host }}/
+  API: http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .Values.ingress.host }}/api/v1/config
+
+{{- else }}
+
+  Port-forward:
+    kubectl port-forward svc/{{ include "eventore.fullname" . }}-frontend 8088:{{ .Values.frontend.service.port }}
+    kubectl port-forward svc/{{ include "eventore.fullname" . }}-backend 8080:{{ .Values.backend.service.port }}
+
+{{- end }}
+
+  Backend image:  {{ .Values.image.backend.repository }}:{{ .Values.image.backend.tag }}
+  Frontend image: {{ .Values.image.frontend.repository }}:{{ .Values.image.frontend.tag }}
+
+  Pull from GHCR (after CI publish):
+    helm upgrade --install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version {{ .Chart.Version }} \
+      -f deploy/helm/eventore/values-dev.yaml \
+      --set image.backend.tag=latest --set image.frontend.tag=latest

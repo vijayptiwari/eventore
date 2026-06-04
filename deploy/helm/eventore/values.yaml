@@ -1,7 +1,13 @@
+global:
+  imageRegistry: ghcr.io/vijayptiwari
+
 eventore:
   deploymentMode: DEV
-  # Runtime filter; empty = all provider JARs in the image. Set to match your Maven/Docker build profile.
   enabledProtocols: ""
+  controlPlane:
+    autoRegisterOnStartup: true
+  dataPlane:
+    requireControlPlaneRegistration: true
   subscriptions:
     maxConcurrent: 50
     queueCapacity: 500
@@ -13,14 +19,17 @@ eventore:
       - JMS
       - PULSAR
       - RABBITMQ
+      - KINESIS
+      - GCP_PUBSUB
+      - AZURE_SERVICE_BUS
 
 image:
   backend:
-    repository: eventore/backend
+    repository: ghcr.io/vijayptiwari/eventore-backend
     tag: "0.1.0"
     pullPolicy: IfNotPresent
   frontend:
-    repository: eventore/frontend
+    repository: ghcr.io/vijayptiwari/eventore-frontend
     tag: "0.1.0"
     pullPolicy: IfNotPresent
 

@@ -1,7 +1,9 @@
+# Build from repository root: docker build -f docker/Dockerfile.backend .
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY backend/pom.xml backend/pom.xml
 COPY backend/eventore-core backend/eventore-core
+COPY backend/eventore-api-codegen backend/eventore-api-codegen
 COPY backend/eventore-provider-kafka backend/eventore-provider-kafka
 COPY backend/eventore-provider-mqtt backend/eventore-provider-mqtt
 COPY backend/eventore-provider-jms backend/eventore-provider-jms
@@ -13,16 +15,19 @@ COPY backend/eventore-provider-azure-servicebus backend/eventore-provider-azure-
 COPY backend/eventore-server backend/eventore-server
 COPY backend/openapi backend/openapi
 WORKDIR /app/backend
-# Default: all providers. Slim example: docker build --build-arg EVENTORE_MAVEN_PROFILES=kafka-kinesis -f docker/Dockerfile.backend .
+# Default: all providers. Slim: --build-arg EVENTORE_MAVEN_PROFILES=kafka-kinesis
 ARG EVENTORE_MAVEN_PROFILES=providers-all
 RUN if [ "$EVENTORE_MAVEN_PROFILES" = "providers-all" ]; then \
-      mvn -q -DskipTests package; \
+      mvn -B -DskipTests package; \
     else \
-      mvn -q -DskipTests -P${EVENTORE_MAVEN_PROFILES} -P!providers-all package; \
+      mvn -B -DskipTests -P"${EVENTORE_MAVEN_PROFILES}" -P!providers-all package; \
     fi
 
 FROM eclipse-temurin:21-jre-alpine
+RUN apk add --no-cache curl
 WORKDIR /app
-COPY --from=build /app/backend/eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar app.jar
+COPY --from=build /app/backend/eventore-server/target/eventore-server-*.jar app.jar
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:8080/actuator/health/readiness || exit 1
 ENTRYPOINT ["java", "-jar", "app.jar"]
