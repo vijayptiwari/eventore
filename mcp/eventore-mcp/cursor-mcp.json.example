@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "eventore": {
+      "command": "node",
+      "args": ["<ABSOLUTE_PATH>/eventore/mcp/eventore-mcp/dist/index.js"],
+      "env": {
+        "EVENTORE_API_URL": "http://localhost:8080/api/v1",
+        "MCP_TRANSPORT": "stdio"
+      }
+    }
+  }
+}

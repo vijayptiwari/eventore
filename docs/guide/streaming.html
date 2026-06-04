@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Streaming &amp; live view — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Streaming &amp; live view</h1>
+      <p class="page-subtitle">Multi-topic WebSocket workspace, filters, timed windows, and export.</p>
+
+      <figure class="diagram">
+        <img src="../assets/diagrams/stream-workspace.svg" alt="Stream workspace" width="920" height="400" loading="lazy" decoding="async"/>
+      </figure>
+
+      <h2>Stream workspace</h2>
+      <p>The <strong>Streams</strong> side panel is your persistent workspace:</p>
+      <ul>
+        <li>Add streams from <strong>Browse</strong> (topic/queue + connection).</li>
+        <li>Each stream shows protocol, connection name, and destination.</li>
+        <li>State is saved in browser cookies so sessions survive refresh.</li>
+      </ul>
+
+      <h2>Live view</h2>
+      <p>Open <strong>Live Stream</strong> to subscribe to all streams in the workspace over a single WebSocket.</p>
+      <table>
+        <thead><tr><th>Feature</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>WebSocket</td><td><code>ws://host/ws/stream</code> — primary path for low latency</td></tr>
+          <tr><td>SSE fallback</td><td>Used when WebSocket is blocked by proxies</td></tr>
+          <tr><td>Header filter</td><td>Regex on message headers (per stream or global)</td></tr>
+          <tr><td>Body filter</td><td>Regex on payload text</td></tr>
+          <tr><td>Timed window</td><td>Limit history to last N minutes</td></tr>
+          <tr><td>Pause</td><td>Buffer incoming messages without losing the subscription</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Publish from live view</h2>
+      <p>When deployment mode allows <code>PUBLISH</code>, send test messages to the active destination with optional headers. DEV mode enforces <code>max-publish-bytes</code>.</p>
+
+      <h2>Export</h2>
+      <p>Export captured messages from the live panel:</p>
+      <ul>
+        <li><strong>JSON</strong> — structured array</li>
+        <li><strong>NDJSON</strong> — one object per line for pipelines</li>
+        <li><strong>CSV</strong> — spreadsheet-friendly columns</li>
+      </ul>
+
+      <h2>WebSocket protocol (conceptual)</h2>
+      <pre><code>Client → Server: subscribe { connectionId, destination, filters? }
+Server → Client: message { headers, body, timestamp, streamId }
+Client → Server: unsubscribe | update filters</code></pre>
+
+      <div class="callout callout-info">
+        Data plane handles all broker reads; control plane must have the connection’s protocol registered or subscribe returns an error.
+      </div>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

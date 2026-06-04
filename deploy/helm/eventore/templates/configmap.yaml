@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "eventore.fullname" . }}-config
+  labels:
+    {{- include "eventore.labels" . | nindent 4 }}
+data:
+  EVENTORE_DEPLOYMENT_MODE: {{ .Values.eventore.deploymentMode | quote }}
+  APPLICATION_YAML: |
+    eventore:
+      deployment-mode: {{ .Values.eventore.deploymentMode }}
+      enabled-protocols: {{ .Values.eventore.enabledProtocols | quote }}
+      subscriptions:
+        max-concurrent: {{ .Values.eventore.subscriptions.maxConcurrent }}
+        queue-capacity: {{ .Values.eventore.subscriptions.queueCapacity }}
+      dev:
+        max-publish-bytes: {{ .Values.eventore.dev.maxPublishBytes }}
+        allowed-protocols: {{ .Values.eventore.dev.allowedProtocols | toJson }}
+  frontend-config.js: |
+    window.__EVENTORE_CONFIG__ = {
+      apiBaseUrl: {{ .Values.frontend.env.apiBaseUrl | quote }},
+      wsUrl: {{ default (printf "wss://%s/ws/stream" .Values.ingress.host) .Values.frontend.env.wsUrl | quote }}
+    };

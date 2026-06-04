@@ -1,0 +1,374 @@
+openapi: 3.0.3
+info:
+  title: Eventore API
+  description: |
+    Multi-stream messaging console with modular per-protocol providers.
+    Deployment modes: ADMIN, DEV, READONLY (configuration-driven).
+  version: 0.1.0
+  contact:
+    name: Eventore
+servers:
+  - url: /api/v1
+    description: API base path (relative to host)
+
+tags:
+  - name: Config
+  - name: Platforms
+  - name: Connections
+  - name: Destinations
+  - name: Publish
+  - name: Subscribe
+  - name: Stream
+  - name: Inspect
+  - name: KafkaAdmin
+
+paths:
+  /config:
+    get:
+      tags: [Config]
+      operationId: getConfig
+      summary: Deployment mode and allowed actions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppConfig'
+
+  /platforms:
+    get:
+      tags: [Platforms]
+      operationId: listPlatforms
+      summary: Cloud and on-prem stream platform presets
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StreamPlatformPreset'
+
+  /connections:
+    get:
+      tags: [Connections]
+      operationId: listConnections
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConnectionProfileResponse'
+    post:
+      tags: [Connections]
+      operationId: createConnection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectionProfile'
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionProfileResponse'
+
+  /connections/{connectionId}:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+    get:
+      tags: [Connections]
+      operationId: getConnection
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionProfileResponse'
+    put:
+      tags: [Connections]
+      operationId: updateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectionProfile'
+      responses:
+        '200':
+          description: OK
+    delete:
+      tags: [Connections]
+      operationId: deleteConnection
+      responses:
+        '204':
+          description: Deleted
+
+  /connections/{connectionId}/validate:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+    post:
+      tags: [Connections]
+      operationId: validateConnection
+      responses:
+        '200':
+          description: OK
+
+  /connections/{connectionId}/destinations:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+    get:
+      tags: [Destinations]
+      operationId: listDestinations
+      responses:
+        '200':
+          description: Topics, queues, or streams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TopicRef'
+
+  /connections/{connectionId}/publish:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+    post:
+      tags: [Publish]
+      operationId: publishMessage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRequest'
+      responses:
+        '200':
+          description: Published
+
+  /connections/{connectionId}/subscribe:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+    post:
+      tags: [Subscribe]
+      operationId: startSubscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscribeRequest'
+      responses:
+        '200':
+          description: Subscription started
+    delete:
+      tags: [Subscribe]
+      operationId: stopSubscription
+      parameters:
+        - name: subscriptionId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stopped
+
+  /stream/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Stream]
+      operationId: streamSse
+      summary: Server-Sent Events for subscription
+      responses:
+        '200':
+          description: text/event-stream
+
+  /connections/{connectionId}/inspect/capabilities:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+    get:
+      tags: [Inspect]
+      operationId: inspectCapabilities
+      responses:
+        '200':
+          description: Provider-specific feature flags
+
+  /connections/{connectionId}/inspect/cluster:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+    get:
+      tags: [Inspect]
+      operationId: inspectCluster
+      responses:
+        '200':
+          description: OK
+
+  /connections/{connectionId}/inspect/topics:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+      - name: filter
+        in: query
+        schema:
+          type: string
+    get:
+      tags: [Inspect]
+      operationId: listInspectTopics
+      responses:
+        '200':
+          description: OK
+
+  /connections/{connectionId}/inspect/search:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+    post:
+      tags: [Inspect]
+      operationId: searchMessages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageSearchRequest'
+      responses:
+        '200':
+          description: Sample messages
+
+  /connections/{connectionId}/kafka/publish:
+    parameters:
+      - $ref: '#/components/parameters/connectionId'
+    post:
+      tags: [KafkaAdmin]
+      operationId: kafkaPublish
+      summary: Kafka publish with headers (provider module)
+      responses:
+        '200':
+          description: OK
+
+components:
+  parameters:
+    connectionId:
+      name: connectionId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    AppConfig:
+      type: object
+      properties:
+        deploymentMode:
+          type: string
+          enum: [ADMIN, DEV, READONLY]
+        allowedActions:
+          type: array
+          items:
+            type: string
+        supportedProtocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProtocolType'
+    ProtocolType:
+      type: string
+      enum:
+        - KAFKA
+        - MQTT
+        - JMS
+        - PULSAR
+        - RABBITMQ
+        - KINESIS
+        - GCP_PUBSUB
+        - AZURE_SERVICE_BUS
+    ConnectionProfile:
+      type: object
+      required: [name, protocol, brokerUrl]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/ProtocolType'
+        cloudProvider:
+          type: string
+        streamPlatform:
+          type: string
+        brokerUrl:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+        credentials:
+          type: object
+          additionalProperties:
+            type: string
+    ConnectionProfileResponse:
+      allOf:
+        - $ref: '#/components/schemas/ConnectionProfile'
+        - type: object
+          properties:
+            hasCredentials:
+              type: boolean
+    TopicRef:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/ProtocolType'
+    PublishRequest:
+      type: object
+      properties:
+        destination:
+          type: string
+        payload:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+    SubscribeRequest:
+      type: object
+      properties:
+        destination:
+          type: string
+        consumerGroup:
+          type: string
+        options:
+          type: object
+          additionalProperties:
+            type: string
+    MessageSearchRequest:
+      type: object
+      properties:
+        topic:
+          type: string
+        maxMessages:
+          type: integer
+        startAt:
+          type: string
+    StreamPlatformPreset:
+      type: object
+      properties:
+        platform:
+          type: string
+        label:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/ProtocolType'
+        cloudProvider:
+          type: string
+        brokerUrlHint:
+          type: string

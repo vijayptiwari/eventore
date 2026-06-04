@@ -1,0 +1,67 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: eventore
+
+eventore:
+  deployment-mode: DEV
+  control-plane:
+    auto-register-on-startup: true
+  data-plane:
+    require-control-plane-registration: true
+  # Comma-separated protocols to load at runtime (must match JARs in the image). Empty = all modules on classpath.
+  # Example slim deploy: enabled-protocols: KAFKA,KINESIS
+  enabled-protocols: ""
+  subscriptions:
+    max-concurrent: 50
+    queue-capacity: 500
+  dev:
+    allowed-protocols: KAFKA,MQTT,JMS,PULSAR,RABBITMQ,KINESIS,GCP_PUBSUB,AZURE_SERVICE_BUS
+    max-publish-bytes: 1048576
+  openapi:
+    server-url: /
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/v1/openapi
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    urls:
+      - name: Runtime (Springdoc)
+        url: /api/v1/openapi
+      - name: Core stream contract
+        url: /openapi/streams/core-api.yaml
+      - name: Inspect stream contract
+        url: /openapi/streams/inspect-api.yaml
+      - name: Kafka stream contract
+        url: /openapi/streams/kafka-api.yaml
+      - name: Kinesis stream contract
+        url: /openapi/streams/kinesis-api.yaml
+      - name: API catalog
+        url: /api/v1/openapi/catalog
+  show-actuator: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  level:
+    com.eventore: INFO
+    AUDIT: INFO

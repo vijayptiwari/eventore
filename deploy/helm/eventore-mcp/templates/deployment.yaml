@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "eventore-mcp.fullname" . }}
+  labels:
+    {{- include "eventore-mcp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "eventore-mcp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "eventore-mcp.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: mcp
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.mcp.port }}
+          env:
+            - name: MCP_TRANSPORT
+              value: {{ .Values.mcp.transport | quote }}
+            - name: MCP_PORT
+              value: {{ .Values.mcp.port | quote }}
+            - name: EVENTORE_API_URL
+              value: {{ .Values.eventore.apiUrl | quote }}
+            {{- if .Values.mcp.authToken }}
+            - name: MCP_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "eventore-mcp.fullname" . }}
+                  key: auth-token
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.mcp.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.mcp.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

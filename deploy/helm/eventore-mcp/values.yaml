@@ -1,0 +1,26 @@
+eventore:
+  apiUrl: http://eventore-backend:8080/api/v1
+
+image:
+  repository: eventore/mcp
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  port: 3100
+  type: ClusterIP
+
+mcp:
+  transport: http
+  port: 3100
+  authToken: ""
+
+ingress:
+  enabled: false
+  className: ""
+  host: eventore-mcp.local
+  annotations: {}
+
+resources: {}

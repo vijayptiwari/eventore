@@ -1,0 +1,8 @@
+# Slim deployment: Kafka + AWS Kinesis only (build image with EVENTORE_MAVEN_PROFILES=kafka-kinesis)
+eventore:
+  deploymentMode: ADMIN
+  enabledProtocols: KAFKA,KINESIS
+  dev:
+    allowedProtocols:
+      - KAFKA
+      - KINESIS

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Control &amp; data plane — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Control plane &amp; data plane</h1>
+      <p class="page-subtitle">How registration, UI metadata, and broker I/O are separated.</p>
+
+      <figure class="diagram">
+        <img src="../assets/diagrams/control-data-plane.svg" alt="Control plane vs data plane" width="900" height="420" loading="lazy" decoding="async"/>
+      </figure>
+
+      <p>Eventore separates <strong>desired state and UI metadata</strong> (control plane) from <strong>broker I/O</strong> (data plane), similar to Kubernetes, Istio, or cloud networking stacks.</p>
+
+      <h2>Control plane</h2>
+      <table>
+        <thead><tr><th>Responsibility</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr><td>Register / deregister providers</td><td><code>POST/DELETE /api/v1/control/providers/{protocol}/register</code></td></tr>
+          <tr><td>UI capabilities</td><td>inspect, admin, messaging, OpenAPI stream ids</td></tr>
+          <tr><td>Client snapshot</td><td><code>GET /api/v1/control/plane</code> (revisioned)</td></tr>
+          <tr><td>Policy</td><td>DEV allowed-protocols ∩ registered providers</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Does not</strong> open TCP connections to Kafka, Kinesis, or other brokers.</p>
+
+      <h3>Bootstrap</h3>
+      <p>When <code>eventore.control-plane.auto-register-on-startup: true</code>, providers matching <code>eventore.enabled-protocols</code> (or all on classpath) register at startup.</p>
+
+      <h2>Data plane</h2>
+      <table>
+        <thead><tr><th>Responsibility</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr><td>Destinations, publish, subscribe</td><td><code>/api/v1/connections/{id}/...</code></td></tr>
+          <tr><td>Inspect &amp; admin</td><td><code>/inspect</code>, <code>/kafka</code>, <code>/kinesis</code></td></tr>
+          <tr><td>Live view</td><td>WebSocket <code>/ws/stream</code></td></tr>
+        </tbody>
+      </table>
+      <p>Routes succeed only when the connection protocol is <strong>registered in the control plane</strong>.</p>
+
+      <h2>UI cascade</h2>
+      <p><code>GET /api/v1/config</code> embeds <code>controlPlane.uiCascade</code>:</p>
+      <ul>
+        <li><code>connectionProtocols</code> — connection form</li>
+        <li><code>inspectProtocols</code> — inspector tabs</li>
+        <li><code>adminProtocols</code> — Kafka admin, etc.</li>
+        <li><code>platformFilterProtocols</code> — platform presets</li>
+      </ul>
+      <p>Frontend: <code>useControlPlane()</code> prefers <code>/control/plane</code>, falls back to embedded config.</p>
+
+      <h2>Configuration</h2>
+      <pre><code>eventore:
+  control-plane:
+    auto-register-on-startup: true
+  data-plane:
+    require-control-plane-registration: true</code></pre>
+
+      <p>See also <a href="architecture.html">Architecture</a> and <a href="configuration.html">Configuration</a>.</p>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

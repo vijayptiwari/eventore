@@ -1,0 +1,166 @@
+openapi: 3.0.3
+info:
+  title: Eventore Inspect API
+  description: |
+    Generic inspect SPI; behavior varies by stream provider capabilities.
+    x-eventore-stream: inspect
+    x-eventore-scope: generic-spi
+  version: 0.1.0
+servers:
+  - url: /api/v1
+tags:
+  - name: Inspect
+paths:
+  /connections/{connectionId}/inspect/capabilities:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+    get:
+      tags: [Inspect]
+      operationId: inspectCapabilities
+      responses:
+        '200':
+          description: Provider-specific feature flags
+          content:
+            application/json:
+              schema:
+                type: object
+  /connections/{connectionId}/inspect/cluster:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+    get:
+      tags: [Inspect]
+      operationId: inspectCluster
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /connections/{connectionId}/inspect/brokers:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+    get:
+      tags: [Inspect]
+      operationId: inspectBrokers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /connections/{connectionId}/inspect/consumer-groups:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+    get:
+      tags: [Inspect]
+      operationId: listConsumerGroups
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /connections/{connectionId}/inspect/consumer-groups/{groupId}:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: groupId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Inspect]
+      operationId: describeConsumerGroup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /connections/{connectionId}/inspect/topics:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: filter
+        in: query
+        schema:
+          type: string
+    get:
+      tags: [Inspect]
+      operationId: listInspectTopics
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /connections/{connectionId}/inspect/topics/{topic}:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Inspect]
+      operationId: describeInspectTopic
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /connections/{connectionId}/inspect/lag:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: groupId
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: topic
+        in: query
+        schema:
+          type: string
+    get:
+      tags: [Inspect]
+      operationId: inspectLag
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /connections/{connectionId}/inspect/search:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+    post:
+      tags: [Inspect]
+      operationId: searchMessages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '../common/schemas.yaml#/components/schemas/MessageSearchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../common/schemas.yaml#/components/schemas/UnifiedMessage'

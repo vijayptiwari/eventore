@@ -1,0 +1,14 @@
+eventore:
+  deploymentMode: READONLY
+  subscriptions:
+    maxConcurrent: 25
+
+backend:
+  replicaCount: 2
+
+frontend:
+  replicaCount: 2
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

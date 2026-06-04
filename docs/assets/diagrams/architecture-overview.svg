@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 540" role="img" aria-labelledby="arch-title">
+  <title id="arch-title">Eventore platform architecture</title>
+  <defs>
+    <linearGradient id="arch-hero" x1="0" y1="0" x2="920" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f0fdfa"/>
+      <stop offset="1" stop-color="#f8fafc"/>
+    </linearGradient>
+    <filter id="arch-shadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arch-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="920" height="540" fill="url(#arch-hero)" rx="16"/>
+  <text x="48" y="44" font-family="system-ui,sans-serif" font-size="22" font-weight="700" fill="#0f172a">Eventore platform architecture</text>
+  <text x="48" y="68" font-family="system-ui,sans-serif" font-size="13" fill="#64748b">Contract-first API · modular providers · control / data plane split</text>
+
+  <g filter="url(#arch-shadow)">
+    <rect x="48" y="92" width="824" height="80" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="72" y="122" font-family="system-ui,sans-serif" font-size="15" font-weight="600" fill="#0f172a">Web console</text>
+    <text x="72" y="144" font-family="system-ui,sans-serif" font-size="12" fill="#64748b">React · Dashboard · Connections · Browse · Live stream · Inspector</text>
+    <rect x="640" y="110" width="200" height="44" rx="8" fill="#ccfbf1" stroke="#14b8a6"/>
+    <text x="660" y="137" font-family="system-ui,sans-serif" font-size="11" font-weight="600" fill="#0f766e">Control plane cascade</text>
+  </g>
+
+  <path d="M460 172v28" stroke="#94a3b8" stroke-width="2" marker-end="url(#arch-arrow)"/>
+
+  <g filter="url(#arch-shadow)">
+    <rect x="48" y="200" width="824" height="156" rx="12" fill="#fff" stroke="#818cf8" stroke-width="1.5"/>
+    <text x="72" y="230" font-family="system-ui,sans-serif" font-size="15" font-weight="600" fill="#312e81">eventore-server (Spring Boot)</text>
+    <rect x="72" y="248" width="360" height="92" rx="10" fill="#f0fdfa" stroke="#0d9488" stroke-width="1.5"/>
+    <text x="92" y="276" font-family="system-ui,sans-serif" font-size="13" font-weight="600" fill="#0f766e">Control plane</text>
+    <text x="92" y="298" font-family="system-ui,sans-serif" font-size="11" fill="#475569">Provider registry · UI metadata · /api/v1/control/*</text>
+    <text x="92" y="318" font-family="system-ui,sans-serif" font-size="11" fill="#475569">OpenAPI catalog · deployment policy</text>
+    <rect x="456" y="248" width="392" height="92" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="476" y="276" font-family="system-ui,sans-serif" font-size="13" font-weight="600" fill="#0f172a">Data plane</text>
+    <text x="476" y="298" font-family="system-ui,sans-serif" font-size="11" fill="#475569">Connections · publish · subscribe · inspect</text>
+    <text x="476" y="318" font-family="system-ui,sans-serif" font-size="11" fill="#475569">WebSocket /ws/stream · protocol admin APIs</text>
+  </g>
+
+  <path d="M460 356v28" stroke="#94a3b8" stroke-width="2" marker-end="url(#arch-arrow)"/>
+
+  <g filter="url(#arch-shadow)">
+    <rect x="48" y="384" width="824" height="88" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="72" y="414" font-family="system-ui,sans-serif" font-size="13" font-weight="600" fill="#0f172a">eventore-provider-* (Maven modules)</text>
+    <text x="72" y="436" font-family="system-ui,sans-serif" font-size="11" fill="#64748b">Kafka · Pulsar · RabbitMQ · MQTT · JMS · Kinesis · GCP Pub/Sub · Azure Service Bus</text>
+    <rect x="72" y="448" width="72" height="16" rx="4" fill="#e0e7ff"/><rect x="152" y="448" width="72" height="16" rx="4" fill="#e0e7ff"/>
+    <rect x="232" y="448" width="72" height="16" rx="4" fill="#ccfbf1"/><rect x="312" y="448" width="72" height="16" rx="4" fill="#ccfbf1"/>
+    <rect x="392" y="448" width="72" height="16" rx="4" fill="#fef3c7"/><rect x="472" y="448" width="72" height="16" rx="4" fill="#fef3c7"/>
+  </g>
+
+  <g filter="url(#arch-shadow)">
+    <rect x="48" y="488" width="824" height="36" rx="8" fill="#0f172a"/>
+    <text x="72" y="512" font-family="system-ui,sans-serif" font-size="12" font-weight="500" fill="#94a3b8">Messaging backends (customer clusters, cloud managed services)</text>
+  </g>
+</svg>

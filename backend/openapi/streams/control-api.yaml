@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Eventore Control Plane API
+  description: |
+    Provider registration and UI cascade metadata. No broker I/O on this plane.
+    x-eventore-plane: control
+  version: 0.1.0
+servers:
+  - url: /api/v1
+tags:
+  - name: ControlPlane
+paths:
+  /control/plane:
+    get:
+      tags: [ControlPlane]
+      operationId: getControlPlane
+      summary: Full control plane snapshot for UI
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /control/providers:
+    get:
+      tags: [ControlPlane]
+      operationId: listControlProviders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /control/providers/{protocol}/register:
+    parameters:
+      - name: protocol
+        in: path
+        required: true
+        schema:
+          $ref: '../common/schemas.yaml#/components/schemas/ProtocolType'
+    post:
+      tags: [ControlPlane]
+      operationId: registerControlProvider
+      responses:
+        '200':
+          description: Registered
+    delete:
+      tags: [ControlPlane]
+      operationId: deregisterControlProvider
+      responses:
+        '200':
+          description: Deregistered

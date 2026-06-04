@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Architecture — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Architecture</h1>
+      <p class="page-subtitle">Components, planes, modules, and how requests flow through the platform.</p>
+
+      <figure class="diagram">
+        <img src="../assets/diagrams/architecture-overview.svg" alt="Architecture overview" width="920" height="540" loading="lazy" decoding="async"/>
+      </figure>
+
+      <h2>Design principles</h2>
+      <ul>
+        <li><strong>Use what is required</strong> — Maven profiles and <code>enabled-protocols</code> limit JAR size and UI surface.</li>
+        <li><strong>Contract-first APIs</strong> — OpenAPI per stream; generated controllers with delegate implementations.</li>
+        <li><strong>Separation of concerns</strong> — control plane for registration and UI metadata; data plane for broker I/O.</li>
+        <li><strong>Provider SPI</strong> — each protocol is an isolated <code>eventore-provider-*</code> module.</li>
+      </ul>
+
+      <h2>Control plane vs data plane</h2>
+      <figure class="diagram">
+        <img src="../assets/diagrams/control-data-plane.svg" alt="Control plane vs data plane" width="900" height="420" loading="lazy" decoding="async"/>
+      </figure>
+
+      <table>
+        <thead><tr><th>Control plane</th><th>Data plane</th></tr></thead>
+        <tbody>
+          <tr><td>Provider register / deregister</td><td>Publish, subscribe, consume</td></tr>
+          <tr><td><code>GET /api/v1/control/plane</code></td><td><code>/api/v1/connections/...</code></td></tr>
+          <tr><td>UI cascade (which tabs to show)</td><td>WebSocket <code>/ws/stream</code></td></tr>
+          <tr><td>OpenAPI catalog per deployment</td><td>Inspect, Kafka admin APIs</td></tr>
+          <tr><td>No TCP to brokers</td><td>All broker clients live here</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Backend modules</h2>
+      <pre><code>eventore-core          Domain, SPI, control/dataplane registries
+eventore-api-codegen   OpenAPI → Spring controllers (per stream)
+eventore-provider-*    One module per protocol (connector + inspector)
+eventore-server        REST, WebSocket, security, delegates</code></pre>
+
+      <h2>Frontend application</h2>
+      <p>React + React Query. Routes:</p>
+      <ul>
+        <li><code>/</code> — Dashboard (deployment mode, control plane summary)</li>
+        <li><code>/connections</code> — CRUD and validation</li>
+        <li><code>/browse</code> — destinations + stream inspector</li>
+        <li><code>/stream</code> — live view panel</li>
+      </ul>
+      <p>The side <strong>Streams</strong> panel persists subscriptions in cookies via <code>StreamWorkspaceContext</code>.</p>
+
+      <figure class="diagram">
+        <img src="../assets/diagrams/stream-workspace.svg" alt="Stream workspace UI" width="920" height="400" loading="lazy" decoding="async"/>
+      </figure>
+
+      <h2>Provider registration flow</h2>
+      <ol class="steps">
+        <li>Spring Boot loads <code>StreamProvider</code> beans from enabled provider JARs.</li>
+        <li>On startup, <code>ControlPlaneBootstrap</code> registers each allowed protocol.</li>
+        <li><code>ControlPlaneCoordinator</code> attaches the provider to <code>DataPlaneRegistry</code>.</li>
+        <li><code>GET /config</code> returns <code>controlPlane.uiCascade</code> for the UI.</li>
+        <li>Admins may <code>POST /control/providers/{protocol}/register</code> or deregister at runtime (ADMIN).</li>
+      </ol>
+
+      <h2>API surfaces (generated + manual)</h2>
+      <table>
+        <thead><tr><th>Surface</th><th>Path prefix</th><th>Plane</th></tr></thead>
+        <tbody>
+          <tr><td>Core</td><td><code>/api/v1/config</code>, connections, publish</td><td>Mixed</td></tr>
+          <tr><td>Control</td><td><code>/api/v1/control/*</code></td><td>Control</td></tr>
+          <tr><td>Inspect</td><td><code>.../inspect/*</code></td><td>Data</td></tr>
+          <tr><td>Kafka</td><td><code>.../kafka/*</code></td><td>Data</td></tr>
+          <tr><td>Stream</td><td><code>/ws/stream</code></td><td>Data</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Reference</h2>
+      <ul>
+        <li><a href="control-data-plane.html">Control plane &amp; data plane</a></li>
+        <li><a href="stream-platforms.html">Stream platform presets</a></li>
+        <li><a href="configuration.html">Configuration reference</a></li>
+        <li><a href="deployment.html">Deployment</a></li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

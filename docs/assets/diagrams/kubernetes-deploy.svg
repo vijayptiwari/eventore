@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 460" role="img" aria-labelledby="k8s-title">
+  <title id="k8s-title">Kubernetes deployment</title>
+  <defs>
+    <marker id="k8s-arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="920" height="460" fill="#f8fafc" rx="16"/>
+  <text x="40" y="40" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="#0f172a">Kubernetes deployment (Helm)</text>
+
+  <rect x="40" y="64" width="840" height="360" rx="14" fill="#fff" stroke="#326ce5" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="64" y="96" font-family="system-ui,sans-serif" font-size="13" font-weight="600" fill="#326ce5">Cluster · namespace: eventore</text>
+
+  <rect x="64" y="116" width="240" height="120" rx="10" fill="#f0fdfa" stroke="#0d9488"/>
+  <text x="184" y="144" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="#0f766e" text-anchor="middle">backend pod</text>
+  <text x="184" y="168" font-family="system-ui,sans-serif" font-size="10" fill="#475569" text-anchor="middle">eventore-server</text>
+  <text x="184" y="188" font-family="system-ui,sans-serif" font-size="10" fill="#475569" text-anchor="middle">:8080 · providers JAR</text>
+  <text x="184" y="212" font-family="system-ui,sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Maven profile / enabledProtocols</text>
+
+  <rect x="340" y="116" width="240" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="460" y="144" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="#0f172a" text-anchor="middle">frontend pod</text>
+  <text x="460" y="168" font-family="system-ui,sans-serif" font-size="10" fill="#475569" text-anchor="middle">nginx + React static</text>
+  <text x="460" y="188" font-family="system-ui,sans-serif" font-size="10" fill="#475569" text-anchor="middle">:80</text>
+
+  <rect x="616" y="116" width="240" height="120" rx="10" fill="#fef3c7" stroke="#ca8a04"/>
+  <text x="736" y="144" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="#a16207" text-anchor="middle">eventore-mcp (optional)</text>
+  <text x="736" y="168" font-family="system-ui,sans-serif" font-size="10" fill="#475569" text-anchor="middle">AI agent tools</text>
+  <text x="736" y="188" font-family="system-ui,sans-serif" font-size="10" fill="#475569" text-anchor="middle">separate chart</text>
+
+  <rect x="64" y="260" width="792" height="56" rx="10" fill="#e0e7ff" stroke="#6366f1"/>
+  <text x="460" y="294" font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="#4338ca" text-anchor="middle">Ingress → eventore.example.com</text>
+
+  <rect x="64" y="332" width="792" height="72" rx="10" fill="#0f172a"/>
+  <text x="88" y="362" font-family="system-ui,sans-serif" font-size="11" fill="#94a3b8">Brokers (external): Kafka · MSK · Kinesis · RabbitMQ · cloud streams …</text>
+  <path d="M184 236v24 M460 236v24 M736 236v24" stroke="#64748b" stroke-width="1.5" marker-end="url(#k8s-arr)"/>
+  <path d="M184 316v16 M460 316v16" stroke="#64748b" stroke-width="1.5"/>
+</svg>

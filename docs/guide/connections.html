@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Connections — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Connections</h1>
+      <p class="page-subtitle">Create, test, and manage broker profiles with platform presets and secure credentials.</p>
+
+      <h2>Overview</h2>
+      <p>A <strong>connection</strong> stores protocol, endpoints, and optional auth. The UI only lists protocols from the control plane cascade (<code>connectionProtocols</code>), not a hardcoded list. See <a href="stream-platforms.html">Stream platforms</a> for presets and credential notes.</p>
+
+      <h2>Creating a connection (UI)</h2>
+      <ol class="steps">
+        <li>Navigate to <strong>Connections</strong>.</li>
+        <li>Select <strong>Protocol</strong> (e.g. Kafka).</li>
+        <li>Optionally pick a <strong>Platform preset</strong> (MSK, Confluent Cloud, Event Hubs, IoT Core, Strimzi, …) to pre-fill fields.</li>
+        <li>Enter <strong>Broker URL</strong> or cloud-specific endpoints.</li>
+        <li>Configure TLS/SASL or API keys as required.</li>
+        <li><strong>Save</strong>, then <strong>Test connection</strong> to validate reachability.</li>
+      </ol>
+
+      <h2>REST API example</h2>
+      <h3>Kafka (local)</h3>
+      <pre><code>curl -X POST http://localhost:8080/api/v1/connections \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "local-kafka",
+    "protocol": "KAFKA",
+    "brokerUrl": "localhost:9092"
+  }'</code></pre>
+
+      <h3>Test connection</h3>
+      <pre><code>curl -X POST http://localhost:8080/api/v1/connections/{id}/test</code></pre>
+
+      <h3>List connections</h3>
+      <pre><code>curl http://localhost:8080/api/v1/connections</code></pre>
+
+      <h2>Per-protocol notes</h2>
+      <table>
+        <thead><tr><th>Protocol</th><th>Typical fields</th></tr></thead>
+        <tbody>
+          <tr><td>Kafka</td><td><code>brokerUrl</code>, SASL mechanism, SSL truststore</td></tr>
+          <tr><td>Pulsar</td><td>Service URL, tenant/namespace defaults</td></tr>
+          <tr><td>RabbitMQ</td><td>AMQP host, vhost, username/password</td></tr>
+          <tr><td>MQTT</td><td>Broker URL, client id, TLS</td></tr>
+          <tr><td>JMS</td><td>Artemis/OpenWire URL, destination type</td></tr>
+          <tr><td>Kinesis</td><td>Region, stream name, AWS credentials or IAM role</td></tr>
+          <tr><td>GCP Pub/Sub</td><td>Project id, credentials JSON</td></tr>
+          <tr><td>Azure Service Bus</td><td>Namespace, shared access key or Entra ID</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warn">
+        <strong>READONLY mode:</strong> connection create/update/delete returns 403. Use pre-provisioned profiles or switch to ADMIN/DEV for management.
+      </div>
+
+      <h2>Security</h2>
+      <ul>
+        <li>Secrets are stored server-side; never log raw passwords in application logs.</li>
+        <li>Prefer IAM roles (Kinesis, MSK) or workload identity in Kubernetes over long-lived keys.</li>
+        <li>Restrict ingress and enable network policies in Helm for production.</li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

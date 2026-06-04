@@ -1,0 +1,11 @@
+eventore:
+  deploymentMode: DEV
+  dev:
+    maxPublishBytes: 524288
+    allowedProtocols:
+      - KAFKA
+      - MQTT
+      - RABBITMQ
+
+backend:
+  replicaCount: 1

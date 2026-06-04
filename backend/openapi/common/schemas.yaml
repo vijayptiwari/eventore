@@ -1,0 +1,195 @@
+openapi: 3.0.3
+info:
+  title: Eventore common schemas
+  version: 0.1.0
+components:
+  parameters:
+    connectionId:
+      name: connectionId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    ProtocolType:
+      type: string
+      enum:
+        - KAFKA
+        - MQTT
+        - JMS
+        - PULSAR
+        - RABBITMQ
+        - KINESIS
+        - GCP_PUBSUB
+        - AZURE_SERVICE_BUS
+    AppConfigResponse:
+      type: object
+      properties:
+        deploymentMode:
+          type: string
+          enum: [ADMIN, DEV, READONLY]
+        allowedActions:
+          type: array
+          items:
+            type: string
+        supportedProtocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProtocolType'
+        loadedModules:
+          type: array
+          items:
+            type: string
+    ProviderInfoDto:
+      type: object
+      properties:
+        protocol:
+          $ref: '#/components/schemas/ProtocolType'
+        moduleId:
+          type: string
+        hasInspector:
+          type: boolean
+        connectorClass:
+          type: string
+    ConnectionProfile:
+      type: object
+      required: [name, protocol, brokerUrl]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/ProtocolType'
+        cloudProvider:
+          type: string
+        streamPlatform:
+          type: string
+        brokerUrl:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+        credentials:
+          type: object
+          additionalProperties:
+            type: string
+    ConnectionProfileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/ProtocolType'
+        cloudProvider:
+          type: string
+        streamPlatform:
+          type: string
+        brokerUrl:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            type: string
+        hasCredentials:
+          type: boolean
+    TopicRef:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/ProtocolType'
+    PublishRequest:
+      type: object
+      properties:
+        destination:
+          type: string
+        payload:
+          type: string
+        key:
+          type: string
+        partition:
+          type: integer
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+    SubscribeRequest:
+      type: object
+      properties:
+        destination:
+          type: string
+        consumerGroup:
+          type: string
+        options:
+          type: object
+          additionalProperties:
+            type: string
+    MessageSearchRequest:
+      type: object
+      properties:
+        topic:
+          type: string
+        topics:
+          type: array
+          items:
+            type: string
+        maxMessages:
+          type: integer
+        startAt:
+          type: string
+        headerRegex:
+          type: string
+        bodyRegex:
+          type: string
+    StreamPlatformPreset:
+      type: object
+      properties:
+        platform:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/ProtocolType'
+        cloudProvider:
+          type: string
+        brokerUrlHint:
+          type: string
+        defaultProperties:
+          type: object
+          additionalProperties:
+            type: string
+    StatusResponse:
+      type: object
+      additionalProperties:
+        type: string
+    UnifiedMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        destination:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        key:
+          type: string
+        payload:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        attributes:
+          type: object
+          additionalProperties:
+            type: string

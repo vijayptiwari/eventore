@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Stream platforms — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Stream platforms &amp; protocols</h1>
+      <p class="page-subtitle">Wire protocols, cloud presets, feature depth, and credentials.</p>
+
+      <p>Eventore connects through a <strong>protocol</strong> (wire API) and optional <strong>cloud platform</strong> preset (hosted product). See <a href="connections.html">Connections</a> to apply presets in the UI.</p>
+
+      <h2>Protocols</h2>
+      <table>
+        <thead><tr><th>Protocol</th><th>Typical use</th></tr></thead>
+        <tbody>
+          <tr><td><code>KAFKA</code></td><td>Kafka, MSK, Event Hubs (Kafka), GCP Managed Kafka, OCP Strimzi</td></tr>
+          <tr><td><code>PULSAR</code></td><td>Apache Pulsar</td></tr>
+          <tr><td><code>RABBITMQ</code></td><td>RabbitMQ + management plugin</td></tr>
+          <tr><td><code>MQTT</code></td><td>MQTT brokers, AWS IoT Core, Azure IoT Hub</td></tr>
+          <tr><td><code>JMS</code></td><td>Apache Artemis, Amazon MQ (OpenWire)</td></tr>
+          <tr><td><code>KINESIS</code></td><td>AWS Kinesis Data Streams</td></tr>
+          <tr><td><code>GCP_PUBSUB</code></td><td>Google Cloud Pub/Sub</td></tr>
+          <tr><td><code>AZURE_SERVICE_BUS</code></td><td>Azure Service Bus queues/topics</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Cloud presets</h2>
+      <p><code>GET /api/v1/platforms</code> returns presets that set <code>cloudProvider</code>, <code>streamPlatform</code>, <code>brokerUrl</code>, and default <code>properties</code>:</p>
+      <ul>
+        <li><strong>AWS</strong> — MSK (Kafka), Kinesis, MQ (JMS), IoT Core (MQTT)</li>
+        <li><strong>Azure</strong> — Event Hubs (Kafka), Service Bus, IoT Hub (MQTT)</li>
+        <li><strong>GCP</strong> — Pub/Sub, Managed Kafka</li>
+        <li><strong>OCP</strong> — AMQ Streams / Strimzi (Kafka)</li>
+      </ul>
+
+      <h2>Feature depth (current)</h2>
+      <table>
+        <thead><tr><th>Area</th><th>Kafka</th><th>Pulsar</th><th>RabbitMQ</th><th>MQTT</th><th>JMS</th><th>Kinesis</th><th>Pub/Sub</th><th>Service Bus</th></tr></thead>
+        <tbody>
+          <tr><td>Browse</td><td>Full</td><td>Admin</td><td>Mgmt API</td><td>Filter</td><td>Config</td><td>List streams</td><td>List topics</td><td>Admin API</td></tr>
+          <tr><td>Live stream</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+          <tr><td>Message search</td><td>Yes</td><td>Reader</td><td>Mgmt get</td><td>Live</td><td>Live</td><td>Planned</td><td>Live</td><td>Live</td></tr>
+          <tr><td>Lag / backlog</td><td>Yes</td><td>Stats</td><td>Depth</td><td>—</td><td>—</td><td>—</td><td>Partial</td><td>—</td></tr>
+          <tr><td>Admin</td><td>Full</td><td>Partial</td><td>Purge/get</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Credentials</h2>
+      <ul>
+        <li><strong>Kafka cloud</strong> — SASL/SSL on preset; username/password or IAM</li>
+        <li><strong>Kinesis</strong> — access keys or IAM role (default chain)</li>
+        <li><strong>GCP Pub/Sub</strong> — service account JSON or ADC</li>
+        <li><strong>Azure Service Bus</strong> — connection string or Entra ID</li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

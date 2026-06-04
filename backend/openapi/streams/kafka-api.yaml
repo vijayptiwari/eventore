@@ -1,0 +1,273 @@
+openapi: 3.0.3
+info:
+  title: Eventore Kafka Stream API
+  description: |
+    Kafka-specific admin and publish operations.
+    x-eventore-stream: kafka
+    x-eventore-protocol: KAFKA
+    x-eventore-module: eventore-provider-kafka
+  version: 0.1.0
+servers:
+  - url: /api/v1
+tags:
+  - name: KafkaAdmin
+paths:
+  /connections/{connectionId}/kafka/capabilities:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+    get:
+      tags: [KafkaAdmin]
+      operationId: kafkaCapabilities
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /connections/{connectionId}/kafka/publish:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: flush
+        in: query
+        schema:
+          type: boolean
+          default: false
+    post:
+      tags: [KafkaAdmin]
+      operationId: kafkaPublish
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '../common/schemas.yaml#/components/schemas/PublishRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KafkaPublishResult'
+  /connections/{connectionId}/kafka/topics:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+    post:
+      tags: [KafkaAdmin]
+      operationId: kafkaCreateTopic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KafkaCreateTopicRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/StatusResponse'
+  /connections/{connectionId}/kafka/topics/{topic}:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      tags: [KafkaAdmin]
+      operationId: kafkaDeleteTopic
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/StatusResponse'
+  /connections/{connectionId}/kafka/topics/{topic}/flush:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      tags: [KafkaAdmin]
+      operationId: kafkaFlushTopic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KafkaFlushTopicRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /connections/{connectionId}/kafka/topics/{topic}/configs:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      tags: [KafkaAdmin]
+      operationId: kafkaAlterTopicConfigs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KafkaAlterTopicConfigsRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/StatusResponse'
+  /connections/{connectionId}/kafka/acls:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: resourceType
+        in: query
+        schema:
+          type: string
+      - name: resourceName
+        in: query
+        schema:
+          type: string
+      - name: principal
+        in: query
+        schema:
+          type: string
+    get:
+      tags: [KafkaAdmin]
+      operationId: kafkaListAcls
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KafkaAclEntry'
+    post:
+      tags: [KafkaAdmin]
+      operationId: kafkaCreateAcl
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KafkaAclEntry'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/StatusResponse'
+    delete:
+      tags: [KafkaAdmin]
+      operationId: kafkaDeleteAcl
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KafkaAclEntry'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/StatusResponse'
+    put:
+      tags: [KafkaAdmin]
+      operationId: kafkaReplaceAcl
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KafkaReplaceAclRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/StatusResponse'
+components:
+  schemas:
+    KafkaPublishResult:
+      type: object
+      properties:
+        topic:
+          type: string
+        partition:
+          type: integer
+        offset:
+          type: integer
+          format: int64
+        status:
+          type: string
+    KafkaCreateTopicRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        partitions:
+          type: integer
+          default: 1
+        replicationFactor:
+          type: integer
+          default: 1
+        configs:
+          type: object
+          additionalProperties:
+            type: string
+    KafkaAlterTopicConfigsRequest:
+      type: object
+      properties:
+        configs:
+          type: object
+          additionalProperties:
+            type: string
+    KafkaFlushTopicRequest:
+      type: object
+      properties:
+        mode:
+          type: string
+          default: ALL
+        partition:
+          type: integer
+    KafkaAclEntry:
+      type: object
+      properties:
+        resourceType:
+          type: string
+        resourceName:
+          type: string
+        patternType:
+          type: string
+        principal:
+          type: string
+        host:
+          type: string
+        operation:
+          type: string
+        permissionType:
+          type: string
+    KafkaReplaceAclRequest:
+      type: object
+      properties:
+        oldBinding:
+          $ref: '#/components/schemas/KafkaAclEntry'
+        newBinding:
+          $ref: '#/components/schemas/KafkaAclEntry'

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 200" role="img" aria-labelledby="uj-title">
+  <title id="uj-title">User journey</title>
+  <defs>
+    <linearGradient id="uj-step" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#f0fdfa"/>
+    </linearGradient>
+    <marker id="uj-arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#0d9488"/>
+    </marker>
+  </defs>
+  <rect width="920" height="200" fill="#f8fafc" rx="12"/>
+  <text x="40" y="36" font-family="system-ui,sans-serif" font-size="18" font-weight="700" fill="#0f172a">Typical workflow</text>
+
+  <g font-family="system-ui,sans-serif">
+    <rect x="40" y="72" width="148" height="100" rx="12" fill="url(#uj-step)" stroke="#14b8a6" stroke-width="1.5"/>
+    <text x="114" y="108" font-size="13" font-weight="700" fill="#0f766e" text-anchor="middle">1. Deploy</text>
+    <text x="114" y="132" font-size="11" fill="#64748b" text-anchor="middle">Helm / JAR</text>
+    <text x="114" y="150" font-size="10" fill="#64748b" text-anchor="middle">Enable protocols</text>
+
+    <path d="M188 122h36" stroke="#0d9488" stroke-width="2" marker-end="url(#uj-arr)"/>
+
+    <rect x="224" y="72" width="148" height="100" rx="12" fill="url(#uj-step)" stroke="#14b8a6" stroke-width="1.5"/>
+    <text x="298" y="108" font-size="13" font-weight="700" fill="#0f766e" text-anchor="middle">2. Connect</text>
+    <text x="298" y="132" font-size="11" fill="#64748b" text-anchor="middle">Preset + test</text>
+    <text x="298" y="150" font-size="10" fill="#64748b" text-anchor="middle">Save profile</text>
+
+    <path d="M372 122h36" stroke="#0d9488" stroke-width="2" marker-end="url(#uj-arr)"/>
+
+    <rect x="408" y="72" width="148" height="100" rx="12" fill="url(#uj-step)" stroke="#14b8a6" stroke-width="1.5"/>
+    <text x="482" y="108" font-size="13" font-weight="700" fill="#0f766e" text-anchor="middle">3. Browse</text>
+    <text x="482" y="132" font-size="11" fill="#64748b" text-anchor="middle">Topics / queues</text>
+    <text x="482" y="150" font-size="10" fill="#64748b" text-anchor="middle">Add to streams</text>
+
+    <path d="M556 122h36" stroke="#0d9488" stroke-width="2" marker-end="url(#uj-arr)"/>
+
+    <rect x="592" y="72" width="148" height="100" rx="12" fill="url(#uj-step)" stroke="#14b8a6" stroke-width="1.5"/>
+    <text x="666" y="108" font-size="13" font-weight="700" fill="#0f766e" text-anchor="middle">4. Live view</text>
+    <text x="666" y="132" font-size="11" fill="#64748b" text-anchor="middle">Filter · export</text>
+    <text x="666" y="150" font-size="10" fill="#64748b" text-anchor="middle">WebSocket</text>
+
+    <path d="M740 122h36" stroke="#0d9488" stroke-width="2" marker-end="url(#uj-arr)"/>
+
+    <rect x="776" y="72" width="108" height="100" rx="12" fill="#0f172a"/>
+    <text x="830" y="108" font-size="13" font-weight="700" fill="#5eead4" text-anchor="middle">5. Ops</text>
+    <text x="830" y="132" font-size="11" fill="#94a3b8" text-anchor="middle">Inspect</text>
+    <text x="830" y="150" font-size="10" fill="#94a3b8" text-anchor="middle">Kafka admin</text>
+  </g>
+</svg>

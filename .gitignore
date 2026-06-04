@@ -1,0 +1,29 @@
+# Build outputs
+target/
+node_modules/
+dist/
+build/
+*.class
+
+# IDE / OS
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs & env
+*.log
+.env
+.env.*
+!.env.example
+
+# Generated / local
+coverage/
+*.jar
+!gradle-wrapper.jar
+frontend/src/api/generated/
+backend/openapi/eventore-api-bundled.yaml

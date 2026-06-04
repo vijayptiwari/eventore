@@ -1,0 +1,28 @@
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY backend/pom.xml backend/pom.xml
+COPY backend/eventore-core backend/eventore-core
+COPY backend/eventore-provider-kafka backend/eventore-provider-kafka
+COPY backend/eventore-provider-mqtt backend/eventore-provider-mqtt
+COPY backend/eventore-provider-jms backend/eventore-provider-jms
+COPY backend/eventore-provider-pulsar backend/eventore-provider-pulsar
+COPY backend/eventore-provider-rabbitmq backend/eventore-provider-rabbitmq
+COPY backend/eventore-provider-kinesis backend/eventore-provider-kinesis
+COPY backend/eventore-provider-gcp-pubsub backend/eventore-provider-gcp-pubsub
+COPY backend/eventore-provider-azure-servicebus backend/eventore-provider-azure-servicebus
+COPY backend/eventore-server backend/eventore-server
+COPY backend/openapi backend/openapi
+WORKDIR /app/backend
+# Default: all providers. Slim example: docker build --build-arg EVENTORE_MAVEN_PROFILES=kafka-kinesis -f docker/Dockerfile.backend .
+ARG EVENTORE_MAVEN_PROFILES=providers-all
+RUN if [ "$EVENTORE_MAVEN_PROFILES" = "providers-all" ]; then \
+      mvn -q -DskipTests package; \
+    else \
+      mvn -q -DskipTests -P${EVENTORE_MAVEN_PROFILES} -P!providers-all package; \
+    fi
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /app/backend/eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

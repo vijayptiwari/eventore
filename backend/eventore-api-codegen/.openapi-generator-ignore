@@ -1,0 +1,10 @@
+**/org/openapitools/**
+**/OpenApiGeneratorApplication.java
+**/OpenApiGeneratorApplicationTests.java
+**/RFC3339DateFormat.java
+**/HomeController.java
+**/SpringDocConfiguration.java
+**/README.md
+**/pom.xml
+**/application.properties
+**/openapi.yaml

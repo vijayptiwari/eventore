@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" role="img" aria-labelledby="dm-title">
+  <title id="dm-title">Deployment modes</title>
+  <rect width="900" height="340" fill="#f8fafc" rx="16"/>
+  <text x="40" y="40" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="#0f172a">Deployment modes</text>
+
+  <rect x="40" y="72" width="260" height="240" rx="14" fill="#fff" stroke="#0d9488" stroke-width="2"/>
+  <text x="170" y="108" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="#0f766e" text-anchor="middle">ADMIN</text>
+  <text x="170" y="132" font-family="system-ui,sans-serif" font-size="11" fill="#64748b" text-anchor="middle">Production operations</text>
+  <g font-family="system-ui,sans-serif" font-size="11" fill="#334155">
+    <text x="64" y="168">✓ Connections CRUD</text>
+    <text x="64" y="192">✓ Subscribe / live view</text>
+    <text x="64" y="216">✓ Publish test messages</text>
+    <text x="64" y="240">✓ Kafka admin (topics, ACLs)</text>
+    <text x="64" y="264">✓ Control plane register</text>
+  </g>
+
+  <rect x="320" y="72" width="260" height="240" rx="14" fill="#fff" stroke="#6366f1" stroke-width="2"/>
+  <text x="450" y="108" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="#4338ca" text-anchor="middle">DEV</text>
+  <text x="450" y="132" font-family="system-ui,sans-serif" font-size="11" fill="#64748b" text-anchor="middle">Safe development</text>
+  <g font-family="system-ui,sans-serif" font-size="11" fill="#334155">
+    <text x="344" y="168">✓ Connections CRUD</text>
+    <text x="344" y="192">✓ Subscribe / live view</text>
+    <text x="344" y="216">✓ Publish (size capped)</text>
+    <text x="344" y="240">✗ Broker admin APIs</text>
+    <text x="344" y="264">◆ Allowed protocols only</text>
+  </g>
+
+  <rect x="600" y="72" width="260" height="240" rx="14" fill="#fff" stroke="#94a3b8" stroke-width="2"/>
+  <text x="730" y="108" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="#475569" text-anchor="middle">READONLY</text>
+  <text x="730" y="132" font-family="system-ui,sans-serif" font-size="11" fill="#64748b" text-anchor="middle">Observability only</text>
+  <g font-family="system-ui,sans-serif" font-size="11" fill="#334155">
+    <text x="624" y="168">✗ Connection changes</text>
+    <text x="624" y="192">✓ Subscribe / live view</text>
+    <text x="624" y="216">✗ Publish</text>
+    <text x="624" y="240">✗ Broker admin</text>
+    <text x="624" y="264">Ideal for SRE dashboards</text>
+  </g>
+</svg>

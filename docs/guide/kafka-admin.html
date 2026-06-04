@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Kafka admin — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Kafka admin</h1>
+      <p class="page-subtitle">Topic lifecycle, ACLs, produce with headers, and cluster operations — ADMIN mode with Kafka registered.</p>
+
+      <div class="callout callout-warn">
+        Kafka admin requires <code>deployment-mode: ADMIN</code>, Kafka on the classpath, and protocol registered in the control plane (<code>adminProtocols</code> includes <code>KAFKA</code>).
+      </div>
+
+      <h2>Topic management</h2>
+      <ul>
+        <li>Create topics with partition count and replication factor</li>
+        <li>Alter configuration (retention, compression, …)</li>
+        <li>Delete topics (with confirmation in UI)</li>
+      </ul>
+      <pre><code>POST /api/v1/connections/{id}/kafka/topics
+{
+  "name": "orders.events",
+  "partitions": 6,
+  "replicationFactor": 3
+}</code></pre>
+
+      <h2>Produce with headers</h2>
+      <pre><code>POST /api/v1/connections/{id}/kafka/topics/{topic}/produce
+{
+  "key": "order-42",
+  "value": "{\"status\":\"created\"}",
+  "headers": {
+    "content-type": "application/json",
+    "trace-id": "abc-123"
+  }
+}</code></pre>
+
+      <h2>ACLs</h2>
+      <p>View and manage Kafka ACLs when the cluster supports ACL APIs and credentials have sufficient privileges.</p>
+      <pre><code>GET  /api/v1/connections/{id}/kafka/acls
+POST /api/v1/connections/{id}/kafka/acls</code></pre>
+
+      <h2>Consumer group operations</h2>
+      <ul>
+        <li>List groups and members</li>
+        <li>Inspect lag per partition</li>
+        <li>Reset offsets (where permitted) — use with care in production</li>
+      </ul>
+
+      <h2>OpenAPI</h2>
+      <p>Kafka-specific operations are defined in <code>openapi/streams/kafka-api.yaml</code> and exposed in Swagger when the Kafka provider is active:</p>
+      <pre><code>http://localhost:8080/openapi/streams/kafka-api.yaml</code></pre>
+      <p>Related: <a href="inspection.html">Inspection</a> · <a href="configuration.html">Configuration</a></p>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

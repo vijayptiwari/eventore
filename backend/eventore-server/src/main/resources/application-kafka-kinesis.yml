@@ -1,0 +1,6 @@
+# Example: run with slim JAR (mvn -Pkafka-kinesis -P!providers-all package)
+#   java -jar eventore-server.jar --spring.profiles.active=kafka-kinesis
+eventore:
+  enabled-protocols: KAFKA,KINESIS
+  dev:
+    allowed-protocols: KAFKA,KINESIS

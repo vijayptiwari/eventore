@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+  title: Eventore API (manifest)
+  description: |
+    Index of per-stream OpenAPI modules. Implementations are generated from each stream spec
+    under `streams/` via `eventore-api-codegen`.
+  version: 0.1.0
+servers:
+  - url: /api/v1
+paths: {}
+x-eventore-streams:
+  - id: core
+    spec: /openapi/streams/core-api.yaml
+    catalog: /api/v1/openapi/catalog
+  - id: inspect
+    spec: /openapi/streams/inspect-api.yaml
+  - id: kafka
+    spec: /openapi/streams/kafka-api.yaml
+    protocol: KAFKA
+  - id: kinesis
+    spec: /openapi/streams/kinesis-api.yaml
+    protocol: KINESIS

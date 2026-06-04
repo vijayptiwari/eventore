@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Deployment — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Deployment</h1>
+      <p class="page-subtitle">Docker, Kubernetes, Helm, static product site, and optional MCP for AI agents.</p>
+
+      <figure class="diagram">
+        <img src="../assets/diagrams/kubernetes-deploy.svg" alt="Kubernetes deployment" width="920" height="460" loading="lazy" decoding="async"/>
+      </figure>
+
+      <h2>Local brokers (development)</h2>
+      <pre><code>docker compose -f docker/docker-compose.brokers.yml up -d
+cd backend && mvn -pl eventore-server -am spring-boot:run -Dspring-boot.run.profiles=local
+cd frontend && npm install && npm run dev</code></pre>
+
+      <h2>Production image</h2>
+      <pre><code># All providers (default)
+docker build -f docker/Dockerfile.backend -t eventore-backend .
+
+# Kafka + Kinesis only
+docker build --build-arg EVENTORE_MAVEN_PROFILES=kafka-kinesis \
+  -f docker/Dockerfile.backend -t eventore-backend:slim .</code></pre>
+
+      <h2>Helm (recommended for K8s)</h2>
+      <p>Chart <code>deploy/helm/eventore</code> deploys backend + frontend pods. Values files:</p>
+      <ul>
+        <li><code>values.yaml</code> — defaults</li>
+        <li><code>values-admin.yaml</code> — full admin mode</li>
+        <li><code>values-kafka-kinesis.yaml</code> — slim protocols</li>
+      </ul>
+      <pre><code>helm install eventore ./deploy/helm/eventore \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0].host=eventore.example.com
+
+# Slim stack
+helm upgrade --install eventore ./deploy/helm/eventore \
+  -f deploy/helm/eventore/values-kafka-kinesis.yaml</code></pre>
+      <p>See <code>deploy/README.md</code> in the repository for ingress, secrets, and network policies.</p>
+
+      <h2>Hosting this documentation site</h2>
+      <p>The <code>docs/</code> folder is the product site (HTML + CSS + SVG). It is intended for <strong>GitHub Pages</strong>:</p>
+      <pre><code># Repository Settings → Pages → Branch: main, Folder: /docs
+
+# Local preview
+npx serve docs</code></pre>
+      <p>See <code>docs/README.md</code> for details. The <code>.nojekyll</code> file ensures GitHub serves static HTML without Jekyll processing.</p>
+
+      <h2>MCP server (optional)</h2>
+      <p>A separate Node MCP server (<code>mcp/eventore-mcp</code>) lets AI agents list connections, browse topics, and stream messages via tools. Deploy chart <code>eventore-mcp</code> when agents need programmatic access.</p>
+      <ul>
+        <li>Point MCP at the backend base URL</li>
+        <li>Respect the same deployment mode and auth as the UI</li>
+      </ul>
+
+      <h2>Health and observability</h2>
+      <pre><code>GET /actuator/health
+GET /api/v1/config
+GET /api/v1/control/plane</code></pre>
+      <p>Use control plane <code>revision</code> to detect provider registration changes without restarting the UI.</p>
+      <p>Related: <a href="getting-started.html">Getting started</a> · <a href="configuration.html">Configuration</a> · <a href="architecture.html">Architecture</a></p>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

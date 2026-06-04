@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Configuration — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Configuration</h1>
+      <p class="page-subtitle">application.yml, environment variables, Helm values, Maven profiles, and deployment modes.</p>
+
+      <figure class="diagram">
+        <img src="../assets/diagrams/deployment-modes.svg" alt="Deployment modes ADMIN DEV READONLY" width="900" height="340" loading="lazy" decoding="async"/>
+      </figure>
+
+      <h2>Core properties</h2>
+      <pre><code>eventore:
+  deployment-mode: ADMIN    # ADMIN | DEV | READONLY
+  enabled-protocols:        # optional comma list; empty = all on classpath
+  control-plane:
+    auto-register-on-startup: true
+  data-plane:
+    require-control-plane-registration: true
+  dev:
+    allowed-protocols:      # DEV only: subset of registered protocols
+      - KAFKA
+      - KINESIS
+    max-publish-bytes: 65536</code></pre>
+
+      <h2>Deployment modes</h2>
+      <table>
+        <thead><tr><th>Mode</th><th>Connections</th><th>Subscribe / live</th><th>Publish</th><th>Broker admin</th></tr></thead>
+        <tbody>
+          <tr><td><code>ADMIN</code></td><td>CRUD</td><td>Yes</td><td>Yes</td><td>Yes (Kafka topics, ACLs, …)</td></tr>
+          <tr><td><code>DEV</code></td><td>CRUD</td><td>Yes</td><td>Yes (size capped)</td><td>No</td></tr>
+          <tr><td><code>READONLY</code></td><td>Read-only</td><td>Yes</td><td>No</td><td>No</td></tr>
+        </tbody>
+      </table>
+      <p>In <code>DEV</code>, only protocols listed under <code>eventore.dev.allowed-protocols</code> are accepted, intersected with control-plane registration.</p>
+
+      <h2>Enabled protocols (runtime)</h2>
+      <p>Limits which providers bootstrap registers and which appear in <code>GET /api/v1/config</code> → <code>supportedProtocols</code>.</p>
+      <pre><code># Environment
+EVENTORE_ENABLED_PROTOCOLS=KAFKA,KINESIS
+
+# Spring
+eventore.enabled-protocols=KAFKA,KINESIS</code></pre>
+      <p>Valid values: <code>KAFKA</code>, <code>PULSAR</code>, <code>RABBITMQ</code>, <code>MQTT</code>, <code>JMS</code>, <code>KINESIS</code>, <code>GCP_PUBSUB</code>, <code>AZURE_SERVICEBUS</code>.</p>
+
+      <h2>Maven profiles (build time)</h2>
+      <table>
+        <thead><tr><th>Profile</th><th>Providers on classpath</th></tr></thead>
+        <tbody>
+          <tr><td><code>providers-all</code> (default)</td><td>All eight modules</td></tr>
+          <tr><td><code>kafka-kinesis</code></td><td>Kafka + Kinesis</td></tr>
+          <tr><td><code>provider-kafka</code></td><td>Kafka only</td></tr>
+          <tr><td><code>provider-kinesis</code></td><td>Kinesis only</td></tr>
+        </tbody>
+      </table>
+      <pre><code>mvn -DskipTests -Pkafka-kinesis -P!providers-all package</code></pre>
+      <p>Pair with Spring profile <code>kafka-kinesis</code> in <code>application-kafka-kinesis.yml</code> for defaults.</p>
+
+      <h2>Helm values</h2>
+      <pre><code>eventore:
+  deploymentMode: ADMIN
+  enabledProtocols: KAFKA,KINESIS
+  dev:
+    allowedProtocols:
+      - KAFKA
+      - KINESIS</code></pre>
+      <p>Slim install:</p>
+      <pre><code>helm install eventore ./deploy/helm/eventore \
+  -f deploy/helm/eventore/values-kafka-kinesis.yaml</code></pre>
+      <p>Build the backend image with:</p>
+      <pre><code>docker build --build-arg EVENTORE_MAVEN_PROFILES=kafka-kinesis \
+  -f docker/Dockerfile.backend .</code></pre>
+
+      <h2>Control plane API</h2>
+      <pre><code># Snapshot (revision, providers, UI cascade)
+GET /api/v1/control/plane
+
+# Register at runtime (ADMIN)
+POST /api/v1/control/providers/KAFKA/register
+
+# Deregister
+DELETE /api/v1/control/providers/MQTT/register</code></pre>
+      <p>Embedded in config for the UI:</p>
+      <pre><code>GET /api/v1/config
+# → controlPlane.uiCascade.connectionProtocols
+# → controlPlane.uiCascade.inspectProtocols
+# → controlPlane.uiCascade.adminProtocols</code></pre>
+
+      <h2>OpenAPI catalog</h2>
+      <p>Active stream contracts for this deployment:</p>
+      <pre><code>GET /api/v1/openapi/catalog</code></pre>
+      <p>Per-stream YAML is served under <code>/openapi/streams/{id}-api.yaml</code> when that provider is registered.</p>
+      <p>Related: <a href="control-data-plane.html">Control &amp; data plane</a> · <a href="deployment.html">Deployment</a></p>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

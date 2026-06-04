@@ -1,0 +1,36 @@
+# Full Eventore stack: 3 services (same roles as 3 K8s pod types)
+services:
+  eventore-backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    ports:
+      - "8080:8080"
+    environment:
+      EVENTORE_DEPLOYMENT_MODE: DEV
+      SPRING_APPLICATION_JSON: '{"eventore":{"deployment-mode":"DEV"}}'
+
+  eventore-frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "8088:80"
+    environment:
+      EVENTORE_API_BASE_URL: /api/v1
+      EVENTORE_WS_URL: ws://localhost:8088/ws/stream
+    depends_on:
+      - eventore-backend
+
+  eventore-mcp:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mcp
+    ports:
+      - "3100:3100"
+    environment:
+      MCP_TRANSPORT: http
+      MCP_PORT: "3100"
+      EVENTORE_API_URL: http://eventore-backend:8080/api/v1
+    depends_on:
+      - eventore-backend

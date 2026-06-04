@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Inspection — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Inspection</h1>
+      <p class="page-subtitle">Browse destinations, consumer groups, lag, and message search across registered protocols.</p>
+
+      <h2>Browse</h2>
+      <ol class="steps">
+        <li>Select a <strong>connection</strong>.</li>
+        <li>Eventore lists <strong>destinations</strong> (topics, queues, streams, subscriptions).</li>
+        <li>Open a destination to see partitions, metadata, or recent messages where supported.</li>
+        <li>Use <strong>Add to streams</strong> to track it in the live workspace.</li>
+      </ol>
+      <p>Only protocols in <code>controlPlane.uiCascade.inspectProtocols</code> show inspector features.</p>
+
+      <h2>Kafka inspection</h2>
+      <ul>
+        <li>Topic list with partition count and replication</li>
+        <li>Consumer groups and per-partition lag</li>
+        <li>Message search by offset, timestamp, or key filter</li>
+      </ul>
+      <pre><code>GET /api/v1/connections/{id}/inspect/topics
+GET /api/v1/connections/{id}/inspect/consumer-groups
+GET /api/v1/connections/{id}/inspect/topics/{topic}/messages?limit=50</code></pre>
+
+      <h2>Other protocols</h2>
+      <table>
+        <thead><tr><th>Protocol</th><th>Inspect capabilities</th></tr></thead>
+        <tbody>
+          <tr><td>Pulsar</td><td>Topics, subscriptions, backlog hints</td></tr>
+          <tr><td>RabbitMQ</td><td>Queues, exchanges, bindings</td></tr>
+          <tr><td>MQTT</td><td>Topic tree, retained messages where available</td></tr>
+          <tr><td>Kinesis</td><td>Streams, shards, iterator position</td></tr>
+          <tr><td>GCP / Azure</td><td>Topics/subscriptions, message peek</td></tr>
+        </tbody>
+      </table>
+
+      <h2>READONLY workflows</h2>
+      <p>READONLY deployments are ideal for SRE dashboards: subscribe and inspect without mutating connections or publishing test traffic. See <a href="configuration.html">Configuration</a> for deployment modes.</p>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

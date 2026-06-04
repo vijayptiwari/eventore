@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Eventore Kinesis Stream API
+  description: |
+    AWS Kinesis stream-specific operations (shard listing, iterator helpers).
+    x-eventore-stream: kinesis
+    x-eventore-protocol: KINESIS
+    x-eventore-module: eventore-provider-kinesis
+  version: 0.1.0
+servers:
+  - url: /api/v1
+tags:
+  - name: KinesisAdmin
+paths:
+  /connections/{connectionId}/kinesis/capabilities:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+    get:
+      tags: [KinesisAdmin]
+      operationId: kinesisCapabilities
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+  /connections/{connectionId}/kinesis/streams/{streamName}/shards:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+      - name: streamName
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [KinesisAdmin]
+      operationId: kinesisListShards
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    shardId:
+                      type: string
+                    hashKeyRange:
+                      type: string
+                    sequenceNumberRange:
+                      type: string

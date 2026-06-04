@@ -1,0 +1,58 @@
+eventore:
+  deploymentMode: DEV
+  # Runtime filter; empty = all provider JARs in the image. Set to match your Maven/Docker build profile.
+  enabledProtocols: ""
+  subscriptions:
+    maxConcurrent: 50
+    queueCapacity: 500
+  dev:
+    maxPublishBytes: 1048576
+    allowedProtocols:
+      - KAFKA
+      - MQTT
+      - JMS
+      - PULSAR
+      - RABBITMQ
+
+image:
+  backend:
+    repository: eventore/backend
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  frontend:
+    repository: eventore/frontend
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+
+backend:
+  replicaCount: 1
+  service:
+    port: 8080
+  resources: {}
+
+frontend:
+  replicaCount: 1
+  service:
+    port: 80
+  resources: {}
+  env:
+    apiBaseUrl: /api/v1
+    wsUrl: ""
+
+ingress:
+  enabled: true
+  className: ""
+  host: eventore.local
+  annotations: {}
+
+secrets:
+  create: true
+  brokerCredentials: {}
+
+networkPolicy:
+  enabled: false
+  brokerCidrs: []
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1

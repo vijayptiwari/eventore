@@ -1,0 +1,53 @@
+services:
+  redpanda:
+    image: redpandadata/redpanda:v24.2.4
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --reserve-memory
+      - 0M
+      - --node-id
+      - "0"
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://localhost:9092
+    ports:
+      - "9092:9092"
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  artemis:
+    image: apache/activemq-artemis:2.37.0
+    environment:
+      AMQ_USER: artemis
+      AMQ_PASSWORD: artemis
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  pulsar:
+    image: apachepulsar/pulsar:3.3.2
+    command: bin/pulsar standalone
+    ports:
+      - "6650:6650"
+      - "8081:8080"

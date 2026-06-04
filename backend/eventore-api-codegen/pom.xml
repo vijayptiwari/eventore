@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.eventore</groupId>
+        <artifactId>eventore-parent</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>eventore-api-codegen</artifactId>
+    <name>eventore-api-codegen</name>
+    <description>OpenAPI-generated API interfaces, models, and controllers per stream</description>
+
+    <properties>
+        <openapi.generator.version>7.10.0</openapi.generator.version>
+        <openapi.spec.dir>${project.basedir}/../openapi</openapi.spec.dir>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.2.22</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>0.2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eventore</groupId>
+            <artifactId>eventore-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.eventore</groupId>
+            <artifactId>eventore-provider-kafka</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>add-openapi-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/openapi/core/src/main/java</source>
+                                <source>${project.build.directory}/generated-sources/openapi/inspect/src/main/java</source>
+                                <source>${project.build.directory}/generated-sources/openapi/kafka/src/main/java</source>
+                                <source>${project.build.directory}/generated-sources/openapi/kinesis/src/main/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi.generator.version}</version>
+                <executions>
+            <groupId>jakarta.validation</groupId>
+
+            <artifactId>jakarta.validation-api</artifactId>
+
+        </dependency>
+
+        <dependency>
+
+                    <execution>
+                        <id>generate-core-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${openapi.spec.dir}/streams/core-api.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <output>${project.build.directory}/generated-sources/openapi/core</output>
+                            <apiPackage>com.eventore.api.generated.core</apiPackage>
+                            <modelPackage>com.eventore.api.generated.core.model</modelPackage>
+                            <configOptions>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <delegatePattern>true</delegatePattern>
+                                <interfaceOnly>false</interfaceOnly>
+                                <useTags>true</useTags>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <generateSupportingFiles>false</generateSupportingFiles>
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
+                                <openApiNullable>false</openApiNullable>
+                                <useBeanValidation>false</useBeanValidation>
+                                <documentationProvider>springdoc</documentationProvider>
+                            </configOptions>
+                            <importMappings>
+                                <importMapping>AppConfig=com.eventore.api.dto.AppConfigResponse</importMapping>
+                                <importMapping>ConnectionProfile=com.eventore.domain.ConnectionProfile</importMapping>
+                                <importMapping>ConnectionProfileResponse=com.eventore.api.dto.ConnectionProfileResponse</importMapping>
+                                <importMapping>ProtocolType=com.eventore.domain.ProtocolType</importMapping>
+                                <importMapping>TopicRef=com.eventore.domain.TopicRef</importMapping>
+                                <importMapping>PublishRequest=com.eventore.connector.spi.PublishRequest</importMapping>
+                                <importMapping>SubscribeRequest=com.eventore.connector.spi.SubscribeRequest</importMapping>
+                                <importMapping>StreamPlatformPreset=com.eventore.platform.StreamPlatformPreset</importMapping>
+                                <importMapping>ProviderInfo=com.eventore.api.openapi.ProviderInfoDto</importMapping>
+                            </importMappings>
+                            <typeMappings>
+                                <typeMapping>StatusResponse=Map&lt;String,String&gt;</typeMapping>
+                            </typeMappings>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-inspect-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${openapi.spec.dir}/streams/inspect-api.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <output>${project.build.directory}/generated-sources/openapi/inspect</output>
+                            <apiPackage>com.eventore.api.generated.inspect</apiPackage>
+                            <modelPackage>com.eventore.api.generated.inspect.model</modelPackage>
+                            <configOptions>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <delegatePattern>true</delegatePattern>
+                                <interfaceOnly>false</interfaceOnly>
+                                <useTags>true</useTags>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <generateSupportingFiles>false</generateSupportingFiles>
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
+                                <openApiNullable>false</openApiNullable>
+                                <useBeanValidation>false</useBeanValidation>
+                                <documentationProvider>springdoc</documentationProvider>
+                            </configOptions>
+                            <importMappings>
+                                <importMapping>MessageSearchRequest=com.eventore.inspect.domain.InspectModels.MessageSearchRequest</importMapping>
+                                <importMapping>UnifiedMessage=com.eventore.domain.UnifiedMessage</importMapping>
+                            </importMappings>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-kafka-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${openapi.spec.dir}/streams/kafka-api.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <output>${project.build.directory}/generated-sources/openapi/kafka</output>
+                            <apiPackage>com.eventore.api.generated.kafka</apiPackage>
+                            <modelPackage>com.eventore.api.generated.kafka.model</modelPackage>
+                            <configOptions>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <delegatePattern>true</delegatePattern>
+                                <interfaceOnly>false</interfaceOnly>
+                                <useTags>true</useTags>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <generateSupportingFiles>false</generateSupportingFiles>
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
+                                <openApiNullable>false</openApiNullable>
+                                <useBeanValidation>false</useBeanValidation>
+                                <documentationProvider>springdoc</documentationProvider>
+                            </configOptions>
+                            <importMappings>
+                            <ignoreFileOverride>${project.basedir}/.openapi-generator-ignore</ignoreFileOverride>
+
+                                <importMapping>PublishRequest=com.eventore.connector.spi.PublishRequest</importMapping>
+                                <importMapping>KafkaPublishResult=com.eventore.inspect.kafka.KafkaAdminModels.PublishResult</importMapping>
+                                <importMapping>KafkaCreateTopicRequest=com.eventore.inspect.kafka.KafkaAdminModels.CreateTopicRequest</importMapping>
+                                <importMapping>KafkaAlterTopicConfigsRequest=com.eventore.inspect.kafka.KafkaAdminModels.AlterTopicConfigsRequest</importMapping>
+                                <importMapping>KafkaFlushTopicRequest=com.eventore.inspect.kafka.KafkaAdminModels.FlushTopicRequest</importMapping>
+                                <importMapping>KafkaAclEntry=com.eventore.inspect.kafka.KafkaAdminModels.KafkaAclEntry</importMapping>
+                                <importMapping>KafkaReplaceAclRequest=com.eventore.inspect.kafka.KafkaAdminModels.ReplaceAclRequest</importMapping>
+                                <importMapping>StatusResponse=Map&lt;String,String&gt;</importMapping>
+                            </importMappings>
+                            <typeMappings>
+                                <typeMapping>StatusResponse=Map&lt;String,String&gt;</typeMapping>
+                            </typeMappings>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-kinesis-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                                <skipDefaultInterface>false</skipDefaultInterface>
+
+                                <generateSupportingFiles>false</generateSupportingFiles>
+
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
+
+                                <openApiNullable>false</openApiNullable>
+
+                                <useBeanValidation>false</useBeanValidation>
+
+                                <documentationProvider>springdoc</documentationProvider>
+
+                            </configOptions>
+
+                            <importMappings>
+
+                                <importMapping>AppConfigResponse=com.eventore.api.dto.AppConfigResponse</importMapping>
+
+                                <importMapping>ConnectionProfile=com.eventore.domain.ConnectionProfile</importMapping>
+
+                                <importMapping>ConnectionProfileResponse=com.eventore.api.dto.ConnectionProfileResponse</importMapping>
+
+                                <importMapping>ProtocolType=com.eventore.domain.ProtocolType</importMapping>
+
+                                <importMapping>TopicRef=com.eventore.domain.TopicRef</importMapping>
+
+                                <importMapping>PublishRequest=com.eventore.connector.spi.PublishRequest</importMapping>
+
+                                <importMapping>SubscribeRequest=com.eventore.connector.spi.SubscribeRequest</importMapping>
+
+                                <importMapping>StreamPlatformPreset=com.eventore.platform.StreamPlatformPreset</importMapping>
+
+                                <importMapping>ProviderInfoDto=com.eventore.api.dto.ProviderInfoDto</importMapping>
+
+                            </importMappings>
+
+                            <typeMappings>
+
+                                <typeMapping>StatusResponse=Map&lt;String,String&gt;</typeMapping>
+
+                            </typeMappings>
+
+                        </configuration>
+
+                    </execution>
+
+                    <execution>
+
+                        <id>generate-inspect-api</id>
+
+                        <goals>
+
+                            <goal>generate</goal>
+
+                        </goals>
+
+                        <configuration>
+
+                            <inputSpec>${openapi.spec.dir}/streams/inspect-api.yaml</inputSpec>
+
+                            <ignoreFileOverride>${project.basedir}/.openapi-generator-ignore</ignoreFileOverride>
+
+                            <generatorName>spring</generatorName>
+
+                            <output>${project.build.directory}/generated-sources/openapi/inspect</output>
+
+                            <apiPackage>com.eventore.api.generated.inspect</apiPackage>
+
+                            <modelPackage>com.eventore.api.generated.inspect.model</modelPackage>
+
+                            <configOptions>
+
+                                <useSpringBoot3>true</useSpringBoot3>
+
+                                <delegatePattern>true</delegatePattern>
+
+                                <interfaceOnly>false</interfaceOnly>
+
+                                <useTags>true</useTags>
+
+                                <skipDefaultInterface>false</skipDefaultInterface>
+
+                                <generateSupportingFiles>false</generateSupportingFiles>
+
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
+
+                                <openApiNullable>false</openApiNullable>
+
+                                <useBeanValidation>false</useBeanValidation>
+
+                                <documentationProvider>springdoc</documentationProvider>
+
+                            </configOptions>
+
+                            <importMappings>
+
+                                <importMapping>MessageSearchRequest=com.eventore.inspect.domain.InspectModels.MessageSearchRequest</importMapping>
+
+                                <importMapping>UnifiedMessage=com.eventore.domain.UnifiedMessage</importMapping>
+
+                            </importMappings>
+
+                        </configuration>
+
+                    </execution>
+
+                    <execution>
+
+                        <id>generate-kafka-api</id>
+
+                        <goals>
+
+                            <goal>generate</goal>
+
+                        </goals>
+
+                        <configuration>
+
+                            <inputSpec>${openapi.spec.dir}/streams/kafka-api.yaml</inputSpec>
+
+                            <ignoreFileOverride>${project.basedir}/.openapi-generator-ignore</ignoreFileOverride>
+
+                            <generatorName>spring</generatorName>
+
+                            <output>${project.build.directory}/generated-sources/openapi/kafka</output>
+
+                            <apiPackage>com.eventore.api.generated.kafka</apiPackage>
+
+                            <modelPackage>com.eventore.api.generated.kafka.model</modelPackage>
+
+                            <configOptions>
+
+                                <useSpringBoot3>true</useSpringBoot3>
+
+                                <delegatePattern>true</delegatePattern>
+
+                                <interfaceOnly>false</interfaceOnly>
+
+                                <useTags>true</useTags>
+
+                                <skipDefaultInterface>false</skipDefaultInterface>
+
+                                <generateSupportingFiles>false</generateSupportingFiles>
+
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
+
+                                <openApiNullable>false</openApiNullable>
+
+                                <useBeanValidation>false</useBeanValidation>
+
+                                <documentationProvider>springdoc</documentationProvider>
+
+                            </configOptions>
+
+                            <importMappings>
+
+                                <importMapping>PublishRequest=com.eventore.connector.spi.PublishRequest</importMapping>
+
+                                <importMapping>StatusResponse=Map&lt;String,String&gt;</importMapping>
+
+                            </importMappings>
+
+                            <typeMappings>
+
+                                <typeMapping>StatusResponse=Map&lt;String,String&gt;</typeMapping>
+
+                            </typeMappings>
+
+                        </configuration>
+
+                    </execution>
+
+                    <execution>
+
+                        <id>generate-kinesis-api</id>
+
+                        <goals>
+
+                            <goal>generate</goal>
+
+                        </goals>
+
+                        <configuration>
+
+                            <inputSpec>${openapi.spec.dir}/streams/kinesis-api.yaml</inputSpec>
+
+                            <ignoreFileOverride>${project.basedir}/.openapi-generator-ignore</ignoreFileOverride>
+
+                            <generatorName>spring</generatorName>
+
+                            <output>${project.build.directory}/generated-sources/openapi/kinesis</output>
+
+                            <apiPackage>com.eventore.api.generated.kinesis</apiPackage>
+
+                            <modelPackage>com.eventore.api.generated.kinesis.model</modelPackage>
+
+                            <configOptions>
+
+                                <useSpringBoot3>true</useSpringBoot3>
+
+                                <delegatePattern>true</delegatePattern>
+
+                                <interfaceOnly>false</interfaceOnly>
+
+                                <useTags>true</useTags>
+
+                                <skipDefaultInterface>false</skipDefaultInterface>

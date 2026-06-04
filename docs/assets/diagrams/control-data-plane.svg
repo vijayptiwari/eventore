@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="cdp-title">
+  <title id="cdp-title">Control plane vs data plane</title>
+  <defs>
+    <marker id="cdp-arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="900" height="420" fill="#f8fafc" rx="16"/>
+  <text x="40" y="40" font-family="system-ui,sans-serif" font-size="20" font-weight="700" fill="#0f172a">Control plane vs data plane</text>
+
+  <rect x="40" y="72" width="380" height="300" rx="14" fill="#f0fdfa" stroke="#14b8a6" stroke-width="2"/>
+  <text x="64" y="108" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#0f766e">Control plane</text>
+  <text x="64" y="132" font-family="system-ui,sans-serif" font-size="12" fill="#475569">Desired state · UI cascade · no broker TCP</text>
+  <rect x="64" y="152" width="332" height="44" rx="8" fill="#fff" stroke="#99f6e4"/>
+  <text x="80" y="180" font-family="system-ui,sans-serif" font-size="11" fill="#0f172a">POST/DELETE …/control/providers/{protocol}/register</text>
+  <rect x="64" y="206" width="332" height="44" rx="8" fill="#fff" stroke="#99f6e4"/>
+  <text x="80" y="234" font-family="system-ui,sans-serif" font-size="11" fill="#0f172a">GET /api/v1/control/plane → revision + uiCascade</text>
+  <rect x="64" y="260" width="332" height="44" rx="8" fill="#fff" stroke="#99f6e4"/>
+  <text x="80" y="288" font-family="system-ui,sans-serif" font-size="11" fill="#0f172a">Deployment mode ∩ enabled protocols</text>
+  <rect x="64" y="314" width="332" height="44" rx="8" fill="#fff" stroke="#99f6e4"/>
+  <text x="80" y="342" font-family="system-ui,sans-serif" font-size="11" fill="#0f172a">OpenAPI stream catalog per deployment</text>
+
+  <rect x="480" y="72" width="380" height="300" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="504" y="108" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#0f172a">Data plane</text>
+  <text x="504" y="132" font-family="system-ui,sans-serif" font-size="12" fill="#475569">Broker I/O only for registered protocols</text>
+  <rect x="504" y="152" width="332" height="44" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="520" y="180" font-family="system-ui,sans-serif" font-size="11" fill="#0f172a">/api/v1/connections · publish · subscribe</text>
+  <rect x="504" y="206" width="332" height="44" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="520" y="234" font-family="system-ui,sans-serif" font-size="11" fill="#0f172a">/inspect · /kafka · /kinesis admin routes</text>
+  <rect x="504" y="260" width="332" height="44" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="520" y="288" font-family="system-ui,sans-serif" font-size="11" fill="#0f172a">WebSocket /ws/stream live view</text>
+  <rect x="504" y="314" width="332" height="44" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="520" y="342" font-family="system-ui,sans-serif" font-size="11" fill="#0f172a">ConnectorRegistry · InspectorRegistry</text>
+
+  <path d="M420 220h48" stroke="#64748b" stroke-width="2" marker-end="url(#cdp-arr)"/>
+  <text x="428" y="208" font-family="system-ui,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">register</text>
+  <path d="M468 240h-48" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#cdp-arr)"/>
+  <text x="432" y="258" font-family="system-ui,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">attach runtime</text>
+</svg>

@@ -1,0 +1,14 @@
+eventore:
+  deploymentMode: ADMIN
+  subscriptions:
+    maxConcurrent: 100
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: eventore-admin-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: "Eventore Admin"
+
+networkPolicy:
+  enabled: false

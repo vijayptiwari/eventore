@@ -1,0 +1,6 @@
+eventore:
+  deployment-mode: DEV
+
+logging:
+  level:
+    com.eventore: DEBUG

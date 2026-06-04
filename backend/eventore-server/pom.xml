@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+
+        <groupId>com.eventore</groupId>
+
+        <artifactId>eventore-parent</artifactId>
+
+        <version>0.1.0-SNAPSHOT</version>
+
+    </parent>
+
+    <artifactId>eventore-server</artifactId>
+
+    <name>eventore-server</name>
+
+    <description>Eventore API gateway, WebSocket, OpenAPI</description>
+
+    <dependencies>
+
+        <dependency>
+
+            <groupId>com.eventore</groupId>
+
+            <artifactId>eventore-core</artifactId>
+
+        </dependency>
+
+        <dependency>
+
+            <groupId>com.eventore</groupId>
+
+            <artifactId>eventore-api-codegen</artifactId>
+
+        </dependency>
+
+        <dependency>
+
+            <groupId>org.springframework.boot</groupId>
+
+            <artifactId>spring-boot-starter-web</artifactId>
+
+        </dependency>
+
+        <dependency>
+
+            <groupId>org.springframework.boot</groupId>
+
+            <artifactId>spring-boot-starter-websocket</artifactId>
+
+        </dependency>
+
+        <dependency>
+
+            <groupId>org.springframework.boot</groupId>
+
+            <artifactId>spring-boot-starter-security</artifactId>
+
+        </dependency>
+
+        <dependency>
+
+            <groupId>org.springframework.boot</groupId>
+
+            <artifactId>spring-boot-starter-actuator</artifactId>
+
+        </dependency>
+
+        <dependency>
+
+            <groupId>org.springdoc</groupId>
+
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+
+        </dependency>
+
+        <dependency>
+
+            <groupId>org.springframework.boot</groupId>
+
+            <artifactId>spring-boot-starter-test</artifactId>
+
+            <scope>test</scope>
+
+        </dependency>
+
+    </dependencies>
+
+
+
+    <!--
+
+      Use what is required: pick provider modules at build time.
+
+      Local dev (all protocols): mvn package  (providers-all is active by default)
+
+      Kafka + Kinesis only:     mvn -Pkafka-kinesis -P!providers-all package
+
+      Single protocol:          mvn -Pprovider-kafka -P!providers-all package
+
+    -->
+
+    <profiles>
+
+        <profile>
+
+            <id>providers-all</id>
+
+            <activation>
+
+                <activeByDefault>true</activeByDefault>
+
+            </activation>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-kafka</artifactId>
+
+                </dependency>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-mqtt</artifactId>
+
+                </dependency>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-jms</artifactId>
+
+                </dependency>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-pulsar</artifactId>
+
+                </dependency>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-rabbitmq</artifactId>
+
+                </dependency>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-kinesis</artifactId>
+
+                </dependency>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-gcp-pubsub</artifactId>
+
+                </dependency>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-azure-servicebus</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+        <profile>
+
+            <id>provider-kafka</id>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-kafka</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+        <profile>
+
+            <id>provider-mqtt</id>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-mqtt</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+        <profile>
+
+            <id>provider-jms</id>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-jms</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+        <profile>
+
+            <id>provider-pulsar</id>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-pulsar</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+        <profile>
+
+            <id>provider-rabbitmq</id>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-rabbitmq</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+        <profile>
+
+            <id>provider-kinesis</id>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-kinesis</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+        <profile>
+
+            <id>provider-gcp-pubsub</id>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-gcp-pubsub</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+        <profile>
+
+            <id>provider-azure-servicebus</id>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-azure-servicebus</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+        <profile>
+
+            <id>kafka-kinesis</id>
+
+            <dependencies>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-kafka</artifactId>
+
+                </dependency>
+
+                <dependency>
+
+                    <groupId>com.eventore</groupId>
+
+                    <artifactId>eventore-provider-kinesis</artifactId>
+
+                </dependency>
+
+            </dependencies>
+
+        </profile>
+
+    </profiles>
+
+
+
+    <build>
+
+        <resources>
+
+            <resource>
+
+                <directory>src/main/resources</directory>
+
+            </resource>
+
+            <resource>
+
+                <directory>../openapi</directory>
+
+                <targetPath>openapi</targetPath>
+
+            </resource>
+
+        </resources>
+
+        <plugins>
+
+            <plugin>
+
+                <groupId>org.springframework.boot</groupId>
+
+                <artifactId>spring-boot-maven-plugin</artifactId>
+
+            </plugin>
+
+        </plugins>
+
+    </build>
+
+</project>
+

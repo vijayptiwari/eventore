@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Getting started — Eventore</title>
+  <script src="../js/base-path.js"></script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="../css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Getting started</h1>
+      <p class="page-subtitle">From zero to your first live stream in about five minutes.</p>
+
+      <figure class="diagram">
+        <img src="../assets/diagrams/user-journey.svg" alt="User journey steps" width="920" height="200" loading="lazy" decoding="async"/>
+        <figcaption class="diagram-caption">Typical workflow after deployment</figcaption>
+      </figure>
+
+      <h2>Prerequisites</h2>
+      <ul>
+        <li>Java 21+ (for running the backend JAR locally)</li>
+        <li>Node 18+ (for building the frontend)</li>
+        <li>Network access to at least one messaging broker</li>
+        <li>Optional: Docker and Helm 3 for container deployment</li>
+      </ul>
+
+      <h2>Quick start (local development)</h2>
+      <h3>1. Build and run the backend</h3>
+      <pre><code>cd backend
+mvn -DskipTests package
+java -jar eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar</code></pre>
+      <p>The API listens on <code>http://localhost:8080</code>. Swagger UI: <code>/swagger-ui.html</code>.</p>
+
+      <h3>2. Build and run the frontend</h3>
+      <pre><code>cd frontend
+npm install
+npm run dev</code></pre>
+      <p>Vite dev server proxies API calls to the backend (see <code>vite.config.ts</code>).</p>
+
+      <h3>3. Verify control plane registration</h3>
+      <pre><code>curl -s http://localhost:8080/api/v1/control/plane | jq .activeProtocols</code></pre>
+      <p>You should see protocols matching the provider modules in your build (default: all eight).</p>
+
+      <h3>4. Create your first connection</h3>
+      <ol class="steps">
+        <li>Open the UI → <strong>Connections</strong>.</li>
+        <li>Choose a <strong>stream platform preset</strong> (e.g. generic Kafka) or enter settings manually.</li>
+        <li>Set <strong>broker URL</strong> (e.g. <code>localhost:9092</code> for Kafka).</li>
+        <li>Add credentials if your cluster uses SASL/SSL.</li>
+        <li>Click <strong>Save connection</strong>, then <strong>Test</strong>.</li>
+      </ol>
+
+      <h3>5. Browse and stream</h3>
+      <ol class="steps">
+        <li>Go to <strong>Browse</strong>, select your connection, pick a topic or queue.</li>
+        <li>Click <strong>Add to streams</strong> — the stream appears in the side panel.</li>
+        <li>Open <strong>Live Stream</strong> to watch messages in real time.</li>
+      </ol>
+
+      <div class="callout">
+        <strong>Tip:</strong> Streams are stored in browser cookies. Closing the tab and returning restores your workspace.
+      </div>
+
+      <h2>Slim deployment (Kafka + Kinesis only)</h2>
+      <pre><code>mvn -DskipTests -Pkafka-kinesis -P!providers-all -pl eventore-server -am package
+java -jar eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar \
+  --spring.profiles.active=kafka-kinesis</code></pre>
+      <p>Only Kafka and Kinesis appear in the UI protocol list. See <a href="configuration.html">Configuration</a>.</p>
+
+      <h2>Next steps</h2>
+      <ul>
+        <li><a href="architecture.html">Understand architecture</a></li>
+        <li><a href="configuration.html">Tune deployment mode and protocols</a></li>
+        <li><a href="kafka-admin.html">Kafka admin operations</a> (ADMIN mode)</li>
+        <li><a href="connections.html">Connections &amp; presets</a></li>
+        <li><a href="deployment.html">Deployment</a></li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="../js/site.js"></script>
+</body>
+</html>

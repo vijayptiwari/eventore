@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Eventore — Multi-stream messaging console</title>
+  <meta name="description" content="Eventore is a unified console for Kafka, Pulsar, RabbitMQ, MQTT, Kinesis, GCP Pub/Sub, Azure Service Bus, and JMS with control plane registration and deep inspection."/>
+  <script src="js/base-path.js"></script>
+  <link rel="icon" href="assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <img class="hero-logo" src="assets/logo-light.svg" alt="Eventore" width="320" height="56"/>
+      <h1>One console for every stream</h1>
+      <p class="lead">
+        Connect, browse, live-stream, inspect, and administer messaging systems from a single UI —
+        with a modular control plane and slim deployments that include only the protocols you need.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="guide/getting-started.html">Get started</a>
+        <a class="btn btn-secondary" href="guide/architecture.html">Architecture</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-inner">
+      <h2 style="text-align:center;margin-top:0">Built for operators and developers</h2>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <h3>Multi-protocol</h3>
+          <p>Kafka, Pulsar, RabbitMQ, MQTT, JMS, AWS Kinesis, GCP Pub/Sub, and Azure Service Bus — with cloud presets for MSK, Event Hubs, IoT Core, and more.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Control &amp; data plane</h3>
+          <p>Register only the stream providers you deploy. The UI cascades capabilities from the control plane; the data plane handles all broker I/O.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Live view &amp; export</h3>
+          <p>Multi-topic WebSocket streaming with header/body regex filters, timed windows, and JSON, CSV, or NDJSON export.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Kafka depth</h3>
+          <p>Consumer groups, lag, message search, topic admin, ACLs, and produce with headers — when the Kafka module is enabled.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Deployment modes</h3>
+          <p>ADMIN, DEV, and READONLY profiles for production admin, safe development, and observability-only access.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Kubernetes-ready</h3>
+          <p>Helm charts, ingress, optional network policies, and Maven profiles for minimal Kafka+Kinesis images.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="section-inner">
+      <figure class="diagram">
+        <img src="assets/diagrams/architecture-overview.svg" alt="Eventore architecture: UI, server, providers, backends" width="920" height="540" loading="lazy" decoding="async"/>
+        <figcaption class="diagram-caption">High-level platform architecture</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-inner section-narrow" style="text-align:center">
+      <h2>Product documentation</h2>
+      <p>Step-by-step guides, configuration reference, diagrams, and deployment examples.</p>
+      <p style="margin-top:2rem">
+        <a class="btn btn-primary" href="guide/index.html">Open the product guide</a>
+        <a class="btn btn-secondary" href="guide/deployment.html">Deployment guide</a>
+      </p>
+    </div>
+  </section>
+
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

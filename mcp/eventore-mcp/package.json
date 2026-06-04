@@ -1,0 +1,28 @@
+{
+  "name": "@eventore/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Eventore messaging bus integration (optional separate deployment)",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "eventore-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "express": "^4.21.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2"
+  }
+}
