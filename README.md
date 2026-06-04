@@ -2,7 +2,7 @@
 
 Eventore connects to **Kafka**, **MQTT**, **JMS** (Artemis), **Pulsar**, **RabbitMQ**, **AWS Kinesis**, **GCP Pub/Sub**, and **Azure Service Bus**, with cloud presets (MSK, Event Hubs, OCP Strimzi, etc.). A modular backend (`eventore-server` + one Maven module per stream) exposes **OpenAPI 3** and a **React** UI with realtime streaming. Deploy to Kubernetes with Helm in **Admin**, **Dev**, or **ReadOnly** mode.
 
-**Product documentation (GitHub Pages):** [`docs/`](docs/) — follow [`docs/PUBLISHING.md`](docs/PUBLISHING.md) to push and host the site. Local preview: <code>npx serve docs</code>. Guide: [`docs/guide/index.html`](docs/guide/index.html).
+**Product documentation:** [https://vijayptiwari.github.io/eventore/](https://vijayptiwari.github.io/eventore/) (GitHub Pages from [`docs/`](docs/)). Repo: [github.com/vijayptiwari/eventore](https://github.com/vijayptiwari/eventore). Local preview: <code>npx serve docs</code>.
 
 ## Architecture
 
