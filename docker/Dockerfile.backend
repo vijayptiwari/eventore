@@ -27,7 +27,7 @@ RUN set -eux; \
       for p in $EVENTORE_STREAM_PROFILES; do \
         PROFILE_ARGS="$PROFILE_ARGS -P$(echo "$p" | tr -d ' ')"; \
       done; \
-      mvn -B -DskipTests $PROFILE_ARGS -P!providers-all package; \
+      mvn -B -DskipTests $PROFILE_ARGS '-P!providers-all' package; \
     fi
 
 FROM eclipse-temurin:21-jre-alpine
