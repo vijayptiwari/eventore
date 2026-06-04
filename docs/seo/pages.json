@@ -1,0 +1,109 @@
+{
+  "pages": [
+    {
+      "file": "index.html",
+      "path": "index.html",
+      "title": "Eventore — Multi-stream messaging console",
+      "description": "Unified open-source console for Kafka, MQTT, RabbitMQ, Pulsar, JMS, Kinesis, GCP Pub/Sub, and Azure Service Bus. Live streaming, inspection, Helm on Kubernetes.",
+      "keywords": "kafka console, mqtt broker ui, multi-protocol messaging, event streaming, kubernetes helm, rabbitmq admin, pulsar tools",
+      "ogType": "website",
+      "jsonLd": "home"
+    },
+    {
+      "file": "guide/index.html",
+      "path": "guide/index.html",
+      "title": "Product guide — Eventore",
+      "description": "Eventore documentation hub: deploy, configure connections, stream live messages, inspect brokers, and run on Kubernetes with Helm.",
+      "keywords": "eventore documentation, messaging console guide, kafka deployment",
+      "ogType": "website"
+    },
+    {
+      "file": "guide/getting-started.html",
+      "path": "guide/getting-started.html",
+      "title": "Getting started — Eventore",
+      "description": "Install Eventore locally or on Kubernetes, create your first broker connection, and start a live message stream in about five minutes.",
+      "keywords": "eventore install, kafka quick start, messaging console tutorial",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/architecture.html",
+      "path": "guide/architecture.html",
+      "title": "Architecture — Eventore",
+      "description": "How Eventore splits control plane and data plane, modular Spring Boot providers, React UI, WebSocket streaming, and OpenAPI APIs.",
+      "keywords": "eventore architecture, control plane data plane, spring boot streaming",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/control-data-plane.html",
+      "path": "guide/control-data-plane.html",
+      "title": "Control & data plane — Eventore",
+      "description": "Learn how Eventore registers stream providers on the control plane while the data plane handles broker connections, publish, and inspect.",
+      "keywords": "control plane, stream provider registration, eventore data plane",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/mcp.html",
+      "path": "guide/mcp.html",
+      "title": "MCP for AI agents — Eventore",
+      "description": "Use the optional Eventore MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents.",
+      "keywords": "model context protocol, mcp kafka, ai agent messaging, eventore mcp",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/configuration.html",
+      "path": "guide/configuration.html",
+      "title": "Configuration — Eventore",
+      "description": "Configure Eventore with application.yml, environment variables, Helm values, Maven profiles, and ADMIN, DEV, or READONLY modes.",
+      "keywords": "eventore configuration, helm values, deployment modes readonly",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/connections.html",
+      "path": "guide/connections.html",
+      "title": "Connections — Eventore",
+      "description": "Create and test broker connection profiles in Eventore with cloud presets for MSK, Azure Event Hubs, GCP Pub/Sub, and secure credentials.",
+      "keywords": "kafka connection profile, msk preset, broker credentials",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/stream-platforms.html",
+      "path": "guide/stream-platforms.html",
+      "title": "Stream platforms — Eventore",
+      "description": "Supported wire protocols and cloud presets in Eventore: Kafka, MQTT, RabbitMQ, Pulsar, JMS, Kinesis, Pub/Sub, and Azure Service Bus.",
+      "keywords": "kafka mqtt rabbitmq pulsar, aws kinesis console, azure service bus ui",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/streaming.html",
+      "path": "guide/streaming.html",
+      "title": "Streaming & live view — Eventore",
+      "description": "Multi-topic WebSocket live view in Eventore with regex filters, timed capture windows, and JSON, CSV, or NDJSON export.",
+      "keywords": "kafka live stream ui, websocket message viewer, event stream export",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/inspection.html",
+      "path": "guide/inspection.html",
+      "title": "Inspection — Eventore",
+      "description": "Browse topics and queues, consumer groups, lag, and message search across every stream protocol registered in Eventore.",
+      "keywords": "kafka consumer lag ui, message search, queue inspection",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/kafka-admin.html",
+      "path": "guide/kafka-admin.html",
+      "title": "Kafka admin — Eventore",
+      "description": "Manage Kafka topics, ACLs, produce with headers, and cluster operations from Eventore when the Kafka provider is enabled in ADMIN mode.",
+      "keywords": "kafka topic admin ui, kafka acl management, produce with headers",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/deployment.html",
+      "path": "guide/deployment.html",
+      "title": "Deployment — Eventore",
+      "description": "Deploy Eventore with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod.",
+      "keywords": "eventore helm chart, ghcr kubernetes, kafka kinesis slim image",
+      "ogType": "article"
+    }
+  ]
+}

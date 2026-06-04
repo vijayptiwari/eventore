@@ -52,9 +52,18 @@ Under **Pages → Custom domain**, add your domain and configure DNS per GitHub�
 After doc changes:
 
 ```powershell
+# Optional locally — CI also runs this before deploy
+node docs/scripts/inject-seo.mjs
+
 git add docs/
 git commit -m "Update documentation"
 git push
 ```
 
 Pages redeploys automatically on push to `main`.
+
+## SEO checklist (one-time)
+
+1. [Google Search Console](https://search.google.com/search-console) → add `https://vijayptiwari.github.io/eventore/`
+2. Submit sitemap: `https://vijayptiwari.github.io/eventore/sitemap.xml`
+3. Test a URL with [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) after deploy

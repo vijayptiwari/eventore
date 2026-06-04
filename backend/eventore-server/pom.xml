@@ -208,6 +208,32 @@
 
             </dependencies>
 
+            <build>
+
+                <plugins>
+
+                    <plugin>
+
+                        <groupId>org.apache.maven.plugins</groupId>
+
+                        <artifactId>maven-compiler-plugin</artifactId>
+
+                        <configuration>
+
+                            <excludes>
+
+                                <exclude>**/KinesisAdminApiDelegateImpl.java</exclude>
+
+                            </excludes>
+
+                        </configuration>
+
+                    </plugin>
+
+                </plugins>
+
+            </build>
+
         </profile>
 
         <profile>
@@ -225,6 +251,34 @@
                 </dependency>
 
             </dependencies>
+
+            <build>
+
+                <plugins>
+
+                    <plugin>
+
+                        <groupId>org.apache.maven.plugins</groupId>
+
+                        <artifactId>maven-compiler-plugin</artifactId>
+
+                        <configuration>
+
+                            <excludes>
+
+                                <exclude>**/KafkaAdminApiDelegateImpl.java</exclude>
+
+                                <exclude>**/KinesisAdminApiDelegateImpl.java</exclude>
+
+                            </excludes>
+
+                        </configuration>
+
+                    </plugin>
+
+                </plugins>
+
+            </build>
 
         </profile>
 
@@ -244,6 +298,34 @@
 
             </dependencies>
 
+            <build>
+
+                <plugins>
+
+                    <plugin>
+
+                        <groupId>org.apache.maven.plugins</groupId>
+
+                        <artifactId>maven-compiler-plugin</artifactId>
+
+                        <configuration>
+
+                            <excludes>
+
+                                <exclude>**/KafkaAdminApiDelegateImpl.java</exclude>
+
+                                <exclude>**/KinesisAdminApiDelegateImpl.java</exclude>
+
+                            </excludes>
+
+                        </configuration>
+
+                    </plugin>
+
+                </plugins>
+
+            </build>
+
         </profile>
 
         <profile>
@@ -261,6 +343,34 @@
                 </dependency>
 
             </dependencies>
+
+            <build>
+
+                <plugins>
+
+                    <plugin>
+
+                        <groupId>org.apache.maven.plugins</groupId>
+
+                        <artifactId>maven-compiler-plugin</artifactId>
+
+                        <configuration>
+
+                            <excludes>
+
+                                <exclude>**/KafkaAdminApiDelegateImpl.java</exclude>
+
+                                <exclude>**/KinesisAdminApiDelegateImpl.java</exclude>
+
+                            </excludes>
+
+                        </configuration>
+
+                    </plugin>
+
+                </plugins>
+
+            </build>
 
         </profile>
 
@@ -280,6 +390,34 @@
 
             </dependencies>
 
+            <build>
+
+                <plugins>
+
+                    <plugin>
+
+                        <groupId>org.apache.maven.plugins</groupId>
+
+                        <artifactId>maven-compiler-plugin</artifactId>
+
+                        <configuration>
+
+                            <excludes>
+
+                                <exclude>**/KafkaAdminApiDelegateImpl.java</exclude>
+
+                                <exclude>**/KinesisAdminApiDelegateImpl.java</exclude>
+
+                            </excludes>
+
+                        </configuration>
+
+                    </plugin>
+
+                </plugins>
+
+            </build>
+
         </profile>
 
         <profile>
@@ -297,6 +435,32 @@
                 </dependency>
 
             </dependencies>
+
+            <build>
+
+                <plugins>
+
+                    <plugin>
+
+                        <groupId>org.apache.maven.plugins</groupId>
+
+                        <artifactId>maven-compiler-plugin</artifactId>
+
+                        <configuration>
+
+                            <excludes>
+
+                                <exclude>**/KafkaAdminApiDelegateImpl.java</exclude>
+
+                            </excludes>
+
+                        </configuration>
+
+                    </plugin>
+
+                </plugins>
+
+            </build>
 
         </profile>
 
@@ -316,6 +480,34 @@
 
             </dependencies>
 
+            <build>
+
+                <plugins>
+
+                    <plugin>
+
+                        <groupId>org.apache.maven.plugins</groupId>
+
+                        <artifactId>maven-compiler-plugin</artifactId>
+
+                        <configuration>
+
+                            <excludes>
+
+                                <exclude>**/KafkaAdminApiDelegateImpl.java</exclude>
+
+                                <exclude>**/KinesisAdminApiDelegateImpl.java</exclude>
+
+                            </excludes>
+
+                        </configuration>
+
+                    </plugin>
+
+                </plugins>
+
+            </build>
+
         </profile>
 
         <profile>
@@ -333,6 +525,34 @@
                 </dependency>
 
             </dependencies>
+
+            <build>
+
+                <plugins>
+
+                    <plugin>
+
+                        <groupId>org.apache.maven.plugins</groupId>
+
+                        <artifactId>maven-compiler-plugin</artifactId>
+
+                        <configuration>
+
+                            <excludes>
+
+                                <exclude>**/KafkaAdminApiDelegateImpl.java</exclude>
+
+                                <exclude>**/KinesisAdminApiDelegateImpl.java</exclude>
+
+                            </excludes>
+
+                        </configuration>
+
+                    </plugin>
+
+                </plugins>
+
+            </build>
 
         </profile>
 

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Eventore  One console for every stream">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#134e4a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1050" cy="120" r="180" fill="#0d9488" opacity="0.25"/>
+  <circle cx="150" cy="520" r="220" fill="#4f46e5" opacity="0.2"/>
+  <text x="80" y="200" fill="#ccfbf1" font-family="Segoe UI, system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="0.08em">EVENTORE</text>
+  <text x="80" y="310" fill="#ffffff" font-family="Segoe UI, system-ui, sans-serif" font-size="56" font-weight="700">One console for every stream</text>
+  <text x="80" y="390" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="28">Kafka · MQTT · RabbitMQ · Pulsar · Kinesis · GCP · Azure</text>
+  <text x="80" y="540" fill="#5eead4" font-family="Segoe UI, system-ui, sans-serif" font-size="24">vijayptiwari.github.io/eventore</text>
+</svg>

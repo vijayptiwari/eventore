@@ -31,6 +31,9 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Inject SEO metadata
+        run: node docs/scripts/inject-seo.mjs
+
       - name: Upload docs artifact
         uses: actions/upload-pages-artifact@v3
         with:

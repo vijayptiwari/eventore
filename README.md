@@ -1,8 +1,8 @@
 # Eventore — Multi-Protocol Streaming Console
 
-Eventore connects to **Kafka**, **MQTT**, **JMS** (Artemis), **Pulsar**, **RabbitMQ**, **AWS Kinesis**, **GCP Pub/Sub**, and **Azure Service Bus**, with cloud presets (MSK, Event Hubs, OCP Strimzi, etc.). A modular backend (`eventore-server` + one Maven module per stream) exposes **OpenAPI 3** and a **React** UI with realtime streaming. Deploy to Kubernetes with Helm in **Admin**, **Dev**, or **ReadOnly** mode.
+**Open-source unified console** for **Kafka**, **MQTT**, **JMS** (Artemis), **Pulsar**, **RabbitMQ**, **AWS Kinesis**, **GCP Pub/Sub**, and **Azure Service Bus** — live message streaming, broker inspection, and admin in one UI. Cloud presets cover MSK, Azure Event Hubs, IoT Core, OCP Strimzi, and more. Modular Spring Boot backend (`eventore-server` + per-protocol providers), **OpenAPI 3**, **React** frontend, optional **MCP** for AI agents. Deploy on **Kubernetes** with Helm in **Admin**, **Dev**, or **ReadOnly** mode.
 
-**Product documentation:** [https://vijayptiwari.github.io/eventore/](https://vijayptiwari.github.io/eventore/) (GitHub Pages from [`docs/`](docs/)). Repo: [github.com/vijayptiwari/eventore](https://github.com/vijayptiwari/eventore). Local preview: <code>npx serve docs</code>.
+**Product documentation:** [vijayptiwari.github.io/eventore](https://vijayptiwari.github.io/eventore/) (GitHub Pages from [`docs/`](docs/), with sitemap and social previews). Repo: [github.com/vijayptiwari/eventore](https://github.com/vijayptiwari/eventore). Local preview: <code>npx serve docs</code>.
 
 ## Architecture
 

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vijayptiwari.github.io/eventore/sitemap.xml
