@@ -88,6 +88,7 @@ a:hover { color: var(--accent); }
   min-height: var(--header-h);
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 1.5rem;
 }
 
@@ -96,6 +97,7 @@ a:hover { color: var(--accent); }
   align-items: center;
   height: 44px;
   flex-shrink: 0;
+  margin-right: auto;
   text-decoration: none;
 }
 .site-logo img, .site-logo svg {
@@ -108,6 +110,7 @@ a:hover { color: var(--accent); }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.125rem 0.25rem;
   margin-left: auto;
 }
@@ -243,6 +246,7 @@ a:hover { color: var(--accent); }
 .hero-inner {
   position: relative;
   width: 100%;
+  max-width: var(--layout-max);
   margin: 0 auto;
   padding-inline: var(--gutter);
 }
@@ -269,11 +273,13 @@ a:hover { color: var(--accent); }
   box-shadow: 0 0 12px var(--accent-glow);
 }
 
-.hero-logo {
-  display: block;
-  width: min(300px, 80vw);
-  height: auto;
-  margin-bottom: 1.5rem;
+.hero-eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5eead4;
 }
 
 .hero h1 {
