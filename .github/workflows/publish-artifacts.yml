@@ -70,22 +70,22 @@ jobs:
         include:
           - name: backend
             file: docker/Dockerfile.backend
-            image: ${{ env.BACKEND_IMAGE }}
+            image: ghcr.io/${{ github.repository_owner }}/eventore-backend
             maven_profile: providers-all
             extra_tag: ""
           - name: backend-kafka-kinesis
             file: docker/Dockerfile.backend
-            image: ${{ env.BACKEND_IMAGE }}
+            image: ghcr.io/${{ github.repository_owner }}/eventore-backend
             maven_profile: kafka-kinesis
             extra_tag: kafka-kinesis
           - name: frontend
             file: docker/Dockerfile.frontend
-            image: ${{ env.FRONTEND_IMAGE }}
+            image: ghcr.io/${{ github.repository_owner }}/eventore-frontend
             maven_profile: ""
             extra_tag: ""
           - name: mcp
             file: docker/Dockerfile.mcp
-            image: ${{ env.MCP_IMAGE }}
+            image: ghcr.io/${{ github.repository_owner }}/eventore-mcp
             maven_profile: ""
             extra_tag: ""
     steps:
@@ -108,13 +108,17 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=${{ matrix.extra_tag }},enable=${{ matrix.extra_tag != '' }}
+      - name: Set backend Maven profile build-arg
+        id: backend_build_args
+        if: matrix.maven_profile != ''
+        run: echo "args=EVENTORE_MAVEN_PROFILES=${{ matrix.maven_profile }}" >> "$GITHUB_OUTPUT"
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ${{ matrix.file }}
           push: true
-          build-args: ${{ matrix.maven_profile != '' && format('EVENTORE_MAVEN_PROFILES={0}', matrix.maven_profile) || '' }}
+          build-args: ${{ steps.backend_build_args.outputs.args }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.name }}
@@ -140,7 +144,7 @@ jobs:
           helm package deploy/helm/eventore -d .helm-packages
           helm package deploy/helm/eventore-mcp -d .helm-packages
           for chart in .helm-packages/*.tgz; do
-            helm push "$chart" "${{ env.HELM_OCI }}"
+            helm push "$chart" "oci://ghcr.io/${{ github.repository_owner }}/charts"
           done
       - uses: actions/upload-artifact@v4
         with:
