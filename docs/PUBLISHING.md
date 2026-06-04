@@ -67,3 +67,4 @@ Pages redeploys automatically on push to `main`.
 1. [Google Search Console](https://search.google.com/search-console) → add `https://vijayptiwari.github.io/eventore/`
 2. Submit sitemap: `https://vijayptiwari.github.io/eventore/sitemap.xml`
 3. Test a URL with [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) after deploy
+4. [Bing Webmaster Tools](https://www.bing.com/webmasters) — verification meta tag lives in `docs/seo/site.json` (`siteVerification`) and `docs/index.html`; keep it after deploy

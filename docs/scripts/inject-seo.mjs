@@ -60,10 +60,22 @@ function homeJsonLd() {
 function buildSeoBlock(page) {
   const canonical = absUrl(page.path);
   const image = absUrl(page.image || site.defaultOgImage);
-  const lines = [
+  const lines = [];
+  if (page.jsonLd === 'home' && Array.isArray(site.siteVerification)) {
+    for (const tag of site.siteVerification) {
+      lines.push(
+        '  <meta name="' +
+          escapeHtml(tag.name) +
+          '" content="' +
+          escapeHtml(tag.content) +
+          '"/>'
+      );
+    }
+  }
+  lines.push(
     '  <meta name="description" content="' + escapeHtml(page.description) + '"/>',
-    '  <meta name="robots" content="index, follow, max-image-preview:large"/>',
-  ];
+    '  <meta name="robots" content="index, follow, max-image-preview:large"/>'
+  );
   if (page.keywords) {
     lines.push('  <meta name="keywords" content="' + escapeHtml(page.keywords) + '"/>');
   }

@@ -4,5 +4,8 @@
   "siteName": "Eventore",
   "defaultOgImage": "assets/og-card.svg",
   "twitterSite": "@vijayptiwari",
-  "repoUrl": "https://github.com/vijayptiwari/eventore"
+  "repoUrl": "https://github.com/vijayptiwari/eventore",
+  "siteVerification": [
+    { "name": "msvalidate.01", "content": "E3DBF2AE0CCC84EA769605967F4C8D65" }
+  ]
 }
