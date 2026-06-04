@@ -69,7 +69,11 @@ jobs:
       - id: set
         run: |
           INCLUDE=$(jq -c '.' deploy/ci-backend-images.json)
-          echo "include=$INCLUDE" >> "$GITHUB_OUTPUT"
+          {
+            echo 'include<<MATRIX_EOF'
+            echo "$INCLUDE"
+            echo 'MATRIX_EOF'
+          } >> "$GITHUB_OUTPUT"
 
   publish-backend-images:
     needs: [build-backend, helm-lint, prepare-backend-matrix]
@@ -119,10 +123,10 @@ jobs:
         include:
           - name: frontend
             file: docker/Dockerfile.frontend
-            image: ${{ env.FRONTEND_IMAGE }}
+            image: ghcr.io/${{ github.repository_owner }}/eventore-frontend
           - name: mcp
             file: docker/Dockerfile.mcp
-            image: ${{ env.MCP_IMAGE }}
+            image: ghcr.io/${{ github.repository_owner }}/eventore-mcp
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
