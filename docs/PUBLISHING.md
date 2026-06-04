@@ -11,43 +11,31 @@ The repo is ready for GitHub Pages from the **`/docs`** folder (`docs/.nojekyll`
 
 ## 2. Push from your machine
 
-Replace `YOUR_GITHUB_USERNAME` with your GitHub username:
+Repository: **https://github.com/vijayptiwari/eventore**
 
 ```powershell
 cd "C:\Users\Vijay Prakash Tiwari\OneDrive\Documents\Codebase\eventore"
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/eventore.git
-git push -u origin main
-```
-
-Use SSH if you prefer:
-
-```powershell
-git remote add origin git@github.com:YOUR_GITHUB_USERNAME/eventore.git
-git push -u origin main
-```
-
-If `origin` already exists, update the URL:
-
-```powershell
-git remote set-url origin https://github.com/YOUR_GITHUB_USERNAME/eventore.git
+git remote add origin https://github.com/vijayptiwari/eventore.git
 git push -u origin main
 ```
 
 ## 3. Enable GitHub Pages
 
-1. On GitHub: **Repository → Settings → Pages**
-2. **Build and deployment → Source:** Deploy from a branch
-3. **Branch:** `main`
-4. **Folder:** `/docs`
-5. Click **Save**
+**Option A — GitHub Actions (recommended, already in repo)**
 
-After one or two minutes, the site is live at:
+1. **Settings → Pages → Build and deployment → Source:** **GitHub Actions**
+2. Push to `main` runs `.github/workflows/docs-pages.yml` automatically
+
+**Option B — Deploy from branch**
+
+1. **Settings → Pages → Source:** Deploy from a branch
+2. **Branch:** `main`, **Folder:** `/docs`
+
+Live site (after deploy):
 
 ```text
-https://YOUR_GITHUB_USERNAME.github.io/eventore/
+https://vijayptiwari.github.io/eventore/
 ```
-
-(If the repo name is not `eventore`, use that name in the URL instead.)
 
 ## 4. Verify
 
