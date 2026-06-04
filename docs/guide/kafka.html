@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Kafka — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Kafka and Kafka-compatible clouds in Eventore: connect, inspect consumer lag, live-stream, administer topics, ACLs, and produce with headers."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="kafka console, msk event hubs, kafka topic admin, consumer lag ui"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/kafka.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="Kafka — Eventore"/>
+  <meta property="og:description" content="Kafka and Kafka-compatible clouds in Eventore: connect, inspect consumer lag, live-stream, administer topics, ACLs, and produce with headers."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/kafka.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Kafka — Eventore"/>
+  <meta name="twitter:description" content="Kafka and Kafka-compatible clouds in Eventore: connect, inspect consumer lag, live-stream, administer topics, ACLs, and produce with headers."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
+    <main>
+      <h1 class="page-title">Kafka</h1>
+      <p class="page-subtitle">Apache Kafka and Kafka-compatible clouds — connect, inspect, live-stream, and administer topics and consumer groups.</p>
+      <p>Wire protocol: <code>KAFKA</code>. Create a profile in <a href="connections.html">Connections</a> or use a cloud preset (MSK, Event Hubs, Managed Kafka, Strimzi).</p>
+
+      <h2 id="connect">Connect</h2>
+      <ul>
+        <li><strong>Presets</strong> — AWS MSK, Azure Event Hubs (Kafka), GCP Managed Kafka, OCP AMQ Streams / Strimzi, Confluent Cloud</li>
+        <li><strong>Endpoints</strong> — bootstrap brokers; TLS and SASL applied from preset or custom</li>
+        <li><strong>Test</strong> — validate metadata reachability before saving</li>
+      </ul>
+      <pre><code>curl -X POST http://localhost:8080/api/v1/connections \
+  -H "Content-Type: application/json" \
+  -d '{"name":"msk-dev","protocol":"KAFKA","brokerUrl":"b-1.example.kafka.amazonaws.com:9096"}'</code></pre>
+
+      <h2 id="browse">Browse &amp; inspect</h2>
+      <ul>
+        <li>Topic list with partition count and replication factor</li>
+        <li>Consumer groups and per-partition lag</li>
+        <li>Message search by offset, timestamp, or key filter</li>
+        <li>Add topics to the <a href="streaming.html">live workspace</a></li>
+      </ul>
+      <pre><code>GET /api/v1/connections/{id}/inspect/topics
+GET /api/v1/connections/{id}/inspect/consumer-groups
+GET /api/v1/connections/{id}/inspect/topics/{topic}/messages?limit=50</code></pre>
+
+      <h2 id="live">Live streaming</h2>
+      <p>Subscribe to multiple Kafka topics over WebSocket with header/body regex filters, timed capture windows, and JSON, CSV, or NDJSON export. See <a href="streaming.html">Streaming &amp; live view</a>.</p>
+
+      <h2 id="admin">Administration</h2>
+      <div class="callout callout-warn">
+        Requires <code>deployment-mode: ADMIN</code>, Kafka on the classpath, and <code>KAFKA</code> in <code>adminProtocols</code>.
+      </div>
+      <ul>
+        <li>Create, alter, and delete topics (partitions, replication, retention)</li>
+        <li>Produce messages with headers</li>
+        <li>View and manage ACLs when the cluster supports them</li>
+        <li>List consumer groups, inspect lag, reset offsets (where permitted)</li>
+      </ul>
+      <pre><code>POST /api/v1/connections/{id}/kafka/topics
+POST /api/v1/connections/{id}/kafka/topics/{topic}/produce
+GET  /api/v1/connections/{id}/kafka/acls</code></pre>
+      <p>OpenAPI: <code>openapi/streams/kafka-api.yaml</code> (Swagger when the Kafka provider is active).</p>
+
+      <h2 id="credentials">Credentials</h2>
+      <ul>
+        <li>SASL/SCRAM, PLAIN, or IAM (MSK) from preset defaults</li>
+        <li>Mutual TLS and truststore configuration per connection</li>
+        <li>Username/password or IAM role via environment / connection properties</li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

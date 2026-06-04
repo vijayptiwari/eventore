@@ -11,6 +11,7 @@ export default function DashboardPage() {
   return (
     <div>
       <h1>Dashboard</h1>
+      <div className="dashboard-grid">
       <div className="card">
         <p>
           Deployment mode: <span className="tag">{config?.deploymentMode}</span>
@@ -71,6 +72,7 @@ export default function DashboardPage() {
           <li>Browse topics or queues and add multiple streams to the side panel.</li>
           <li>Streams persist in cookies — close the tab and reopen to restore them.</li>
         </ol>
+      </div>
       </div>
     </div>
   );

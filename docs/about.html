@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>About — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="About Eventore, creator Vijay Prakash Tiwari, and how to contribute to the open-source multi-stream messaging console."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="eventore about, contribute open source, messaging console"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/about.html"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="About — Eventore"/>
+  <meta property="og:description" content="About Eventore, creator Vijay Prakash Tiwari, and how to contribute to the open-source multi-stream messaging console."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/about.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="About — Eventore"/>
+  <meta name="twitter:description" content="About Eventore, creator Vijay Prakash Tiwari, and how to contribute to the open-source multi-stream messaging console."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <!-- /eventore-seo -->
+  <script src="js/base-path.js"></script>
+  <link rel="icon" href="assets/logo-mark.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="css/site.css"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+
+  <main class="about-page">
+    <div class="about-page-inner">
+      <header class="about-page-header">
+        <h1 class="page-title">About</h1>
+        <p class="page-subtitle">The project, the person behind it, and how you can help.</p>
+      </header>
+
+      <div class="about-tabs" role="tablist" aria-label="About sections">
+        <button type="button" class="about-tab active" role="tab" data-about-tab="project" aria-selected="true" aria-controls="about-panel-project" id="tab-project">About</button>
+        <button type="button" class="about-tab" role="tab" data-about-tab="developer" aria-selected="false" aria-controls="about-panel-developer" id="tab-developer">About the developer</button>
+        <button type="button" class="about-tab" role="tab" data-about-tab="contribute" aria-selected="false" aria-controls="about-panel-contribute" id="tab-contribute">How to contribute</button>
+      </div>
+
+      <section class="about-panel" data-about-panel="project" id="about-panel-project" role="tabpanel" aria-labelledby="tab-project">
+        <h2 class="visually-hidden">About Eventore</h2>
+        <p>
+          <strong>Eventore</strong> is an open-source, multi-protocol messaging console. It gives operators and engineers
+          one place to connect, browse, live-stream, inspect, and administer Kafka, Pulsar, RabbitMQ, MQTT, JMS,
+          AWS Kinesis, Google Cloud Pub/Sub, and Azure Service Bus — with slim deployments that include only the
+          protocols you need.
+        </p>
+        <p>
+          The product is built around a modular control plane and data plane: stream providers register at runtime,
+          and the UI reflects what your cluster actually exposes. That design supports local debugging, shared
+          workspaces, and production Kubernetes installs with Helm and GHCR images.
+        </p>
+        <ul>
+          <li>License: <strong>Apache-2.0</strong></li>
+          <li>Source: <a href="https://github.com/vijayptiwari/eventore" target="_blank" rel="noopener noreferrer">github.com/vijayptiwari/eventore</a></li>
+          <li>Product documentation: <a href="guide/index.html">Open the product guide</a></li>
+        </ul>
+        <div class="btn-group">
+          <a class="btn btn-primary" href="guide/getting-started.html">Get started</a>
+          <a class="btn btn-outline" href="index.html">Back to home</a>
+        </div>
+      </section>
+
+      <section class="about-panel about-panel--hidden" data-about-panel="developer" id="about-panel-developer" role="tabpanel" aria-labelledby="tab-developer" hidden>
+        <h2 class="visually-hidden">About the developer</h2>
+        <div class="about-developer-card">
+          <div class="about-developer-avatar" aria-hidden="true">VP</div>
+          <div class="about-developer-body">
+            <h3>Vijay Prakash Tiwari</h3>
+            <p class="about-developer-role">Creator &amp; maintainer of Eventore</p>
+            <p>
+              Vijay builds tools that make event streaming and messaging infrastructure easier to run and reason about.
+              Eventore started from the need for a single, honest console across the brokers teams already operate —
+              without juggling separate UIs per protocol or hiding capabilities behind opaque wrappers.
+            </p>
+            <p>
+              He works across the full stack of the project: Spring Boot providers and APIs, the React console,
+              Helm and CI pipelines, documentation, and the optional MCP server for AI-assisted operations.
+            </p>
+            <ul class="about-developer-links">
+              <li><a href="https://github.com/vijayptiwari" target="_blank" rel="noopener noreferrer">GitHub — @vijayptiwari</a></li>
+              <li><a href="https://github.com/vijayptiwari/eventore" target="_blank" rel="noopener noreferrer">Eventore repository</a></li>
+              <li><a href="https://twitter.com/vijayptiwari" target="_blank" rel="noopener noreferrer">X — @vijayptiwari</a></li>
+            </ul>
+          </div>
+        </div>
+        <p class="about-note text-muted">
+          Want to extend the codebase? See <a href="guide/local-development.html">Local development</a> in the product guide
+          for repository layout and a working dev stack.
+        </p>
+      </section>
+
+      <section class="about-panel about-panel--hidden" data-about-panel="contribute" id="about-panel-contribute" role="tabpanel" aria-labelledby="tab-contribute" hidden>
+        <h2 class="visually-hidden">How to contribute</h2>
+        <p class="page-subtitle" style="margin-top:0">How to report issues, propose changes, and land pull requests that match the project structure.</p>
+
+        <p>Thank you for helping improve Eventore. Set up the <a href="guide/local-development.html#local">local stack</a> in the product guide, then follow the workflow below.</p>
+
+        <h2 id="ways">Ways to contribute</h2>
+        <ul class="check">
+          <li><strong>Bug reports</strong> — reproducible steps, logs, and protocol or cloud preset used</li>
+          <li><strong>Documentation</strong> — <code>docs/</code> product guides and diagrams (run SEO inject before PR)</li>
+          <li><strong>UI</strong> — React components and live-stream workspace in <code>frontend/</code></li>
+          <li><strong>API &amp; providers</strong> — Spring modules under <code>eventore-provider-*</code></li>
+          <li><strong>Helm &amp; CI</strong> — <code>deploy/helm/</code>, Dockerfiles, GitHub Actions workflows</li>
+          <li><strong>MCP tools</strong> — <code>mcp/eventore-mcp</code> for agent integrations</li>
+        </ul>
+
+        <h2 id="before-pr">Before you open a PR</h2>
+        <ol class="steps">
+          <li>Fork <a href="https://github.com/vijayptiwari/eventore" target="_blank" rel="noopener noreferrer">github.com/vijayptiwari/eventore</a> and create a branch from <code>main</code>.</li>
+          <li>Set up the <a href="guide/local-development.html#local">local stack</a> and confirm your change against at least one broker (Docker Compose brokers are enough for most work).</li>
+          <li>Run relevant checks:
+            <ul>
+              <li>Backend: <code>mvn -DskipTests package</code> (or full tests if you touched core logic)</li>
+              <li>Frontend: <code>npm run build</code> in <code>frontend/</code></li>
+              <li>Docs: <code>node docs/scripts/inject-seo.mjs</code> when you change HTML under <code>docs/</code></li>
+            </ul>
+          </li>
+          <li>Keep changes focused — one feature or fix per pull request when possible.</li>
+        </ol>
+
+        <h2 id="pull-requests">Pull request guidelines</h2>
+        <ul>
+          <li>Describe <strong>what</strong> changed and <strong>why</strong> in the PR description.</li>
+          <li>Note which protocols or deployment modes you tested (e.g. Kafka + ADMIN, READONLY smoke test).</li>
+          <li>Include screenshots for UI changes and sample API requests for backend behavior.</li>
+          <li>Update user-facing docs in <code>docs/guide/</code> when behavior or configuration changes.</li>
+          <li>Do not commit secrets, connection strings, or real cluster credentials.</li>
+        </ul>
+
+        <h2 id="new-provider">Adding a stream provider</h2>
+        <p>To add or extend a protocol integration:</p>
+        <ol class="steps">
+          <li>Create <code>eventore-provider-&lt;id&gt;/</code> with connector and inspector packages implementing <code>StreamProvider</code>.</li>
+          <li>Register <code>*StreamProviderAutoConfiguration</code> in <code>META-INF/spring/...AutoConfiguration.imports</code>.</li>
+          <li>Add the module to <code>eventore-server/pom.xml</code> and a Maven profile if it should be optional.</li>
+          <li>Extend <code>ProtocolType</code> in <code>eventore-core</code> and the OpenAPI contract under <code>openapi/</code>.</li>
+          <li>Regenerate API sources and implement delegates in <code>eventore-server</code>.</li>
+          <li>Add a product guide page <code>docs/guide/&lt;protocol&gt;.html</code>, sidebar entry in <code>docs/js/site.js</code>, and an entry in <code>docs/seo/pages.json</code>.</li>
+          <li>Document GHCR image tag in <code>deploy/ci-backend-images.json</code> if CI should publish a slim image.</li>
+        </ol>
+        <p>See <code>backend/README.md</code> § “Adding a new stream provider” for module-level detail.</p>
+
+        <h2 id="docs-contrib">Documentation contributions</h2>
+        <ul>
+          <li>Product copy lives in <code>docs/guide/*.html</code> — match existing tone and section structure.</li>
+          <li>About and contributor pages live at <code>docs/about.html</code> (not in the product guide sidebar).</li>
+          <li>Regenerate SEO blocks and sitemap: <code>node docs/scripts/inject-seo.mjs</code>.</li>
+        </ul>
+
+        <h2 id="conduct">Community standards</h2>
+        <p>Be respectful and constructive in issues and reviews. Security-sensitive findings should be reported privately to the maintainers when possible rather than in a public issue with exploit details.</p>
+
+        <h2 id="license">License</h2>
+        <p>Contributions are accepted under the project license (Apache-2.0). By submitting a pull request, you agree your work can be distributed under the same terms.</p>
+
+        <div class="callout callout-info">
+          <strong>Questions?</strong> Open a <a href="https://github.com/vijayptiwari/eventore/issues" target="_blank" rel="noopener noreferrer">GitHub issue</a> with the <code>question</code> label or describe your use case in the issue body.
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+  <script src="js/site.js"></script>
+  <script src="js/about-tabs.js"></script>
+</body>
+</html>

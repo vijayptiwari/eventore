@@ -46,22 +46,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/kafka.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/pulsar.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/rabbitmq.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/mqtt.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/jms.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/kinesis.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/gcp-pubsub.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/azure-service-bus.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://vijayptiwari.github.io/eventore/guide/streaming.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vijayptiwari.github.io/eventore/guide/inspection.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://vijayptiwari.github.io/eventore/guide/kafka-admin.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://vijayptiwari.github.io/eventore/guide/deployment.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/about.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/local-development.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

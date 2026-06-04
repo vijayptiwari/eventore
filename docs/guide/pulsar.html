@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pulsar — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Apache Pulsar in Eventore: tenants, namespaces, subscriptions, backlog inspection, and live streaming."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="pulsar console, pulsar topic browser"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/pulsar.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="Pulsar — Eventore"/>
+  <meta property="og:description" content="Apache Pulsar in Eventore: tenants, namespaces, subscriptions, backlog inspection, and live streaming."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/pulsar.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Pulsar — Eventore"/>
+  <meta name="twitter:description" content="Apache Pulsar in Eventore: tenants, namespaces, subscriptions, backlog inspection, and live streaming."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">Pulsar</h1>
+      <p class="page-subtitle">Apache Pulsar tenants, namespaces, topics, subscriptions, and backlog inspection.</p>
+      <p>Wire protocol: <code>PULSAR</code>. See <a href="connections.html">Connections</a>.</p>
+
+      <h2 id="connect">Connect</h2>
+      <ul>
+        <li>Service URL for broker or proxy (<code>pulsar://</code> or <code>pulsar+ssl://</code>)</li>
+        <li>Authentication token or TLS as required by the cluster</li>
+      </ul>
+
+      <h2 id="browse">Browse &amp; inspect</h2>
+      <ul>
+        <li>Topics and partitioned topics under tenants/namespaces</li>
+        <li>Subscriptions and backlog statistics where exposed by the broker</li>
+        <li>Reader-based message peek for troubleshooting</li>
+      </ul>
+
+      <h2 id="live">Live streaming</h2>
+      <p>Live view subscribes to Pulsar topics in the shared workspace. Filters and export behave like other protocols — <a href="streaming.html">Streaming &amp; live view</a>.</p>
+
+      <h2 id="admin">Administration</h2>
+      <p>Partial admin: namespace/topic operations supported where the provider implements them. Full cluster policy management may require Pulsar CLI or vendor tools.</p>
+
+      <h2 id="credentials">Credentials</h2>
+      <ul>
+        <li>JWT or TLS client certificates common on managed Pulsar</li>
+        <li>Store secrets in connection properties; never commit credentials to git</li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

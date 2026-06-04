@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Local development — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Eventore local development: monorepo layout, Java and React setup, Maven provider profiles, OpenAPI codegen, and docs preview."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="eventore development, spring boot kafka console, openapi codegen"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/local-development.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="Local development — Eventore"/>
+  <meta property="og:description" content="Eventore local development: monorepo layout, Java and React setup, Maven provider profiles, OpenAPI codegen, and docs preview."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/local-development.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Local development — Eventore"/>
+  <meta name="twitter:description" content="Eventore local development: monorepo layout, Java and React setup, Maven provider profiles, OpenAPI codegen, and docs preview."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+  window.__EVENTORE_BASE__ = docsRoot(path);
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
+    <main>
+      <h1 class="page-title">Local development</h1>
+      <p class="page-subtitle">Repository layout, local stack, build profiles, and where to change the UI, API, and stream providers.</p>
+
+      <p>Eventore is an open-source monorepo. Operators use the <a href="./getting-started.html">getting started</a> guide; this page is for engineers extending or debugging the product. To contribute, see <a href="../about.html#contribute">How to contribute</a>.</p>
+
+      <h2 id="stack">Technology stack</h2>
+      <table>
+        <thead><tr><th>Area</th><th>Stack</th></tr></thead>
+        <tbody>
+          <tr><td>Backend</td><td>Java 21, Spring Boot 3.3, modular Maven providers, OpenAPI 3, WebSocket + SSE</td></tr>
+          <tr><td>Frontend</td><td>Vite, React, TypeScript, nginx in cluster images</td></tr>
+          <tr><td>MCP (optional)</td><td>Node.js — <code>mcp/eventore-mcp</code></td></tr>
+          <tr><td>Deploy</td><td>Docker, Helm (OCI on GHCR), GitHub Actions for images and docs</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="layout">Repository layout</h2>
+      <pre><code>backend/          Spring Boot API and eventore-provider-* modules
+frontend/         React console
+docs/             Product site (GitHub Pages)
+openapi/          API contracts and codegen
+mcp/eventore-mcp/ Optional MCP server
+deploy/helm/      Kubernetes charts
+docker/           Dockerfiles and broker compose for local dev</code></pre>
+      <p>Deep dive: <a href="./architecture.html">Architecture</a> · <a href="./control-data-plane.html">Control &amp; data plane</a></p>
+
+      <h2 id="prerequisites">Prerequisites</h2>
+      <ul>
+        <li><strong>Java 21+</strong> and Maven 3.9+</li>
+        <li><strong>Node.js 20+</strong> for the frontend (and MCP if you work on it)</li>
+        <li><strong>Docker</strong> for test brokers and optional full stack</li>
+      </ul>
+
+      <h2 id="local">Local development</h2>
+      <h3>1. Test brokers</h3>
+      <pre><code>docker compose -f docker/docker-compose.brokers.yml up -d</code></pre>
+
+      <h3>2. Backend</h3>
+      <pre><code>cd backend
+mvn -pl eventore-server -am spring-boot:run -Dspring-boot.run.profiles=local</code></pre>
+      <ul>
+        <li>Swagger UI: <code>http://localhost:8080/swagger-ui.html</code></li>
+        <li>OpenAPI: <code>http://localhost:8080/openapi/eventore-api.yaml</code></li>
+        <li>Loaded providers: <code>GET /api/v1/providers</code></li>
+      </ul>
+      <p>Module layout and Maven profiles: <code>backend/README.md</code> in the repository.</p>
+
+      <h3>3. Frontend</h3>
+      <pre><code>cd frontend
+npm install
+npm run dev</code></pre>
+      <p>Open <code>http://localhost:5173</code> — the dev server proxies API calls to the backend.</p>
+
+      <h3>4. Full stack (optional)</h3>
+      <pre><code>docker compose -f docker/docker-compose.stack.yml up -d</code></pre>
+
+      <h2 id="profiles">Slim builds (providers)</h2>
+      <p>Ship only the protocols you need at <strong>build</strong> and <strong>runtime</strong>:</p>
+      <ul>
+        <li>Maven profile on <code>eventore-server</code> (e.g. <code>-Pkafka-kinesis -P!providers-all</code>)</li>
+        <li><code>eventore.enabled-protocols</code> or Helm <code>enabledProtocols</code></li>
+        <li>UI reads <code>GET /api/v1/config</code> → <code>supportedProtocols</code></li>
+      </ul>
+      <p>Published image tags mirror this — see <a href="./deployment.html#published-artifacts">Published artifacts</a>.</p>
+
+      <h2 id="openapi">OpenAPI and codegen</h2>
+      <p>Contracts live under <code>openapi/streams/</code>. After changing YAML:</p>
+      <pre><code>mvn -pl eventore-api-codegen generate-sources
+mvn -pl eventore-server -am package</code></pre>
+      <p>Delegates are implemented under <code>com.eventore.api.delegate</code> in <code>eventore-server</code>.</p>
+
+      <h2 id="docs-preview">Documentation site</h2>
+      <pre><code>npx serve docs -l 3456</code></pre>
+      <p>After editing <code>docs/seo/pages.json</code>, run <code>node docs/scripts/inject-seo.mjs</code> from the repo root.</p>
+
+      <h2 id="related">Related</h2>
+      <ul>
+        <li><a href="../about.html#contribute">How to contribute</a></li>
+        <li><a href="./configuration.html">Configuration</a></li>
+        <li><a href="./mcp.html">MCP for AI agents</a></li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

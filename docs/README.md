@@ -11,8 +11,12 @@ Product guide and diagrams in this folder for **GitHub Pages** (`Settings → Pa
 ## Local preview
 
 ```bash
-npx serve docs
+npx serve docs -l 3456
 ```
+
+Open **http://localhost:3456/index.html** (or `/` after `serve.json` loads) — not the folder listing. If you see “Index of docs”, restart the command above from the repo root.
+
+Prefer **`.html` URLs** (e.g. `http://localhost:3456/guide/pulsar.html`). Shortcuts `/kafka` and `/guide/pulsar` redirect via `serve.json` (local) and `404.html` (GitHub Pages). Guide pages load CSS/JS through an inline bootstrap so trailing-slash paths still style correctly when the host serves the file.
 
 ## Documentation map (all pages)
 
@@ -25,18 +29,27 @@ npx serve docs
 | Control & data plane | `guide/control-data-plane.html` |
 | Configuration | `guide/configuration.html` |
 | Connections | `guide/connections.html` |
-| Stream platforms | `guide/stream-platforms.html` |
-| Streaming & live view | `guide/streaming.html` |
-| Inspection | `guide/inspection.html` |
-| Kafka admin | `guide/kafka-admin.html` |
+| All platforms (comparison) | `guide/stream-platforms.html` |
+| **Kafka** | `guide/kafka.html` |
+| **Pulsar** | `guide/pulsar.html` |
+| **RabbitMQ** | `guide/rabbitmq.html` |
+| **MQTT** | `guide/mqtt.html` |
+| **JMS** | `guide/jms.html` |
+| **AWS Kinesis** | `guide/kinesis.html` |
+| **GCP Pub/Sub** | `guide/gcp-pubsub.html` |
+| **Azure Service Bus** | `guide/azure-service-bus.html` |
+| Live streaming | `guide/streaming.html` |
 | Deployment (GHCR images & OCI Helm) | `guide/deployment.html` (#published-artifacts) |
 | MCP for AI agents | `guide/mcp.html` |
+| Local development (contributors) | `guide/local-development.html` |
+
+**About** (not in the product guide): [`about.html`](about.html) — tabs for About Eventore, About the developer, and How to contribute. Linked from the home page and main nav.
 
 ## Path resolution
 
-- Guide pages use **document-relative** links (`deployment.html`, `../assets/...`).
-- `js/base-path.js` sets `__EVENTORE_BASE__` for the header/footer only (no `<base>` tag — that broke guide links).
-- Sidebar links use absolute paths via `js/site.js` so they work from any guide page.
+- Guide pages use an **inline bootstrap** (in each `guide/*.html` head) to set `__EVENTORE_BASE__` and load `js/base-path.js` + `js/guide-init.js` from the docs root (fixes `/guide/page/` where `../css` breaks).
+- `js/guide-init.js` injects `css/site.css` and `js/site.js` from that root.
+- Sidebar links use root-absolute paths via `js/site.js` so they work from any guide URL shape.
 
 ## SEO
 

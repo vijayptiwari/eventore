@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Eventore">
+  <defs>
+    <linearGradient id="em-bg" x1="8" y1="56" x2="56" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0c4a6e"/>
+      <stop offset="1" stop-color="#134e4a"/>
+    </linearGradient>
+    <linearGradient id="em-stream" x1="16" y1="48" x2="48" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2dd4bf"/>
+      <stop offset="0.5" stop-color="#14b8a6"/>
+      <stop offset="1" stop-color="#5eead4"/>
+    </linearGradient>
+    <filter id="em-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#em-bg)"/>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="none" stroke="#2dd4bf" stroke-opacity="0.35" stroke-width="1"/>
+  <g filter="url(#em-glow)">
+    <path d="M32 14v36" stroke="url(#em-stream)" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M18 28c0-8 6.2-14 14-14" fill="none" stroke="url(#em-stream)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M46 28c0-8-6.2-14-14-14" fill="none" stroke="url(#em-stream)" stroke-width="3" stroke-linecap="round" opacity="0.92"/>
+    <path d="M18 36c0 8 6.2 14 14 14" fill="none" stroke="#99f6e4" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+    <path d="M46 36c0 8-6.2 14-14 14" fill="none" stroke="#99f6e4" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+    <circle cx="32" cy="32" r="5.5" fill="#f0fdfa" stroke="#14b8a6" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="2" fill="#0d9488"/>
+  </g>
+</svg>

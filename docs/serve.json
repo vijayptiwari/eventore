@@ -1,0 +1,264 @@
+{
+  "cleanUrls": false,
+  "directoryListing": false,
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" }
+  ],
+  "redirects": [
+    {
+      "source": "/guide",
+      "destination": "/guide/index.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/getting-started",
+      "destination": "/guide/getting-started.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/getting-started/",
+      "destination": "/guide/getting-started.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/architecture",
+      "destination": "/guide/architecture.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/architecture/",
+      "destination": "/guide/architecture.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/control-data-plane",
+      "destination": "/guide/control-data-plane.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/control-data-plane/",
+      "destination": "/guide/control-data-plane.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/mcp",
+      "destination": "/guide/mcp.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/mcp/",
+      "destination": "/guide/mcp.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/configuration",
+      "destination": "/guide/configuration.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/configuration/",
+      "destination": "/guide/configuration.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/connections",
+      "destination": "/guide/connections.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/connections/",
+      "destination": "/guide/connections.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/stream-platforms",
+      "destination": "/guide/stream-platforms.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/stream-platforms/",
+      "destination": "/guide/stream-platforms.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/kafka",
+      "destination": "/guide/kafka.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/kafka/",
+      "destination": "/guide/kafka.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/pulsar",
+      "destination": "/guide/pulsar.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/pulsar/",
+      "destination": "/guide/pulsar.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/rabbitmq",
+      "destination": "/guide/rabbitmq.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/rabbitmq/",
+      "destination": "/guide/rabbitmq.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/mqtt",
+      "destination": "/guide/mqtt.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/mqtt/",
+      "destination": "/guide/mqtt.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/jms",
+      "destination": "/guide/jms.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/jms/",
+      "destination": "/guide/jms.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/kinesis",
+      "destination": "/guide/kinesis.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/kinesis/",
+      "destination": "/guide/kinesis.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/gcp-pubsub",
+      "destination": "/guide/gcp-pubsub.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/gcp-pubsub/",
+      "destination": "/guide/gcp-pubsub.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/azure-service-bus",
+      "destination": "/guide/azure-service-bus.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/azure-service-bus/",
+      "destination": "/guide/azure-service-bus.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/streaming",
+      "destination": "/guide/streaming.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/streaming/",
+      "destination": "/guide/streaming.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/deployment",
+      "destination": "/guide/deployment.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/deployment/",
+      "destination": "/guide/deployment.html",
+      "type": 301
+    },
+    {
+      "source": "/about",
+      "destination": "/about.html",
+      "type": 301
+    },
+    {
+      "source": "/about/",
+      "destination": "/about.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/local-development",
+      "destination": "/guide/local-development.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/local-development/",
+      "destination": "/guide/local-development.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/developers",
+      "destination": "/about.html#developer",
+      "type": 301
+    },
+    {
+      "source": "/guide/developers/",
+      "destination": "/about.html#developer",
+      "type": 301
+    },
+    {
+      "source": "/guide/contributing",
+      "destination": "/about.html#contribute",
+      "type": 301
+    },
+    {
+      "source": "/guide/contributing/",
+      "destination": "/about.html#contribute",
+      "type": 301
+    },
+    {
+      "source": "/kafka",
+      "destination": "/guide/kafka.html",
+      "type": 301
+    },
+    {
+      "source": "/pulsar",
+      "destination": "/guide/pulsar.html",
+      "type": 301
+    },
+    {
+      "source": "/rabbitmq",
+      "destination": "/guide/rabbitmq.html",
+      "type": 301
+    },
+    {
+      "source": "/mqtt",
+      "destination": "/guide/mqtt.html",
+      "type": 301
+    },
+    {
+      "source": "/jms",
+      "destination": "/guide/jms.html",
+      "type": 301
+    },
+    {
+      "source": "/kinesis",
+      "destination": "/guide/kinesis.html",
+      "type": 301
+    },
+    {
+      "source": "/gcp-pubsub",
+      "destination": "/guide/gcp-pubsub.html",
+      "type": 301
+    },
+    {
+      "source": "/azure-service-bus",
+      "destination": "/guide/azure-service-bus.html",
+      "type": 301
+    }
+  ]
+}

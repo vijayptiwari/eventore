@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Redirecting — Eventore</title>
+  <script>
+    (function () {
+      var path = location.pathname.replace(/\\/g, '/');
+      var root = path.match(/^(.*)\/guide(?:\/|$)/);
+      var base = root ? (root[1] ? root[1] : '') + '/' : '/';
+      if (path === base + 'guide' || path === base.replace(/\/$/, '') + '/guide') {
+        location.replace(base + 'guide/index.html' + location.search + location.hash);
+        return;
+      }
+      if (/\/guide\/developers\/?$/i.test(path)) {
+        location.replace(base + 'about.html#developer' + location.search + location.hash);
+        return;
+      }
+      if (/\/guide\/contributing\/?$/i.test(path)) {
+        location.replace(base + 'about.html#contribute' + location.search + location.hash);
+        return;
+      }
+      if (path === base + 'about' || path === base + 'about/') {
+        location.replace(base + 'about.html' + location.search + location.hash);
+        return;
+      }
+      var guide = path.match(/^(.*\/guide\/[a-z0-9-]+)\/?$/i);
+      if (guide) {
+        location.replace(guide[1] + '.html' + location.search + location.hash);
+        return;
+      }
+      var streams = ['kafka', 'pulsar', 'rabbitmq', 'mqtt', 'jms', 'kinesis', 'gcp-pubsub', 'azure-service-bus'];
+      for (var i = 0; i < streams.length; i++) {
+        var slug = streams[i];
+        if (path === base + slug || path === base + slug + '/') {
+          location.replace(base + 'guide/' + slug + '.html' + location.search + location.hash);
+          return;
+        }
+      }
+      location.replace(base + 'index.html');
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting… <a id="home" href="/">Home</a></p>
+  <script>
+    var m = location.pathname.match(/^(.*)\/guide/);
+    document.getElementById('home').href = ((m && m[1]) ? m[1] : '') + '/index.html';
+  </script>
+</body>
+</html>

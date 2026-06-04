@@ -23,9 +23,38 @@
   <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
   <!-- /eventore-seo -->
-  <script src="../js/base-path.js"></script>
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="../css/site.css"/>
 </head>
 <body>
   <header class="site-header" id="site-header"></header>
@@ -125,6 +154,5 @@ eventore-server        REST, WebSocket, security, delegates</code></pre>
     </main>
   </div>
   <footer class="site-footer" id="site-footer"></footer>
-  <script src="../js/site.js"></script>
 </body>
 </html>

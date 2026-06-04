@@ -44,13 +44,17 @@
       <div class="hero-cta">
         <a class="btn btn-primary" href="guide/getting-started.html">Get started</a>
         <a class="btn btn-secondary" href="guide/architecture.html">Architecture</a>
+        <a class="btn btn-outline" href="about.html">About</a>
       </div>
     </div>
   </section>
 
   <section class="section">
     <div class="section-inner">
-      <h2 style="text-align:center;margin-top:0">Built for operators and developers</h2>
+      <div class="section-heading">
+        <h2>Built for operators and developers</h2>
+        <p>From local debugging to production Kubernetes — one UI for every messaging backend you run.</p>
+      </div>
       <div class="feature-grid">
         <article class="feature-card">
           <h3>Multi-protocol</h3>
@@ -65,16 +69,12 @@
           <p>Multi-topic WebSocket streaming with header/body regex filters, timed windows, and JSON, CSV, or NDJSON export.</p>
         </article>
         <article class="feature-card">
-          <h3>Kafka depth</h3>
-          <p>Consumer groups, lag, message search, topic admin, ACLs, and produce with headers — when the Kafka module is enabled.</p>
+          <h3>Per-stream guides</h3>
+          <p>Dedicated docs for Kafka, Pulsar, RabbitMQ, MQTT, JMS, Kinesis, GCP Pub/Sub, and Azure Service Bus — connect, inspect, live view, and admin in one place per protocol.</p>
         </article>
         <article class="feature-card">
-          <h3>Deployment modes</h3>
-          <p>ADMIN, DEV, and READONLY profiles for production admin, safe development, and observability-only access.</p>
-        </article>
-        <article class="feature-card">
-          <h3>Kubernetes-ready</h3>
-          <p>Published images on GHCR and Helm charts on OCI — plus ingress, network policies, and slim Kafka+Kinesis builds.</p>
+          <h3>Production deployment</h3>
+          <p>ADMIN, DEV, and READONLY profiles; GHCR images, OCI Helm charts, ingress, network policies, and slim protocol builds.</p>
         </article>
         <article class="feature-card">
           <h3>MCP for agents</h3>
@@ -84,23 +84,26 @@
     </div>
   </section>
 
-  <section class="section section-alt">
+  <section class="section section-alt section-diagram">
     <div class="section-inner">
-      <figure class="diagram">
+      <figure class="diagram diagram--compact">
         <img src="assets/diagrams/architecture-overview.svg" alt="Eventore architecture: UI, server, providers, backends" width="920" height="540" loading="lazy" decoding="async"/>
         <figcaption class="diagram-caption">High-level platform architecture</figcaption>
       </figure>
     </div>
   </section>
 
-  <section class="section">
-    <div class="section-inner section-narrow" style="text-align:center">
-      <h2>Product documentation</h2>
-      <p>Step-by-step guides, configuration reference, diagrams, and deployment examples.</p>
-      <p style="margin-top:2rem">
+  <section class="section section-cta">
+    <div class="section-inner section-narrow">
+      <div class="section-heading">
+        <h2>Product documentation</h2>
+        <p>Step-by-step guides, configuration reference, architecture diagrams, and deployment examples.</p>
+      </div>
+      <div class="btn-group">
         <a class="btn btn-primary" href="guide/index.html">Open the product guide</a>
-        <a class="btn btn-secondary" href="guide/deployment.html">Deployment guide</a>
-      </p>
+        <a class="btn btn-outline" href="guide/deployment.html">Deployment guide</a>
+        <a class="btn btn-outline" href="about.html">About &amp; contribute</a>
+      </div>
     </div>
   </section>
 

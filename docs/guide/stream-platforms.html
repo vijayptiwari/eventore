@@ -5,37 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Stream platforms — Eventore</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Supported wire protocols and cloud presets in Eventore: Kafka, MQTT, RabbitMQ, Pulsar, JMS, Kinesis, Pub/Sub, and Azure Service Bus."/>
+  <meta name="description" content="Compare Eventore wire protocols and cloud presets, with links to each per-stream product guide."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
   <meta name="keywords" content="kafka mqtt rabbitmq pulsar, aws kinesis console, azure service bus ui"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/stream-platforms.html"/>
   <meta property="og:type" content="article"/>
   <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Stream platforms — Eventore"/>
-  <meta property="og:description" content="Supported wire protocols and cloud presets in Eventore: Kafka, MQTT, RabbitMQ, Pulsar, JMS, Kinesis, Pub/Sub, and Azure Service Bus."/>
+  <meta property="og:title" content="All stream platforms — Eventore"/>
+  <meta property="og:description" content="Compare Eventore wire protocols and cloud presets, with links to each per-stream product guide."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/stream-platforms.html"/>
   <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
   <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Stream platforms — Eventore"/>
-  <meta name="twitter:description" content="Supported wire protocols and cloud presets in Eventore: Kafka, MQTT, RabbitMQ, Pulsar, JMS, Kinesis, Pub/Sub, and Azure Service Bus."/>
+  <meta name="twitter:title" content="All stream platforms — Eventore"/>
+  <meta name="twitter:description" content="Compare Eventore wire protocols and cloud presets, with links to each per-stream product guide."/>
   <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
   <!-- /eventore-seo -->
-  <script src="../js/base-path.js"></script>
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="../css/site.css"/>
 </head>
 <body>
   <header class="site-header" id="site-header"></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
     <main>
-      <h1 class="page-title">Stream platforms &amp; protocols</h1>
-      <p class="page-subtitle">Wire protocols, cloud presets, feature depth, and credentials.</p>
+      <h1 class="page-title">All stream platforms</h1>
+      <p class="page-subtitle">Compare protocols and cloud presets — then open the guide for your stream.</p>
 
-      <p>Eventore connects through a <strong>protocol</strong> (wire API) and optional <strong>cloud platform</strong> preset (hosted product). See <a href="connections.html">Connections</a> to apply presets in the UI.</p>
+      <p class="callout callout-info">Prefer a single protocol? Open its guide directly from the <a href="index.html#streams">documentation hub</a>.</p>
+      <p>Each protocol has a dedicated guide (connect, inspect, live view, admin). Quick links:</p>
+      <ul class="stream-guide-links">
+        <li><a href="kafka.html">Kafka</a></li>
+        <li><a href="pulsar.html">Pulsar</a></li>
+        <li><a href="rabbitmq.html">RabbitMQ</a></li>
+        <li><a href="mqtt.html">MQTT</a></li>
+        <li><a href="jms.html">JMS</a></li>
+        <li><a href="kinesis.html">AWS Kinesis</a></li>
+        <li><a href="gcp-pubsub.html">GCP Pub/Sub</a></li>
+        <li><a href="azure-service-bus.html">Azure Service Bus</a></li>
+      </ul>
+      <p>Eventore connects through a <strong>protocol</strong> (wire API) and optional <strong>cloud platform</strong> preset. See <a href="connections.html">Connections</a> to apply presets in the UI.</p>
 
       <h2>Protocols</h2>
       <table>
@@ -83,6 +124,5 @@
     </main>
   </div>
   <footer class="site-footer" id="site-footer"></footer>
-  <script src="../js/site.js"></script>
 </body>
 </html>

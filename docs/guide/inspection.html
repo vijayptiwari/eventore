@@ -2,75 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Inspection — Eventore</title>
-  <!-- eventore-seo -->
-  <meta name="description" content="Browse topics and queues, consumer groups, lag, and message search across every stream protocol registered in Eventore."/>
-  <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="kafka consumer lag ui, message search, queue inspection"/>
-  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/inspection.html"/>
-  <meta property="og:type" content="article"/>
-  <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Inspection — Eventore"/>
-  <meta property="og:description" content="Browse topics and queues, consumer groups, lag, and message search across every stream protocol registered in Eventore."/>
-  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/inspection.html"/>
-  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
-  <meta property="og:locale" content="en_US"/>
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Inspection — Eventore"/>
-  <meta name="twitter:description" content="Browse topics and queues, consumer groups, lag, and message search across every stream protocol registered in Eventore."/>
-  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta name="twitter:site" content="@vijayptiwari"/>
-  <!-- /eventore-seo -->
-  <script src="../js/base-path.js"></script>
-  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="../css/site.css"/>
+  <meta http-equiv="refresh" content="0; url=streaming.html"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/streaming.html"/>
+  <title>Redirecting — Eventore</title>
+  <script>location.replace('streaming.html');</script>
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
-  <div class="guide-layout">
-    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
-    <main>
-      <h1 class="page-title">Inspection</h1>
-      <p class="page-subtitle">Browse destinations, consumer groups, lag, and message search across registered protocols.</p>
-
-      <h2>Browse</h2>
-      <ol class="steps">
-        <li>Select a <strong>connection</strong>.</li>
-        <li>Eventore lists <strong>destinations</strong> (topics, queues, streams, subscriptions).</li>
-        <li>Open a destination to see partitions, metadata, or recent messages where supported.</li>
-        <li>Use <strong>Add to streams</strong> to track it in the live workspace.</li>
-      </ol>
-      <p>Only protocols in <code>controlPlane.uiCascade.inspectProtocols</code> show inspector features.</p>
-
-      <h2>Kafka inspection</h2>
-      <ul>
-        <li>Topic list with partition count and replication</li>
-        <li>Consumer groups and per-partition lag</li>
-        <li>Message search by offset, timestamp, or key filter</li>
-      </ul>
-      <pre><code>GET /api/v1/connections/{id}/inspect/topics
-GET /api/v1/connections/{id}/inspect/consumer-groups
-GET /api/v1/connections/{id}/inspect/topics/{topic}/messages?limit=50</code></pre>
-
-      <h2>Other protocols</h2>
-      <table>
-        <thead><tr><th>Protocol</th><th>Inspect capabilities</th></tr></thead>
-        <tbody>
-          <tr><td>Pulsar</td><td>Topics, subscriptions, backlog hints</td></tr>
-          <tr><td>RabbitMQ</td><td>Queues, exchanges, bindings</td></tr>
-          <tr><td>MQTT</td><td>Topic tree, retained messages where available</td></tr>
-          <tr><td>Kinesis</td><td>Streams, shards, iterator position</td></tr>
-          <tr><td>GCP / Azure</td><td>Topics/subscriptions, message peek</td></tr>
-        </tbody>
-      </table>
-
-      <h2>READONLY workflows</h2>
-      <p>READONLY deployments are ideal for SRE dashboards: subscribe and inspect without mutating connections or publishing test traffic. See <a href="configuration.html">Configuration</a> for deployment modes.</p>
-    </main>
-  </div>
-  <footer class="site-footer" id="site-footer"></footer>
-  <script src="../js/site.js"></script>
+  <p>Moved to <a href="streaming.html">Live streaming</a>. Per-protocol browse steps are in each <a href="index.html#streams">stream guide</a>.</p>
 </body>
 </html>

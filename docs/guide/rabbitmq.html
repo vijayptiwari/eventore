@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>RabbitMQ — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="RabbitMQ queues, exchanges, bindings, and management API integration in Eventore."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="rabbitmq admin ui, queue inspection"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/rabbitmq.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="RabbitMQ — Eventore"/>
+  <meta property="og:description" content="RabbitMQ queues, exchanges, bindings, and management API integration in Eventore."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/rabbitmq.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="RabbitMQ — Eventore"/>
+  <meta name="twitter:description" content="RabbitMQ queues, exchanges, bindings, and management API integration in Eventore."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">RabbitMQ</h1>
+      <p class="page-subtitle">Queues, exchanges, bindings, and management API integration.</p>
+      <p>Wire protocol: <code>RABBITMQ</code> (management plugin required). See <a href="connections.html">Connections</a>.</p>
+
+      <h2 id="connect">Connect</h2>
+      <ul>
+        <li>Management API base URL (typically port <code>15672</code>)</li>
+        <li>AMQP host/port for messaging paths used by streaming</li>
+        <li>Username/password with management tag</li>
+      </ul>
+
+      <h2 id="browse">Browse &amp; inspect</h2>
+      <ul>
+        <li>Queues, exchanges, and bindings via management API</li>
+        <li>Queue depth and consumer utilization</li>
+        <li>Get/purge messages for supported operations (ADMIN mode)</li>
+      </ul>
+
+      <h2 id="live">Live streaming</h2>
+      <p>Stream messages from bound queues into the live workspace. See <a href="streaming.html">Streaming &amp; live view</a>.</p>
+
+      <h2 id="admin">Administration</h2>
+      <p>Queue purge and message get via management API where enabled. Topology changes (declare exchange/queue) depend on deployment mode and provider capabilities.</p>
+
+      <h2 id="credentials">Credentials</h2>
+      <ul>
+        <li>Standard RabbitMQ user/password over TLS recommended for production</li>
+        <li>Restrict management access to operators; use READONLY Eventore profile for observers</li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

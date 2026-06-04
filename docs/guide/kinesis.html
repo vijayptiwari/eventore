@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AWS Kinesis — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="AWS Kinesis Data Streams in Eventore: shards, iterators, IAM auth, and live records."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="kinesis console, kinesis stream viewer"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/kinesis.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="AWS Kinesis — Eventore"/>
+  <meta property="og:description" content="AWS Kinesis Data Streams in Eventore: shards, iterators, IAM auth, and live records."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/kinesis.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="AWS Kinesis — Eventore"/>
+  <meta name="twitter:description" content="AWS Kinesis Data Streams in Eventore: shards, iterators, IAM auth, and live records."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">AWS Kinesis</h1>
+      <p class="page-subtitle">Kinesis Data Streams — shards, iterators, and live record consumption.</p>
+      <p>Wire protocol: <code>KINESIS</code>. Preset: <strong>AWS Kinesis</strong>. See <a href="connections.html">Connections</a>.</p>
+
+      <h2 id="connect">Connect</h2>
+      <ul>
+        <li>Region and stream name (or discover streams after auth)</li>
+        <li>IAM access keys, assumed role, or instance profile via default credential chain</li>
+        <li>Slim deployments: build image with Kinesis provider only</li>
+      </ul>
+
+      <h2 id="browse">Browse &amp; inspect</h2>
+      <ul>
+        <li>List streams and shard iterators</li>
+        <li>Shard-level throughput and iterator position</li>
+        <li>Historical message search: planned; use live view for recent records</li>
+      </ul>
+
+      <h2 id="live">Live streaming</h2>
+      <p>Poll or subscribe to shard iterators in the live workspace — <a href="streaming.html">Streaming &amp; live view</a>.</p>
+
+      <h2 id="admin">Administration</h2>
+      <p>Stream creation and resharding are AWS console/CLI operations. Eventore does not replace Kinesis capacity planning tools.</p>
+
+      <h2 id="credentials">Credentials</h2>
+      <ul>
+        <li>Access key + secret (dev only) or IAM role on EKS/EC2</li>
+        <li>Least privilege: <code>kinesis:DescribeStream</code>, <code>GetRecords</code>, <code>PutRecord</code> as needed</li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

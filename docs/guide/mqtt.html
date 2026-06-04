@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>MQTT — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="MQTT brokers, AWS IoT Core, and Azure IoT Hub in Eventore: topics, filters, and live view."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="mqtt broker ui, aws iot core console"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/mqtt.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="MQTT — Eventore"/>
+  <meta property="og:description" content="MQTT brokers, AWS IoT Core, and Azure IoT Hub in Eventore: topics, filters, and live view."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/mqtt.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="MQTT — Eventore"/>
+  <meta name="twitter:description" content="MQTT brokers, AWS IoT Core, and Azure IoT Hub in Eventore: topics, filters, and live view."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main>
+      <h1 class="page-title">MQTT</h1>
+      <p class="page-subtitle">MQTT brokers, AWS IoT Core, and Azure IoT Hub device and topic workflows.</p>
+      <p>Wire protocol: <code>MQTT</code>. Presets include <strong>AWS IoT Core</strong> and <strong>Azure IoT Hub</strong>. See <a href="connections.html">Connections</a>.</p>
+
+      <h2 id="connect">Connect</h2>
+      <ul>
+        <li>Broker URL (<code>mqtt://</code> / <code>mqtts://</code>) or cloud endpoint from preset</li>
+        <li>Client ID, username/password, or X.509 for IoT clouds</li>
+        <li>Topic filter roots for browse and subscribe</li>
+      </ul>
+
+      <h2 id="browse">Browse &amp; inspect</h2>
+      <ul>
+        <li>Topic tree exploration with wildcard filters</li>
+        <li>Retained messages where the broker exposes them</li>
+        <li>Live inspection aligns with active subscriptions</li>
+      </ul>
+
+      <h2 id="live">Live streaming</h2>
+      <p>Subscribe to MQTT topic filters in the multi-protocol workspace — <a href="streaming.html">Streaming &amp; live view</a>.</p>
+
+      <h2 id="admin">Administration</h2>
+      <p>MQTT is consume/publish oriented in Eventore; broker ACL and certificate management stay in your cloud console or broker admin UI.</p>
+
+      <h2 id="credentials">Credentials</h2>
+      <ul>
+        <li><strong>IoT Core</strong> — IAM/certificate-based auth per AWS preset</li>
+        <li><strong>IoT Hub</strong> — SAS tokens or certificates per Azure preset</li>
+        <li><strong>Self-hosted</strong> — username/password or mutual TLS</li>
+      </ul>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

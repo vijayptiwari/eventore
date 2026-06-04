@@ -5,64 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Product guide — Eventore</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Eventore documentation hub: deploy, configure connections, stream live messages, inspect brokers, and run on Kubernetes with Helm."/>
+  <meta name="description" content="Eventore documentation hub: per-stream guides for Kafka, MQTT, Pulsar, and cloud protocols, plus deployment and configuration."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
   <meta name="keywords" content="eventore documentation, messaging console guide, kafka deployment"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/index.html"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="Eventore"/>
   <meta property="og:title" content="Product guide — Eventore"/>
-  <meta property="og:description" content="Eventore documentation hub: deploy, configure connections, stream live messages, inspect brokers, and run on Kubernetes with Helm."/>
+  <meta property="og:description" content="Eventore documentation hub: per-stream guides for Kafka, MQTT, Pulsar, and cloud protocols, plus deployment and configuration."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/index.html"/>
   <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
   <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Product guide — Eventore"/>
-  <meta name="twitter:description" content="Eventore documentation hub: deploy, configure connections, stream live messages, inspect brokers, and run on Kubernetes with Helm."/>
+  <meta name="twitter:description" content="Eventore documentation hub: per-stream guides for Kafka, MQTT, Pulsar, and cloud protocols, plus deployment and configuration."/>
   <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
   <!-- /eventore-seo -->
-  <script src="../js/base-path.js"></script>
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="../css/site.css"/>
 </head>
 <body>
   <header class="site-header" id="site-header"></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
     <main>
-      <h1 class="page-title">Product guide</h1>
-      <p class="page-subtitle">Everything you need to deploy, configure, and use Eventore in production.</p>
+      <h1 class="page-title">Documentation</h1>
+      <p class="page-subtitle">Pick your messaging protocol first, then platform setup and deployment.</p>
 
-      <div class="toc-grid">
-        <a class="toc-card" href="getting-started.html"><h3>Getting started</h3><p>Install, first connection, and a five-minute walkthrough.</p></a>
-        <a class="toc-card" href="architecture.html"><h3>Architecture</h3><p>Components, control/data plane, providers, and API surfaces.</p></a>
-        <a class="toc-card" href="configuration.html"><h3>Configuration</h3><p>application.yml, Helm values, slim builds, and deployment modes.</p></a>
-        <a class="toc-card" href="connections.html"><h3>Connections</h3><p>Presets, credentials, validation, and per-protocol fields.</p></a>
-        <a class="toc-card" href="streaming.html"><h3>Streaming &amp; live view</h3><p>WebSocket workspace, filters, timed views, and export.</p></a>
-        <a class="toc-card" href="inspection.html"><h3>Inspection</h3><p>Topics, consumer groups, lag, and message search.</p></a>
-        <a class="toc-card" href="kafka-admin.html"><h3>Kafka admin</h3><p>Topics, ACLs, produce with headers, and flush.</p></a>
-        <a class="toc-card" href="deployment.html"><h3>Deployment</h3><p>GHCR images, OCI Helm charts, Docker Compose, Kubernetes, and MCP.</p></a>
-        <a class="toc-card" href="control-data-plane.html"><h3>Control &amp; data plane</h3><p>Registration, UI cascade, and broker I/O separation.</p></a>
-        <a class="toc-card" href="mcp.html"><h3>MCP for AI agents</h3><p>Tools, prompts, resources, Cursor setup, and optional third pod.</p></a>
-        <a class="toc-card" href="stream-platforms.html"><h3>Stream platforms</h3><p>Protocols, cloud presets, credentials, and feature matrix.</p></a>
+      <h2 class="guide-section-title" id="streams">Stream guides</h2>
+      <p class="guide-section-lead">Each guide covers connection, browse, live view, and admin for that protocol.</p>
+      <div class="toc-grid toc-grid--8">
+        <a class="toc-card" href="./kafka.html"><h3>Kafka</h3><p>Topics, lag, search, ACLs, produce.</p></a>
+        <a class="toc-card" href="./pulsar.html"><h3>Pulsar</h3><p>Namespaces, subscriptions, backlog.</p></a>
+        <a class="toc-card" href="./rabbitmq.html"><h3>RabbitMQ</h3><p>Queues, exchanges, bindings.</p></a>
+        <a class="toc-card" href="./mqtt.html"><h3>MQTT</h3><p>Brokers, IoT Core, IoT Hub.</p></a>
+        <a class="toc-card" href="./jms.html"><h3>JMS</h3><p>Artemis, Amazon MQ.</p></a>
+        <a class="toc-card" href="./kinesis.html"><h3>AWS Kinesis</h3><p>Streams, shards, IAM.</p></a>
+        <a class="toc-card" href="./gcp-pubsub.html"><h3>GCP Pub/Sub</h3><p>Topics, subscriptions, ADC.</p></a>
+        <a class="toc-card" href="./azure-service-bus.html"><h3>Azure Service Bus</h3><p>Queues, topics, Entra ID.</p></a>
       </div>
 
-      <h2>Who this guide is for</h2>
-      <ul class="check">
-        <li><strong>Platform engineers</strong> deploying Eventore on Kubernetes or VMs</li>
-        <li><strong>Developers</strong> debugging event flows across Kafka, queues, or cloud streams</li>
-        <li><strong>Operators</strong> managing topics, consumer lag, and broker configuration</li>
-        <li><strong>AI / platform automation</strong> using the optional MCP server with Cursor or HTTP clients</li>
-      </ul>
+      <h2 class="guide-section-title">Platform</h2>
+      <div class="toc-grid toc-grid--6">
+        <a class="toc-card" href="./getting-started.html"><h3>Getting started</h3><p>Install and first connection in five minutes.</p></a>
+        <a class="toc-card" href="./architecture.html"><h3>Architecture</h3><p>Control plane, data plane, providers.</p></a>
+        <a class="toc-card" href="./configuration.html"><h3>Configuration</h3><p>YAML, Helm, ADMIN / DEV / READONLY.</p></a>
+        <a class="toc-card" href="./connections.html"><h3>Connections</h3><p>Profiles, presets, credentials.</p></a>
+        <a class="toc-card" href="./streaming.html"><h3>Live streaming</h3><p>WebSocket workspace, filters, export.</p></a>
+        <a class="toc-card" href="./deployment.html"><h3>Deployment</h3><p>Images, Helm, Kubernetes.</p></a>
+      </div>
+      <p class="guide-more-links"><a href="./mcp.html">MCP for AI agents</a> · <a href="./stream-platforms.html">Compare all protocols</a> · <a href="../about.html">About &amp; contribute</a> (outside this product guide)</p>
 
       <div class="callout callout-info">
-        <strong>Convention:</strong> examples use <code>http://localhost:8080</code> for the API and the bundled UI on port 80 (or via ingress). Replace with your ingress host in production.
+        <strong>Tip:</strong> Examples use <code>http://localhost:8080</code> for the API. Replace with your ingress host in production.
       </div>
     </main>
   </div>
   <footer class="site-footer" id="site-footer"></footer>
-  <script src="../js/site.js"></script>
 </body>
 </html>
