@@ -231,7 +231,7 @@ public class PulsarMessagingConnector implements MessagingConnector {
         }
         String url = profile.getBrokerUrl();
         if (url.startsWith("pulsar://")) {
-            return url.replace("pulsar://", "http://");
+            return url.replace("pulsar://", "http://").replace(":6650", ":8080");
         }
         return "http://" + url.replace(":6650", ":8080");
     }

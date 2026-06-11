@@ -15,6 +15,8 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.apache.pulsar.client.admin.PulsarAdmin;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -40,11 +42,32 @@ class PulsarConnectorIntegrationTest {
 
     private final PulsarMessagingConnector connector = new PulsarMessagingConnector();
 
+    @BeforeAll
+    static void awaitDefaultNamespace() throws Exception {
+        String adminUrl = adminUrl();
+        long deadline = System.currentTimeMillis() + 60_000;
+        while (System.currentTimeMillis() < deadline) {
+            try (PulsarAdmin admin = PulsarAdmin.builder().serviceHttpUrl(adminUrl).build()) {
+                if (admin.namespaces().getNamespaces("public").contains("public/default")) {
+                    return;
+                }
+                admin.namespaces().createNamespace("public/default");
+                return;
+            } catch (Exception ignored) {
+                Thread.sleep(500);
+            }
+        }
+        throw new IllegalStateException("Pulsar public/default namespace not ready");
+    }
+
+    private static String adminUrl() {
+        return "http://" + PULSAR.getHost() + ":" + PULSAR.getMappedPort(8080);
+    }
+
     private ConnectionProfile profile() {
         String broker = "pulsar://" + PULSAR.getHost() + ":" + PULSAR.getMappedPort(6650);
-        String adminUrl = "http://" + PULSAR.getHost() + ":" + PULSAR.getMappedPort(8080);
         return StreamTestFixtures.profile(
-                ProtocolType.PULSAR, broker, Map.of("adminUrl", adminUrl), Map.of());
+                ProtocolType.PULSAR, broker, Map.of("adminUrl", adminUrl()), Map.of());
     }
 
     @Test
