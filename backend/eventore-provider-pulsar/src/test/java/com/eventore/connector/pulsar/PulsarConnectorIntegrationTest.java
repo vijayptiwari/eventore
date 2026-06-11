@@ -9,13 +9,16 @@ import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.ProtocolType;
 import com.eventore.domain.UnifiedMessage;
 import com.eventore.testsupport.StreamTestFixtures;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.apache.pulsar.client.admin.PulsarAdmin;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -45,17 +48,28 @@ class PulsarConnectorIntegrationTest {
     @BeforeEach
     void awaitDefaultNamespace() throws Exception {
         String adminUrl = adminUrl();
+        HttpClient client = HttpClient.newHttpClient();
         long deadline = System.currentTimeMillis() + 60_000;
         while (System.currentTimeMillis() < deadline) {
-            try (PulsarAdmin admin = PulsarAdmin.builder().serviceHttpUrl(adminUrl).build()) {
-                if (admin.namespaces().getNamespaces("public").contains("public/default")) {
-                    return;
-                }
-                admin.namespaces().createNamespace("public/default");
+            HttpResponse<String> list = client.send(
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(adminUrl + "/admin/v2/namespaces/public"))
+                            .GET()
+                            .build(),
+                    HttpResponse.BodyHandlers.ofString());
+            if (list.statusCode() == 200 && list.body().contains("public/default")) {
                 return;
-            } catch (Exception ignored) {
-                Thread.sleep(500);
             }
+            HttpResponse<Void> create = client.send(
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(adminUrl + "/admin/v2/namespaces/public/default"))
+                            .PUT(HttpRequest.BodyPublishers.noBody())
+                            .build(),
+                    HttpResponse.BodyHandlers.discarding());
+            if (create.statusCode() == 204 || create.statusCode() == 409) {
+                return;
+            }
+            Thread.sleep(500);
         }
         throw new IllegalStateException("Pulsar public/default namespace not ready");
     }
