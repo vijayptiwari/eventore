@@ -1,21 +1,6 @@
-import type { ProtocolType } from './types';
+import type { CloudProvider, ProtocolType, StreamPlatform } from './types';
 
-export type CloudProvider = 'ON_PREM' | 'AWS' | 'AZURE' | 'GCP' | 'OCP';
-
-export type StreamPlatform =
-  | 'GENERIC'
-  | 'AWS_MSK'
-  | 'AWS_KINESIS'
-  | 'AWS_MQ'
-  | 'AWS_IOT_CORE'
-  | 'AWS_SQS'
-  | 'AZURE_EVENT_HUBS'
-  | 'AZURE_SERVICE_BUS'
-  | 'AZURE_IOT_HUB'
-  | 'GCP_PUBSUB'
-  | 'GCP_MANAGED_KAFKA'
-  | 'OCP_AMQ_STREAMS'
-  | 'OCP_STRIMZI_KAFKA';
+export type { CloudProvider, StreamPlatform };
 
 export interface StreamPlatformPreset {
   platform: StreamPlatform;

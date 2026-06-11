@@ -12,7 +12,10 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,11 +23,16 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class SubscriptionManager {
 
+    private static final Logger log = LoggerFactory.getLogger(SubscriptionManager.class);
+
     private final ConnectorRegistry connectorRegistry;
     private final EventoreProperties properties;
     private final MetricsService metricsService;
     private final Map<String, ActiveSubscription> subscriptions = new ConcurrentHashMap<>();
-    private final Object subscribeLock = new Object();
+    /** Per-connection locks so connector I/O on one connection never blocks others. */
+    private final Map<String, Object> connectionLocks = new ConcurrentHashMap<>();
+    /** Atomic reservation counter keeping the max-concurrent cap exact across connections. */
+    private final AtomicInteger subscriptionCount = new AtomicInteger();
 
     public SubscriptionManager(
             ConnectorRegistry connectorRegistry,
@@ -40,48 +48,64 @@ public class SubscriptionManager {
             SubscribeRequest request,
             Consumer<StreamEvent> eventConsumer,
             boolean useQueue) {
-        synchronized (subscribeLock) {
-            if (subscriptions.size() >= properties.getSubscriptions().getMaxConcurrent()) {
-                throw new ResponseStatusException(
-                        HttpStatus.TOO_MANY_REQUESTS, "Maximum concurrent subscriptions reached");
-            }
-            String subscriptionId = UUID.randomUUID().toString();
-            request.setSubscriptionKey(subscriptionId);
-            int capacity = properties.getSubscriptions().getQueueCapacity();
-            BlockingQueue<StreamEvent> queue = useQueue ? new LinkedBlockingQueue<>(capacity) : null;
-            MessagingConnector connector = connectorRegistry.get(profile.getProtocol());
+        if (subscriptionCount.incrementAndGet() > properties.getSubscriptions().getMaxConcurrent()) {
+            subscriptionCount.decrementAndGet();
+            throw new ResponseStatusException(
+                    HttpStatus.TOO_MANY_REQUESTS, "Maximum concurrent subscriptions reached");
+        }
+        boolean reserved = true;
+        try {
+            synchronized (lockFor(profile.getId())) {
+                String subscriptionId = UUID.randomUUID().toString();
+                request.setSubscriptionKey(subscriptionId);
+                int capacity = properties.getSubscriptions().getQueueCapacity();
+                BlockingQueue<StreamEvent> queue = useQueue ? new LinkedBlockingQueue<>(capacity) : null;
+                MessagingConnector connector = connectorRegistry.get(profile.getProtocol());
 
-            MessageHandler handler = new MessageHandler() {
-                @Override
-                public void onMessage(UnifiedMessage message) {
-                    metricsService.recordMessage(profile.getProtocol());
-                    StreamEvent event = StreamEvent.message(subscriptionId, message);
-                    if (queue != null) {
-                        if (!queue.offer(event)) {
-                            queue.poll();
-                            queue.offer(event);
-                            eventConsumer.accept(StreamEvent.slowConsumer(subscriptionId));
+                MessageHandler handler = new MessageHandler() {
+                    @Override
+                    public void onMessage(UnifiedMessage message) {
+                        metricsService.recordMessage(profile.getProtocol());
+                        StreamEvent event = StreamEvent.message(subscriptionId, message);
+                        if (queue != null) {
+                            if (!queue.offer(event)) {
+                                queue.poll();
+                                while (!queue.offer(event)) {
+                                    queue.poll();
+                                }
+                                eventConsumer.accept(StreamEvent.slowConsumer(subscriptionId));
+                            }
                         }
+                        eventConsumer.accept(event);
                     }
-                    eventConsumer.accept(event);
-                }
 
-                @Override
-                public void onError(String message) {
-                    eventConsumer.accept(StreamEvent.error(subscriptionId, message));
-                }
-            };
+                    @Override
+                    public void onError(String message) {
+                        eventConsumer.accept(StreamEvent.error(subscriptionId, message));
+                    }
+                };
 
-            try {
-                AutoCloseable closeable = connector.subscribe(profile, request, handler);
-                ActiveSubscription active =
-                        new ActiveSubscription(subscriptionId, profile, request, closeable, queue);
-                subscriptions.put(subscriptionId, active);
-                metricsService.incrementSubscriptions();
-                return subscriptionId;
-            } catch (Exception e) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Subscribe failed: " + e.getMessage());
+                try {
+                    AutoCloseable closeable = connector.subscribe(profile, request, handler);
+                    ActiveSubscription active =
+                            new ActiveSubscription(subscriptionId, profile, request, closeable, queue);
+                    subscriptions.put(subscriptionId, active);
+                    reserved = false;
+                    metricsService.incrementSubscriptions();
+                    return subscriptionId;
+                } catch (Exception e) {
+                    log.error(
+                            "Subscribe failed for connection {} destination {}",
+                            profile.getId(),
+                            request.getDestination(),
+                            e);
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST, "Subscribe failed: " + e.getMessage(), e);
+                }
+            }
+        } finally {
+            if (reserved) {
+                subscriptionCount.decrementAndGet();
             }
         }
     }
@@ -89,9 +113,16 @@ public class SubscriptionManager {
     public void unsubscribe(String subscriptionId) {
         ActiveSubscription active = subscriptions.remove(subscriptionId);
         if (active != null) {
-            active.close();
+            synchronized (lockFor(active.profile().getId())) {
+                active.close();
+            }
+            subscriptionCount.decrementAndGet();
             metricsService.decrementSubscriptions();
         }
+    }
+
+    private Object lockFor(String connectionId) {
+        return connectionLocks.computeIfAbsent(connectionId, k -> new Object());
     }
 
     public boolean ownsSubscription(String connectionId, String subscriptionId) {
@@ -112,14 +143,18 @@ public class SubscriptionManager {
     }
 
     public void closeAllForConnection(String connectionId) {
-        subscriptions.entrySet().removeIf(entry -> {
-            if (entry.getValue().profile().getId().equals(connectionId)) {
-                entry.getValue().close();
-                metricsService.decrementSubscriptions();
-                return true;
-            }
-            return false;
-        });
+        synchronized (lockFor(connectionId)) {
+            subscriptions.entrySet().removeIf(entry -> {
+                if (entry.getValue().profile().getId().equals(connectionId)) {
+                    entry.getValue().close();
+                    subscriptionCount.decrementAndGet();
+                    metricsService.decrementSubscriptions();
+                    return true;
+                }
+                return false;
+            });
+        }
+        connectionLocks.remove(connectionId);
     }
 
     public record StreamEvent(String type, String subscriptionId, UnifiedMessage message, String detail) {
@@ -150,8 +185,8 @@ public class SubscriptionManager {
         void close() {
             try {
                 closeable.close();
-            } catch (Exception ignored) {
-                // ignore
+            } catch (Exception e) {
+                log.debug("Error closing subscription {} for connection {}", id, profile.getId(), e);
             }
         }
     }

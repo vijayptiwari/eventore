@@ -34,7 +34,7 @@ public class GcpPubSubMessagingInspector implements MessagingInspector {
     @Override
     public ProtocolInspectCapabilities capabilities() {
         ProtocolInspectCapabilities c = new ProtocolInspectCapabilities();
-        c.setFeatures(List.of("cluster", "topics", "subscriptions", "backlog", "message-search"));
+        c.setFeatures(List.of("cluster", "topics"));
         return c;
     }
 
@@ -42,8 +42,8 @@ public class GcpPubSubMessagingInspector implements MessagingInspector {
     public ClusterInfo clusterInfo(ConnectionProfile profile) {
         ClusterInfo info = new ClusterInfo();
         info.setClusterId(CloudClientSupport.gcpProjectId(profile));
-        info.getAttributes().put("cloudProvider", "GCP");
-        info.getAttributes().put("service", "Pub/Sub");
+        info.putAttribute("cloudProvider", "GCP");
+        info.putAttribute("service", "Pub/Sub");
         return info;
     }
 
@@ -80,7 +80,7 @@ public class GcpPubSubMessagingInspector implements MessagingInspector {
     public TopicDetail describeTopic(ConnectionProfile profile, String topic) {
         TopicDetail td = new TopicDetail();
         td.setName(topic);
-        td.getConfig().put("projectId", CloudClientSupport.gcpProjectId(profile));
+        td.putConfig("projectId", CloudClientSupport.gcpProjectId(profile));
         return td;
     }
 

@@ -1,10 +1,15 @@
 package com.eventore.inspect.domain;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Inspect DTOs. Collection getters return unmodifiable views; use the matching
+ * {@code put*}/{@code add*} helpers or setters to populate instances.
+ */
 public final class InspectModels {
 
     private InspectModels() {}
@@ -23,19 +28,31 @@ public final class InspectModels {
         }
 
         public List<BrokerNode> getBrokers() {
-            return brokers;
+            return Collections.unmodifiableList(brokers);
         }
 
         public void setBrokers(List<BrokerNode> brokers) {
-            this.brokers = brokers;
+            this.brokers = brokers != null ? new ArrayList<>(brokers) : new ArrayList<>();
+        }
+
+        public void addBroker(BrokerNode broker) {
+            if (broker != null) {
+                brokers.add(broker);
+            }
         }
 
         public Map<String, String> getAttributes() {
-            return attributes;
+            return Collections.unmodifiableMap(attributes);
         }
 
         public void setAttributes(Map<String, String> attributes) {
-            this.attributes = attributes;
+            this.attributes = attributes != null ? new HashMap<>(attributes) : new HashMap<>();
+        }
+
+        public void putAttribute(String key, String value) {
+            if (key != null && value != null) {
+                attributes.put(key, value);
+            }
         }
     }
 
@@ -149,19 +166,25 @@ public final class InspectModels {
         }
 
         public List<GroupMember> getMembers() {
-            return members;
+            return Collections.unmodifiableList(members);
         }
 
         public void setMembers(List<GroupMember> members) {
-            this.members = members;
+            this.members = members != null ? new ArrayList<>(members) : new ArrayList<>();
+        }
+
+        public void addMember(GroupMember member) {
+            if (member != null) {
+                members.add(member);
+            }
         }
 
         public List<GroupOffset> getOffsets() {
-            return offsets;
+            return Collections.unmodifiableList(offsets);
         }
 
         public void setOffsets(List<GroupOffset> offsets) {
-            this.offsets = offsets;
+            this.offsets = offsets != null ? new ArrayList<>(offsets) : new ArrayList<>();
         }
     }
 
@@ -196,11 +219,17 @@ public final class InspectModels {
         }
 
         public List<String> getAssignments() {
-            return assignments;
+            return Collections.unmodifiableList(assignments);
         }
 
         public void setAssignments(List<String> assignments) {
-            this.assignments = assignments;
+            this.assignments = assignments != null ? new ArrayList<>(assignments) : new ArrayList<>();
+        }
+
+        public void addAssignment(String assignment) {
+            if (assignment != null) {
+                assignments.add(assignment);
+            }
         }
     }
 
@@ -284,19 +313,31 @@ public final class InspectModels {
         }
 
         public List<TopicPartitionInfo> getPartitions() {
-            return partitions;
+            return Collections.unmodifiableList(partitions);
         }
 
         public void setPartitions(List<TopicPartitionInfo> partitions) {
-            this.partitions = partitions;
+            this.partitions = partitions != null ? new ArrayList<>(partitions) : new ArrayList<>();
+        }
+
+        public void addPartition(TopicPartitionInfo partition) {
+            if (partition != null) {
+                partitions.add(partition);
+            }
         }
 
         public Map<String, String> getConfig() {
-            return config;
+            return Collections.unmodifiableMap(config);
         }
 
         public void setConfig(Map<String, String> config) {
-            this.config = config;
+            this.config = config != null ? new HashMap<>(config) : new HashMap<>();
+        }
+
+        public void putConfig(String key, String value) {
+            if (key != null && value != null) {
+                config.put(key, value);
+            }
         }
     }
 
@@ -323,19 +364,27 @@ public final class InspectModels {
         }
 
         public List<Integer> getReplicas() {
-            return replicas;
+            return Collections.unmodifiableList(replicas);
         }
 
         public void setReplicas(List<Integer> replicas) {
-            this.replicas = replicas;
+            this.replicas = replicas != null ? new ArrayList<>(replicas) : new ArrayList<>();
+        }
+
+        public void addReplica(int replica) {
+            replicas.add(replica);
         }
 
         public List<Integer> getIsr() {
-            return isr;
+            return Collections.unmodifiableList(isr);
         }
 
         public void setIsr(List<Integer> isr) {
-            this.isr = isr;
+            this.isr = isr != null ? new ArrayList<>(isr) : new ArrayList<>();
+        }
+
+        public void addIsr(int node) {
+            isr.add(node);
         }
     }
 
@@ -418,11 +467,11 @@ public final class InspectModels {
         private List<String> features = new ArrayList<>();
 
         public List<String> getFeatures() {
-            return features;
+            return Collections.unmodifiableList(features);
         }
 
         public void setFeatures(List<String> features) {
-            this.features = features;
+            this.features = features != null ? new ArrayList<>(features) : new ArrayList<>();
         }
     }
 }

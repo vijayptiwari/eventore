@@ -1,6 +1,7 @@
 package com.eventore.api.delegate;
 
 import com.eventore.api.generated.kafka.KafkaAdminApiDelegate;
+import com.eventore.connector.spi.PayloadCodec;
 import com.eventore.connector.spi.PublishRequest;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.ProtocolType;
@@ -17,9 +18,11 @@ import com.eventore.security.DeploymentModePolicy;
 import com.eventore.service.AuditService;
 import com.eventore.service.ConnectionRegistry;
 import jakarta.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import org.apache.kafka.common.errors.TopicExistsException;
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,11 +65,9 @@ public class KafkaAdminApiDelegateImpl implements KafkaAdminApiDelegate {
         boolean flushProducer = Boolean.TRUE.equals(flush)
                 || (publishRequest.getHeaders() != null
                         && "true".equalsIgnoreCase(publishRequest.getHeaders().get("flush")));
-        int bytes = publishRequest.getPayload() != null
-                ? publishRequest.getPayload().getBytes(StandardCharsets.UTF_8).length
-                : 0;
+        int bytes = PayloadCodec.toBytes(publishRequest.getPayload(), publishRequest.getContentType()).length;
         policy.validatePublishSize(bytes);
-        try {
+        return handle(() -> {
             KafkaAdminModels.PublishResult domainResult =
                     kafkaAdmin.publish(profile, publishRequest, flushProducer);
             KafkaPublishResult result = toKafkaPublishResult(domainResult);
@@ -78,9 +79,7 @@ public class KafkaAdminApiDelegateImpl implements KafkaAdminApiDelegate {
                     bytes,
                     request != null ? request.getHeader("User-Agent") : null);
             return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+        });
     }
 
     @Override
@@ -91,23 +90,19 @@ public class KafkaAdminApiDelegateImpl implements KafkaAdminApiDelegate {
         if (kafkaCreateTopicRequest.getName() == null || kafkaCreateTopicRequest.getName().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "topic name is required");
         }
-        try {
+        return handle(() -> {
             kafkaAdmin.createTopic(profile, toCreateTopicRequest(kafkaCreateTopicRequest));
             return ResponseEntity.ok(Map.of("status", "created", "topic", kafkaCreateTopicRequest.getName()));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+        });
     }
 
     @Override
     public ResponseEntity<Map<String, String>> kafkaDeleteTopic(String connectionId, String topic) {
         policy.require(Action.ADMIN_BROKER_OPS);
-        try {
+        return handle(() -> {
             kafkaAdmin.deleteTopic(requireKafka(connectionId), topic);
             return ResponseEntity.ok(Map.of("status", "deleted", "topic", topic));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+        });
     }
 
     @Override
@@ -118,37 +113,28 @@ public class KafkaAdminApiDelegateImpl implements KafkaAdminApiDelegate {
                 kafkaFlushTopicRequest != null
                         ? toFlushTopicRequest(kafkaFlushTopicRequest)
                         : new KafkaAdminModels.FlushTopicRequest();
-        try {
-            return ResponseEntity.ok(kafkaAdmin.flushTopic(requireKafka(connectionId), topic, req));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+        return handle(() -> ResponseEntity.ok(kafkaAdmin.flushTopic(requireKafka(connectionId), topic, req)));
     }
 
     @Override
     public ResponseEntity<Map<String, String>> kafkaAlterTopicConfigs(
             String connectionId, String topic, KafkaAlterTopicConfigsRequest kafkaAlterTopicConfigsRequest) {
         policy.require(Action.ADMIN_BROKER_OPS);
-        try {
+        return handle(() -> {
             kafkaAdmin.alterTopicConfigs(
                     requireKafka(connectionId), topic, toAlterTopicConfigsRequest(kafkaAlterTopicConfigsRequest));
             return ResponseEntity.ok(Map.of("status", "updated", "topic", topic));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+        });
     }
 
     @Override
     public ResponseEntity<List<KafkaAclEntry>> kafkaListAcls(
             String connectionId, String resourceType, String resourceName, String principal) {
         policy.require(Action.ADMIN_BROKER_OPS);
-        try {
-            return ResponseEntity.ok(kafkaAdmin.listAcls(requireKafka(connectionId), resourceType, resourceName, principal).stream()
-                    .map(KafkaAdminApiDelegateImpl::toKafkaAclEntry)
-                    .toList());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+        return handle(() -> ResponseEntity.ok(
+                kafkaAdmin.listAcls(requireKafka(connectionId), resourceType, resourceName, principal).stream()
+                        .map(KafkaAdminApiDelegateImpl::toKafkaAclEntry)
+                        .toList()));
     }
 
     @Override
@@ -159,12 +145,10 @@ public class KafkaAdminApiDelegateImpl implements KafkaAdminApiDelegate {
             String principal,
             KafkaAclEntry kafkaAclEntry) {
         policy.require(Action.ADMIN_BROKER_OPS);
-        try {
+        return handle(() -> {
             kafkaAdmin.createAcl(requireKafka(connectionId), toKafkaAclEntry(kafkaAclEntry));
             return ResponseEntity.ok(Map.of("status", "created"));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+        });
     }
 
     @Override
@@ -175,12 +159,10 @@ public class KafkaAdminApiDelegateImpl implements KafkaAdminApiDelegate {
             String principal,
             KafkaAclEntry kafkaAclEntry) {
         policy.require(Action.ADMIN_BROKER_OPS);
-        try {
+        return handle(() -> {
             kafkaAdmin.deleteAcl(requireKafka(connectionId), toKafkaAclEntry(kafkaAclEntry));
             return ResponseEntity.ok(Map.of("status", "deleted"));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        }
+        });
     }
 
     @Override
@@ -194,12 +176,47 @@ public class KafkaAdminApiDelegateImpl implements KafkaAdminApiDelegate {
         if (kafkaReplaceAclRequest.getOldBinding() == null || kafkaReplaceAclRequest.getNewBinding() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "oldBinding and newBinding required");
         }
-        try {
+        return handle(() -> {
             kafkaAdmin.replaceAcl(requireKafka(connectionId), toReplaceAclRequest(kafkaReplaceAclRequest));
             return ResponseEntity.ok(Map.of("status", "replaced"));
-        } catch (Exception e) {
+        });
+    }
+
+    @FunctionalInterface
+    private interface AdminCall<T> {
+        T run() throws Exception;
+    }
+
+    /**
+     * Executes a Kafka admin call, translating well-known broker errors to meaningful HTTP
+     * statuses (409 for existing topics, 404 for unknown topics/partitions, 400 for invalid
+     * input) instead of a blanket 500.
+     */
+    private static <T> T handle(AdminCall<T> call) {
+        try {
+            return call.run();
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        } catch (Exception e) {
+            throw translate(e);
         }
+    }
+
+    private static ResponseStatusException translate(Exception e) {
+        Throwable cause = e instanceof ExecutionException && e.getCause() != null ? e.getCause() : e;
+        if (cause instanceof TopicExistsException) {
+            return new ResponseStatusException(HttpStatus.CONFLICT, cause.getMessage(), cause);
+        }
+        if (cause instanceof UnknownTopicOrPartitionException) {
+            return new ResponseStatusException(HttpStatus.NOT_FOUND, cause.getMessage(), cause);
+        }
+        if (cause instanceof IllegalArgumentException) {
+            return new ResponseStatusException(HttpStatus.BAD_REQUEST, cause.getMessage(), cause);
+        }
+        return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
     }
 
     private ConnectionProfile requireKafka(String connectionId) {

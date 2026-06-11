@@ -1,6 +1,7 @@
 package com.eventore.domain;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -33,12 +34,19 @@ public class UnifiedMessage {
         this.destination = destination;
     }
 
+    /** Returns an unmodifiable view; use {@link #putHeader(String, String)} to add entries. */
     public Map<String, String> getHeaders() {
-        return headers;
+        return Collections.unmodifiableMap(headers);
     }
 
     public void setHeaders(Map<String, String> headers) {
-        this.headers = headers != null ? headers : new HashMap<>();
+        this.headers = headers != null ? new HashMap<>(headers) : new HashMap<>();
+    }
+
+    public void putHeader(String key, String value) {
+        if (key != null && value != null) {
+            headers.put(key, value);
+        }
     }
 
     public String getPayload() {

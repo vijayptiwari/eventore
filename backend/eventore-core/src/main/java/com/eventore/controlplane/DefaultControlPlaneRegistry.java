@@ -11,36 +11,45 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultControlPlaneRegistry implements ControlPlaneRegistry {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultControlPlaneRegistry.class);
 
     private final Map<ProtocolType, StreamProviderDescriptor> descriptors = new ConcurrentHashMap<>();
     private final AtomicLong revision = new AtomicLong(0);
 
     @Override
     public StreamProviderDescriptor register(StreamProviderDescriptor descriptor) {
-        ProtocolType protocol = descriptor.getProtocol();
         StreamProviderDescriptor copy = copy(descriptor);
         copy.setState(ProviderLifecycleState.REGISTERED);
         copy.setRegisteredAt(Instant.now());
         copy.setDeregisteredAt(null);
-        copy.setRegistrationEpoch(revision.incrementAndGet());
-        descriptors.put(protocol, copy);
-        return copy;
+        // compute() makes the revision bump and the map mutation atomic per protocol.
+        StreamProviderDescriptor registered = descriptors.compute(descriptor.getProtocol(), (protocol, existing) -> {
+            copy.setRegistrationEpoch(revision.incrementAndGet());
+            return copy;
+        });
+        log.info("Registered control-plane provider {} (module={})", registered.getProtocol(), registered.getModuleId());
+        return registered;
     }
 
     @Override
     public StreamProviderDescriptor deregister(ProtocolType protocol) {
-        StreamProviderDescriptor existing = descriptors.get(protocol);
-        if (existing == null) {
+        StreamProviderDescriptor updated = descriptors.computeIfPresent(protocol, (p, existing) -> {
+            StreamProviderDescriptor copy = copy(existing);
+            copy.setState(ProviderLifecycleState.DEREGISTERED);
+            copy.setDeregisteredAt(Instant.now());
+            copy.setRegistrationEpoch(revision.incrementAndGet());
+            return copy;
+        });
+        if (updated == null) {
             throw new IllegalArgumentException("Provider not registered: " + protocol);
         }
-        StreamProviderDescriptor copy = copy(existing);
-        copy.setState(ProviderLifecycleState.DEREGISTERED);
-        copy.setDeregisteredAt(Instant.now());
-        copy.setRegistrationEpoch(revision.incrementAndGet());
-        descriptors.put(protocol, copy);
-        return copy;
+        log.info("Deregistered control-plane provider {} (module={})", protocol, updated.getModuleId());
+        return updated;
     }
 
     @Override

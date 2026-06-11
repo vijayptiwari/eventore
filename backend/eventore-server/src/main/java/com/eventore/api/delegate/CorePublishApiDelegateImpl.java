@@ -2,12 +2,12 @@ package com.eventore.api.delegate;
 
 import com.eventore.api.generated.core.PublishApiDelegate;
 import com.eventore.connector.ConnectorRegistry;
+import com.eventore.connector.spi.PayloadCodec;
 import com.eventore.connector.spi.PublishRequest;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
 import com.eventore.service.AuditService;
 import com.eventore.service.ConnectionRegistry;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -36,9 +36,7 @@ public class CorePublishApiDelegateImpl implements PublishApiDelegate {
         policy.require(Action.PUBLISH);
         var profile = CoreDelegateSupport.profile(connectionRegistry, connectionId);
         policy.requireProtocol(profile.getProtocol());
-        int bytes = publishRequest.getPayload() != null
-                ? publishRequest.getPayload().getBytes(StandardCharsets.UTF_8).length
-                : 0;
+        int bytes = PayloadCodec.toBytes(publishRequest.getPayload(), publishRequest.getContentType()).length;
         policy.validatePublishSize(bytes);
         connectorRegistry.get(profile.getProtocol()).publish(profile, publishRequest);
         var request = CoreDelegateSupport.currentRequest();

@@ -20,17 +20,12 @@ export default function StreamPage() {
   const [publishBody, setPublishBody] = useState('{"hello":"eventore"}');
   const canPublish = canAction(config?.allowedActions, 'PUBLISH');
 
+  const urlStreamHandled = useRef<string | null>(null);
   useEffect(() => {
     const cid = params.get('connectionId');
     const dest = params.get('destination');
     if (cid) setConnectionId(cid);
     if (dest) setDestination(dest);
-  }, [params]);
-
-  const urlStreamHandled = useRef<string | null>(null);
-  useEffect(() => {
-    const cid = params.get('connectionId');
-    const dest = params.get('destination');
     if (!cid || !dest || !connections?.length) return;
     const key = `${cid}:${dest}`;
     if (urlStreamHandled.current === key) return;
@@ -49,10 +44,11 @@ export default function StreamPage() {
 
   const publishMutation = useMutation({
     mutationFn: () => {
-      const cid = activeSession?.connectionId ?? connectionId;
-      const dest = activeSession?.destination ?? destination;
-      return api.publish(cid, {
-        destination: dest,
+      if (!activeSession) {
+        throw new Error('Select an active stream before publishing');
+      }
+      return api.publish(activeSession.connectionId, {
+        destination: activeSession.destination,
         payload: publishBody,
         contentType: 'application/json',
       });

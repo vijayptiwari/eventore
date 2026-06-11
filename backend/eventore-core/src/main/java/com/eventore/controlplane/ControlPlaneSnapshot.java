@@ -1,6 +1,7 @@
 package com.eventore.controlplane;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /** Aggregated control-plane view for UI and gateway configuration. */
@@ -21,27 +22,27 @@ public class ControlPlaneSnapshot {
     }
 
     public List<StreamProviderDescriptor> getProviders() {
-        return providers;
+        return Collections.unmodifiableList(providers);
     }
 
     public void setProviders(List<StreamProviderDescriptor> providers) {
-        this.providers = providers != null ? providers : new ArrayList<>();
+        this.providers = providers != null ? new ArrayList<>(providers) : new ArrayList<>();
     }
 
     public List<String> getActiveProtocols() {
-        return activeProtocols;
+        return Collections.unmodifiableList(activeProtocols);
     }
 
     public void setActiveProtocols(List<String> activeProtocols) {
-        this.activeProtocols = activeProtocols != null ? activeProtocols : new ArrayList<>();
+        this.activeProtocols = activeProtocols != null ? new ArrayList<>(activeProtocols) : new ArrayList<>();
     }
 
     public List<String> getOpenApiStreams() {
-        return openApiStreams;
+        return Collections.unmodifiableList(openApiStreams);
     }
 
     public void setOpenApiStreams(List<String> openApiStreams) {
-        this.openApiStreams = openApiStreams != null ? openApiStreams : new ArrayList<>();
+        this.openApiStreams = openApiStreams != null ? new ArrayList<>(openApiStreams) : new ArrayList<>();
     }
 
     public UiCascade getUiCascade() {
@@ -59,35 +60,38 @@ public class ControlPlaneSnapshot {
         private List<String> platformFilterProtocols = new ArrayList<>();
 
         public List<String> getConnectionProtocols() {
-            return connectionProtocols;
+            return Collections.unmodifiableList(connectionProtocols);
         }
 
         public void setConnectionProtocols(List<String> connectionProtocols) {
-            this.connectionProtocols = connectionProtocols;
+            this.connectionProtocols =
+                    connectionProtocols != null ? new ArrayList<>(connectionProtocols) : new ArrayList<>();
         }
 
         public List<String> getInspectProtocols() {
-            return inspectProtocols;
+            return Collections.unmodifiableList(inspectProtocols);
         }
 
         public void setInspectProtocols(List<String> inspectProtocols) {
-            this.inspectProtocols = inspectProtocols;
+            this.inspectProtocols = inspectProtocols != null ? new ArrayList<>(inspectProtocols) : new ArrayList<>();
         }
 
         public List<String> getAdminProtocols() {
-            return adminProtocols;
+            return Collections.unmodifiableList(adminProtocols);
         }
 
         public void setAdminProtocols(List<String> adminProtocols) {
-            this.adminProtocols = adminProtocols;
+            this.adminProtocols = adminProtocols != null ? new ArrayList<>(adminProtocols) : new ArrayList<>();
         }
 
         public List<String> getPlatformFilterProtocols() {
-            return platformFilterProtocols;
+            return Collections.unmodifiableList(platformFilterProtocols);
         }
 
         public void setPlatformFilterProtocols(List<String> platformFilterProtocols) {
-            this.platformFilterProtocols = platformFilterProtocols;
+            this.platformFilterProtocols = platformFilterProtocols != null
+                    ? new ArrayList<>(platformFilterProtocols)
+                    : new ArrayList<>();
         }
     }
 }

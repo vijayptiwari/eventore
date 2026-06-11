@@ -9,7 +9,10 @@ import com.eventore.service.ConnectionRegistry;
 import com.eventore.service.MetricsService;
 import com.eventore.service.SubscriptionManager;
 import com.eventore.service.SubscriptionManager.StreamEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PreDestroy;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +21,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -26,6 +32,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Component
 public class StreamWebSocketHandler extends TextWebSocketHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(StreamWebSocketHandler.class);
 
     private static final Set<Integer> ALLOWED_LIVE_VIEW_MINUTES = Set.of(1, 2, 5, 10);
     private static final int MAX_LIVE_VIEW_TOPICS = 32;
@@ -43,7 +51,8 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
             });
     private final Map<String, Map<String, String>> sessionSubscriptions = new ConcurrentHashMap<>();
     private final Map<String, Map<String, LiveViewHandle>> liveViewsByWsSession = new ConcurrentHashMap<>();
-    private final Object sendLock = new Object();
+    /** Per-session send locks (removed on close) so one slow session never blocks the others. */
+    private final Map<String, Object> sessionSendLocks = new ConcurrentHashMap<>();
 
     public StreamWebSocketHandler(
             ObjectMapper objectMapper,
@@ -63,12 +72,14 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
         metricsService.incrementWs();
         sessionSubscriptions.put(session.getId(), new ConcurrentHashMap<>());
         liveViewsByWsSession.put(session.getId(), new ConcurrentHashMap<>());
+        sessionSendLocks.put(session.getId(), new Object());
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
             WsCommand command = objectMapper.readValue(message.getPayload(), WsCommand.class);
+            WsCommand.validateType(command);
             switch (command.getType()) {
                 case "SUBSCRIBE" -> handleSubscribe(session, command);
                 case "UNSUBSCRIBE" -> handleUnsubscribe(session, command);
@@ -77,9 +88,29 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
                 case "HEARTBEAT" -> send(session, new StreamFrame("HEARTBEAT", null, null, null, null));
                 default -> send(session, errorFrame(command.getClientStreamId(), null, "Unknown command"));
             }
+        } catch (JsonProcessingException e) {
+            log.warn("Malformed WebSocket command JSON for session {}: {}", session.getId(), e.getOriginalMessage());
+            send(session, errorFrame(null, null, "Malformed command JSON"));
+        } catch (IllegalArgumentException | ResponseStatusException e) {
+            // Validation/policy failures carry messages intended for the client.
+            log.warn("WebSocket command rejected for session {}: {}", session.getId(), e.getMessage());
+            send(session, errorFrame(null, null, clientDetail(e)));
         } catch (Exception e) {
-            send(session, errorFrame(null, null, e.getMessage()));
+            log.error("WebSocket command failed for session {}", session.getId(), e);
+            send(session, errorFrame(null, null, "Internal error processing command"));
         }
+    }
+
+    @PreDestroy
+    void shutdownLiveViewScheduler() {
+        liveViewScheduler.shutdownNow();
+    }
+
+    private static String clientDetail(Exception e) {
+        if (e instanceof ResponseStatusException rse && rse.getReason() != null) {
+            return rse.getReason();
+        }
+        return e.getMessage() != null ? e.getMessage() : "Invalid command";
     }
 
     private void handleSubscribe(WebSocketSession session, WsCommand command) {
@@ -134,12 +165,18 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
             send(session, errorFrame(clientStreamId, null, "durationMinutes must be 1, 2, 5, or 10"));
             return;
         }
+        final LiveViewFilter.Compiled filter;
         try {
-            LiveViewFilter.validateRegex(command.getHeaderRegex(), command.getBodyRegex());
-        } catch (Exception e) {
-            send(session, errorFrame(clientStreamId, null, "Invalid regex: " + e.getMessage()));
+            filter = LiveViewFilter.compile(command.getHeaderRegex(), command.getBodyRegex());
+        } catch (IllegalArgumentException e) {
+            send(session, errorFrame(clientStreamId, null, e.getMessage()));
             return;
         }
+
+        SubscribeRequest request = buildSubscribeRequest(command, "lv:" + clientStreamId, true);
+        request.setDestinations(topics);
+        request.setDestination(topics.get(0));
+        request.setConsumerGroup("eventore-lv-" + clientStreamId);
 
         ConnectionProfile profile = connectionRegistry
                 .find(command.getConnectionId())
@@ -147,14 +184,6 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
         policy.requireProtocol(profile.getProtocol());
 
         stopLiveView(session, clientStreamId, false);
-
-        SubscribeRequest request = buildSubscribeRequest(command, "lv:" + clientStreamId, true);
-        request.setDestinations(topics);
-        request.setDestination(topics.get(0));
-        request.setConsumerGroup("eventore-lv-" + clientStreamId);
-
-        final String headerRegex = command.getHeaderRegex();
-        final String bodyRegex = command.getBodyRegex();
 
         String subscriptionId = subscriptionManager.subscribe(
                 profile,
@@ -164,7 +193,7 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
                         return;
                     }
                     if ("MESSAGE".equals(event.type()) && event.message() != null) {
-                        if (!LiveViewFilter.matches(headerRegex, bodyRegex, event.message())) {
+                        if (!LiveViewFilter.matches(filter, event.message())) {
                             return;
                         }
                         send(session, liveViewMessageFrame(event, clientStreamId));
@@ -232,7 +261,12 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
             request.setOptions(command.getOptions());
         }
         if (liveView) {
-            request.getOptions().put("liveView", "true");
+            Map<String, String> options = request.getOptions();
+            if (options == null) {
+                options = new HashMap<>();
+                request.setOptions(options);
+            }
+            options.put("liveView", "true");
         }
         return request;
     }
@@ -266,6 +300,7 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
                 subscriptionManager.unsubscribe(handle.subscriptionId());
             }
         }
+        sessionSendLocks.remove(session.getId());
     }
 
     private StreamFrame toFrame(StreamEvent event, String clientStreamId) {
@@ -283,119 +318,18 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void send(WebSocketSession session, StreamFrame frame) {
-        synchronized (sendLock) {
+        Object lock = sessionSendLocks.computeIfAbsent(session.getId(), k -> new Object());
+        synchronized (lock) {
             try {
                 if (session.isOpen()) {
                     session.sendMessage(new TextMessage(objectMapper.writeValueAsString(frame)));
                 }
-            } catch (Exception ignored) {
-                // ignore
+            } catch (Exception e) {
+                log.warn("Failed to send WebSocket frame to session {}", session.getId(), e);
             }
         }
     }
 
     private record LiveViewHandle(
             String subscriptionId, ScheduledFuture<?> expiry, long expiresAt, List<String> topics) {}
-
-    public static class WsCommand {
-        private String type;
-        private String connectionId;
-        private String destination;
-        private List<String> topics;
-        private String consumerGroup;
-        private String subscriptionId;
-        private String clientStreamId;
-        private String headerRegex;
-        private String bodyRegex;
-        private Integer durationMinutes;
-        private Map<String, String> options;
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public String getConnectionId() {
-            return connectionId;
-        }
-
-        public void setConnectionId(String connectionId) {
-            this.connectionId = connectionId;
-        }
-
-        public String getDestination() {
-            return destination;
-        }
-
-        public void setDestination(String destination) {
-            this.destination = destination;
-        }
-
-        public List<String> getTopics() {
-            return topics;
-        }
-
-        public void setTopics(List<String> topics) {
-            this.topics = topics;
-        }
-
-        public String getConsumerGroup() {
-            return consumerGroup;
-        }
-
-        public void setConsumerGroup(String consumerGroup) {
-            this.consumerGroup = consumerGroup;
-        }
-
-        public String getSubscriptionId() {
-            return subscriptionId;
-        }
-
-        public void setSubscriptionId(String subscriptionId) {
-            this.subscriptionId = subscriptionId;
-        }
-
-        public String getClientStreamId() {
-            return clientStreamId;
-        }
-
-        public void setClientStreamId(String clientStreamId) {
-            this.clientStreamId = clientStreamId;
-        }
-
-        public String getHeaderRegex() {
-            return headerRegex;
-        }
-
-        public void setHeaderRegex(String headerRegex) {
-            this.headerRegex = headerRegex;
-        }
-
-        public String getBodyRegex() {
-            return bodyRegex;
-        }
-
-        public void setBodyRegex(String bodyRegex) {
-            this.bodyRegex = bodyRegex;
-        }
-
-        public Integer getDurationMinutes() {
-            return durationMinutes;
-        }
-
-        public void setDurationMinutes(Integer durationMinutes) {
-            this.durationMinutes = durationMinutes;
-        }
-
-        public Map<String, String> getOptions() {
-            return options;
-        }
-
-        public void setOptions(Map<String, String> options) {
-            this.options = options;
-        }
-    }
 }

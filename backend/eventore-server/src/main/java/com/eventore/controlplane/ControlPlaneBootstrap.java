@@ -6,6 +6,7 @@ import com.eventore.provider.StreamProvider;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -67,9 +68,20 @@ public class ControlPlaneBootstrap {
         Set<ProtocolType> configured = Arrays.stream(raw.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
-                .map(s -> ProtocolType.valueOf(s.toUpperCase()))
+                .map(ControlPlaneBootstrap::parseProtocol)
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(ProtocolType.class)));
         configured.retainAll(onClasspath);
         return configured;
+    }
+
+    private static ProtocolType parseProtocol(String name) {
+        try {
+            return ProtocolType.valueOf(name.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException(
+                    "Unknown protocol '" + name + "' in eventore.enabled-protocols. Valid values: "
+                            + Arrays.toString(ProtocolType.values()),
+                    e);
+        }
     }
 }

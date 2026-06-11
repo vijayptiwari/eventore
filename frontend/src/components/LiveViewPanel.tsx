@@ -7,6 +7,7 @@ import type { LiveViewDurationMinutes } from '../stream/types';
 import ExportResultActions from './ExportResultActions';
 
 const DURATIONS: LiveViewDurationMinutes[] = [1, 2, 5, 10];
+const MAX_REGEX_LENGTH = 512;
 
 interface Props {
   session: LiveStreamSession;
@@ -23,7 +24,9 @@ export default function LiveViewPanel({ session }: Props) {
   const [remainingSec, setRemainingSec] = useState<number | null>(null);
 
   const { data: topics } = useQuery({
-    queryKey: ['inspect-topics', session.connectionId, topicFilter],
+    // Distinct from StreamInspector's 'inspect-topics' key: this query has
+    // different `enabled` rules and must not share cache entries with it.
+    queryKey: ['live-view-topics', session.connectionId, topicFilter],
     queryFn: () => api.inspectTopics(session.connectionId, topicFilter || undefined),
     enabled:
       session.protocol === 'KAFKA' ||
@@ -41,12 +44,13 @@ export default function LiveViewPanel({ session }: Props) {
   }, [topics, session.destination]);
 
   useEffect(() => {
-    if (!liveView?.expiresAt || liveView.status !== 'active') {
+    const expiresAt = liveView?.expiresAt;
+    if (!expiresAt || liveView.status !== 'active') {
       setRemainingSec(null);
       return;
     }
     const tick = () => {
-      const sec = Math.max(0, Math.floor((liveView.expiresAt! - Date.now()) / 1000));
+      const sec = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
       setRemainingSec(sec);
     };
     tick();
@@ -64,6 +68,8 @@ export default function LiveViewPanel({ session }: Props) {
   };
 
   const isActive = liveView?.active && (liveView.status === 'connecting' || liveView.status === 'active');
+  const regexTooLong =
+    headerRegex.length > MAX_REGEX_LENGTH || bodyRegex.length > MAX_REGEX_LENGTH;
 
   return (
     <div className="live-view-panel">
@@ -104,6 +110,7 @@ export default function LiveViewPanel({ session }: Props) {
             value={headerRegex}
             onChange={(e) => setHeaderRegex(e.target.value)}
             placeholder="e.g. correlationId=order-.*"
+            maxLength={MAX_REGEX_LENGTH}
             disabled={isActive}
           />
         </div>
@@ -113,9 +120,13 @@ export default function LiveViewPanel({ session }: Props) {
             value={bodyRegex}
             onChange={(e) => setBodyRegex(e.target.value)}
             placeholder='e.g. "status":"OK"'
+            maxLength={MAX_REGEX_LENGTH}
             disabled={isActive}
           />
         </div>
+        {regexTooLong && (
+          <p className="stream-error">Each regex filter must be at most {MAX_REGEX_LENGTH} characters.</p>
+        )}
         <p className="inspector-meta">Leave blank to show all messages. Invalid regex is rejected by the server.</p>
       </div>
 
@@ -142,7 +153,7 @@ export default function LiveViewPanel({ session }: Props) {
         <div className="inspector-actions">
           <button
             type="button"
-            disabled={!wsConnected || isActive || selectedTopics.size === 0}
+            disabled={!wsConnected || isActive || selectedTopics.size === 0 || regexTooLong}
             onClick={() =>
               startLiveView(session.id, {
                 topics: [...selectedTopics],

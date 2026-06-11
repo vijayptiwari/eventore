@@ -20,11 +20,14 @@ function downloadBlob(filename: string, content: string, mimeType: string): void
   URL.revokeObjectURL(url);
 }
 
-function csvEscape(value: string): string {
-  if (/[",\n\r]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+export function csvEscape(value: string): string {
+  // Prefix with ' to neutralize spreadsheet formula injection (=, +, -, @)
+  // since exported message content is untrusted.
+  const guarded = /^[=+\-@]/.test(value) ? `'${value}` : value;
+  if (/[",\n\r]/.test(guarded)) {
+    return `"${guarded.replace(/"/g, '""')}"`;
   }
-  return value;
+  return guarded;
 }
 
 export function exportJsonFile(filename: string, data: unknown): void {

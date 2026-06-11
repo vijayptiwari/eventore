@@ -17,5 +17,10 @@ public interface MessagingConnector {
 
     void publish(ConnectionProfile profile, PublishRequest request);
 
+    /**
+     * Releases connector resources for the given connection id. Implementations should
+     * stop active subscriptions, close clients, and tolerate repeated calls for the
+     * same id without throwing.
+     */
     void close(String connectionId);
 }

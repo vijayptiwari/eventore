@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Orchestrates control-plane registration and data-plane attachment (desired state vs runtime handles).
@@ -20,6 +22,8 @@ public class ControlPlaneCoordinator {
     private final ControlPlaneRegistry controlPlane;
     private final DataPlaneRegistry dataPlane;
     private final Map<ProtocolType, StreamProvider> availableImplementations = new ConcurrentHashMap<>();
+    /** Serializes register/deregister so the last-active-provider guard is atomic. */
+    private final Object lifecycleLock = new Object();
 
     public ControlPlaneCoordinator(ControlPlaneRegistry controlPlane, DataPlaneRegistry dataPlane) {
         this.controlPlane = controlPlane;
@@ -36,25 +40,33 @@ public class ControlPlaneCoordinator {
             throw new IllegalArgumentException(
                     "No provider implementation on classpath for " + protocol);
         }
-        if (controlPlane.isRegistered(protocol)) {
-            log.info("Provider {} already registered in control plane", protocol);
-            return controlPlane.find(protocol).orElseThrow();
+        synchronized (lifecycleLock) {
+            if (controlPlane.isRegistered(protocol)) {
+                log.info("Provider {} already registered in control plane", protocol);
+                return controlPlane.find(protocol).orElseThrow();
+            }
+            StreamProviderDescriptor descriptor = StreamProviderDescriptorFactory.fromProvider(implementation);
+            StreamProviderDescriptor registered = controlPlane.register(descriptor);
+            dataPlane.attach(protocol, implementation);
+            log.info("Control plane: registered {} (module={})", protocol, registered.getModuleId());
+            return registered;
         }
-        StreamProviderDescriptor descriptor = StreamProviderDescriptorFactory.fromProvider(implementation);
-        StreamProviderDescriptor registered = controlPlane.register(descriptor);
-        dataPlane.attach(protocol, implementation);
-        log.info("Control plane: registered {} (module={})", protocol, registered.getModuleId());
-        return registered;
     }
 
     public StreamProviderDescriptor deregister(ProtocolType protocol) {
-        if (!controlPlane.isRegistered(protocol)) {
-            throw new IllegalArgumentException("Provider not registered: " + protocol);
+        synchronized (lifecycleLock) {
+            if (!controlPlane.isRegistered(protocol)) {
+                throw new IllegalArgumentException("Provider not registered: " + protocol);
+            }
+            if (controlPlane.listRegistered().size() <= 1) {
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT, "Cannot deregister the last active provider");
+            }
+            dataPlane.detach(protocol);
+            StreamProviderDescriptor deregistered = controlPlane.deregister(protocol);
+            log.info("Control plane: deregistered {}", protocol);
+            return deregistered;
         }
-        dataPlane.detach(protocol);
-        StreamProviderDescriptor deregistered = controlPlane.deregister(protocol);
-        log.info("Control plane: deregistered {}", protocol);
-        return deregistered;
     }
 
     public ControlPlaneSnapshot snapshot() {

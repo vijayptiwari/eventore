@@ -24,13 +24,26 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RabbitMqMessagingInspector implements MessagingInspector {
 
+    private static final Logger log = LoggerFactory.getLogger(RabbitMqMessagingInspector.class);
+
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+    private final HttpClient httpClient;
+
+    public RabbitMqMessagingInspector() {
+        this(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
+    }
+
+    /** Visible for tests so the management HTTP layer can be stubbed deterministically. */
+    RabbitMqMessagingInspector(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
     @Override
     public ProtocolType protocol() {
@@ -41,7 +54,7 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
     public ProtocolInspectCapabilities capabilities() {
         ProtocolInspectCapabilities c = new ProtocolInspectCapabilities();
         c.setFeatures(List.of(
-                "broker-info", "queues", "queue-detail", "message-search", "lag", "queue-purge", "message-get"));
+                "broker-info", "queues", "queue-detail", "message-search", "lag", "message-get"));
         return c;
     }
 
@@ -54,10 +67,10 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
             if (overview.has("cluster_name")) {
                 info.setClusterId(overview.get("cluster_name").asText());
             }
-            info.getAttributes().put("management", managementBase(profile));
+            info.putAttribute("management", managementBase(profile));
         } catch (Exception e) {
-            info.getAttributes().put("note", "Enable management plugin or set managementPort property");
-            info.getAttributes().put("error", e.getMessage());
+            info.putAttribute("note", "Enable management plugin or set managementPort property");
+            info.putAttribute("error", e.getMessage());
         }
         return info;
     }
@@ -87,16 +100,22 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
                     }
                     TopicDetail td = new TopicDetail();
                     td.setName(name);
+                    // NOTE: RabbitMQ queues have no partitions, so partitionCount is
+                    // deliberately repurposed to carry the queue's consumer count.
+                    // Existing API consumers rely on this; do not change without a
+                    // coordinated contract update.
                     td.setPartitionCount(q.path("consumers").asInt(0));
-                    td.getConfig().put("messages", String.valueOf(q.path("messages").asInt()));
-                    td.getConfig().put("state", q.path("state").asText(""));
+                    td.putConfig("messages", String.valueOf(q.path("messages").asInt()));
+                    td.putConfig("state", q.path("state").asText(""));
                     queues.add(td);
                 }
             }
         } catch (Exception e) {
+            log.debug("RabbitMQ management API queue listing failed for connection {}; "
+                    + "returning configured default queue", profile.getId(), e);
             TopicDetail fallback = new TopicDetail();
             fallback.setName(profile.propertyOrDefault("queue", "eventore.queue"));
-            fallback.getConfig().put("note", "Management API unavailable: " + e.getMessage());
+            fallback.putConfig("note", "Management API unavailable: " + e.getMessage());
             queues.add(fallback);
         }
         return queues;
@@ -109,9 +128,9 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
             JsonNode q = getJson(profile, "/api/queues/" + vhost + "/" + enc(topic));
             TopicDetail td = new TopicDetail();
             td.setName(topic);
-            td.getConfig().put("messages", String.valueOf(q.path("messages").asInt()));
-            td.getConfig().put("consumers", String.valueOf(q.path("consumers").asInt()));
-            td.getConfig().put("message_bytes", String.valueOf(q.path("message_bytes").asLong()));
+            td.putConfig("messages", String.valueOf(q.path("messages").asInt()));
+            td.putConfig("consumers", String.valueOf(q.path("consumers").asInt()));
+            td.putConfig("message_bytes", String.valueOf(q.path("message_bytes").asLong()));
             return td;
         } catch (Exception e) {
             throw new IllegalStateException("Queue detail failed: " + e.getMessage(), e);
@@ -136,7 +155,7 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
         int count = request.getMaxMessages() != null ? Math.min(request.getMaxMessages(), 100) : 50;
         try {
             String vhost = encVhost(profile);
-            String body = "{\"count\":" + count + ",\"ackmode\":\"amqp\",\"encoding\":\"auto\"}";
+            String body = "{\"count\":" + count + ",\"ackmode\":\"reject_requeue_true\",\"encoding\":\"auto\"}";
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(managementBase(profile) + "/api/queues/" + vhost + "/" + enc(queue) + "/get"))
                     .timeout(Duration.ofSeconds(15))
@@ -163,7 +182,7 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
                     msg.setConnectionId(profile.getId());
                     msg.setProtocol(ProtocolType.RABBITMQ);
                     msg.setDestination(queue);
-                    msg.getHeaders().put("routingKey", item.path("routing_key").asText(""));
+                    msg.putHeader("routingKey", item.path("routing_key").asText(""));
                     msg.setPayload(text);
                     messages.add(msg);
                 }
@@ -202,13 +221,29 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
 
     private String managementBase(ConnectionProfile profile) {
         String port = profile.propertyOrDefault("managementPort", "15672");
-        String host = profile.getBrokerUrl().split(":")[0];
-        return "http://" + host + ":" + port;
+        com.eventore.connector.rabbitmq.RabbitMqBrokerUrls.Endpoint endpoint =
+                com.eventore.connector.rabbitmq.RabbitMqBrokerUrls.parse(profile.getBrokerUrl());
+        String scheme = "true".equalsIgnoreCase(profile.propertyOrDefault("managementTls", "false"))
+                ? "https"
+                : "http";
+        return scheme + "://" + endpoint.host() + ":" + port;
     }
 
     private String basicAuth(ConnectionProfile profile) {
-        String user = profile.credential("username") != null ? profile.credential("username") : "guest";
-        String pass = profile.credential("password") != null ? profile.credential("password") : "guest";
+        String user = profile.credential("username");
+        String pass = profile.credential("password");
+        if (user == null || pass == null) {
+            log.warn(
+                    "Connection '{}' has no explicit RabbitMQ management credentials; "
+                            + "falling back to default guest/guest",
+                    profile.getId());
+        }
+        if (user == null) {
+            user = "guest";
+        }
+        if (pass == null) {
+            pass = "guest";
+        }
         return "Basic " + Base64.getEncoder().encodeToString((user + ":" + pass).getBytes(StandardCharsets.UTF_8));
     }
 

@@ -10,10 +10,13 @@ public class ControlPlaneView {
     private java.util.List<String> openApiStreams;
 
     public static ControlPlaneView from(ControlPlaneSnapshot snapshot) {
+        if (snapshot == null) {
+            throw new IllegalArgumentException("control plane snapshot is required");
+        }
         ControlPlaneView view = new ControlPlaneView();
         view.revision = snapshot.getRevision();
         view.uiCascade = snapshot.getUiCascade();
-        view.openApiStreams = snapshot.getOpenApiStreams();
+        view.openApiStreams = java.util.List.copyOf(snapshot.getOpenApiStreams());
         return view;
     }
 
@@ -34,10 +37,10 @@ public class ControlPlaneView {
     }
 
     public java.util.List<String> getOpenApiStreams() {
-        return openApiStreams;
+        return openApiStreams != null ? java.util.Collections.unmodifiableList(openApiStreams) : java.util.List.of();
     }
 
     public void setOpenApiStreams(java.util.List<String> openApiStreams) {
-        this.openApiStreams = openApiStreams;
+        this.openApiStreams = openApiStreams != null ? new java.util.ArrayList<>(openApiStreams) : null;
     }
 }

@@ -4,6 +4,8 @@ import com.eventore.domain.CloudProvider;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.ProtocolType;
 import com.eventore.domain.StreamPlatform;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ConnectionProfileResponse {
@@ -18,6 +20,9 @@ public class ConnectionProfileResponse {
     private boolean hasCredentials;
 
     public static ConnectionProfileResponse from(ConnectionProfile profile) {
+        if (profile == null) {
+            throw new IllegalArgumentException("connection profile is required");
+        }
         ConnectionProfileResponse r = new ConnectionProfileResponse();
         r.id = profile.getId();
         r.name = profile.getName();
@@ -25,7 +30,7 @@ public class ConnectionProfileResponse {
         r.cloudProvider = profile.getCloudProvider();
         r.streamPlatform = profile.getStreamPlatform();
         r.brokerUrl = profile.getBrokerUrl();
-        r.properties = profile.getProperties();
+        r.properties = new LinkedHashMap<>(profile.getProperties());
         r.hasCredentials =
                 profile.getCredentials() != null && !profile.getCredentials().isEmpty();
         return r;
@@ -80,11 +85,11 @@ public class ConnectionProfileResponse {
     }
 
     public Map<String, String> getProperties() {
-        return properties;
+        return properties != null ? Collections.unmodifiableMap(properties) : Map.of();
     }
 
     public void setProperties(Map<String, String> properties) {
-        this.properties = properties;
+        this.properties = properties != null ? new LinkedHashMap<>(properties) : null;
     }
 
     public boolean isHasCredentials() {

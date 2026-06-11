@@ -3,15 +3,16 @@ package com.eventore.connector.kinesis;
 import com.eventore.connector.cloud.CloudClientSupport;
 import com.eventore.connector.spi.MessageHandler;
 import com.eventore.connector.spi.MessagingConnector;
+import com.eventore.connector.spi.PayloadCodec;
 import com.eventore.connector.spi.PublishRequest;
 import com.eventore.connector.spi.SubscribeDestinations;
 import com.eventore.connector.spi.SubscribeRequest;
+import com.eventore.connector.spi.SubscriptionKeys;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.MessageDirection;
 import com.eventore.domain.ProtocolType;
 import com.eventore.domain.TopicRef;
 import com.eventore.domain.UnifiedMessage;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.kinesis.KinesisClient;
+import software.amazon.awssdk.services.kinesis.model.ExpiredIteratorException;
 import software.amazon.awssdk.services.kinesis.model.GetRecordsRequest;
 import software.amazon.awssdk.services.kinesis.model.GetRecordsResponse;
 import software.amazon.awssdk.services.kinesis.model.GetShardIteratorRequest;
@@ -30,10 +32,17 @@ import software.amazon.awssdk.services.kinesis.model.PutRecordRequest;
 import software.amazon.awssdk.services.kinesis.model.Record;
 import software.amazon.awssdk.services.kinesis.model.Shard;
 import software.amazon.awssdk.services.kinesis.model.ShardIteratorType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class KinesisMessagingConnector implements MessagingConnector {
+
+    private static final Logger log = LoggerFactory.getLogger(KinesisMessagingConnector.class);
+
+    private static final long POLL_INTERVAL_MS = 500;
+    private static final long MAX_BACKOFF_MS = 30_000;
 
     private final Map<String, AutoCloseable> active = new ConcurrentHashMap<>();
 
@@ -94,48 +103,83 @@ public class KinesisMessagingConnector implements MessagingConnector {
             String stream,
             AtomicBoolean running) {
         try {
-            List<Shard> shards =
-                    kinesis.listShards(ListShardsRequest.builder().streamName(stream).build()).shards();
+            List<Shard> shards = listAllShards(kinesis, stream);
             Map<String, String> iterators = new ConcurrentHashMap<>();
             for (Shard shard : shards) {
-                String it = kinesis.getShardIterator(GetShardIteratorRequest.builder()
-                                .streamName(stream)
-                                .shardId(shard.shardId())
-                                .shardIteratorType(ShardIteratorType.LATEST)
-                                .build())
-                        .shardIterator();
-                iterators.put(shard.shardId(), it);
+                iterators.put(shard.shardId(), latestIterator(kinesis, stream, shard.shardId()));
             }
+            long backoffMs = POLL_INTERVAL_MS;
             while (running.get()) {
-                for (Map.Entry<String, String> entry : iterators.entrySet()) {
-                    if (entry.getValue() == null) {
-                        continue;
+                try {
+                    for (Map.Entry<String, String> entry : iterators.entrySet()) {
+                        if (entry.getValue() == null) {
+                            continue;
+                        }
+                        GetRecordsResponse records;
+                        try {
+                            records = kinesis.getRecords(GetRecordsRequest.builder()
+                                    .shardIterator(entry.getValue())
+                                    .limit(100)
+                                    .build());
+                        } catch (ExpiredIteratorException expired) {
+                            // Shard iterators expire after 5 minutes; fetch a fresh
+                            // one and resume tailing the shard.
+                            log.debug("Kinesis shard iterator expired for stream {} shard {}; refreshing",
+                                    stream, entry.getKey(), expired);
+                            entry.setValue(latestIterator(kinesis, stream, entry.getKey()));
+                            continue;
+                        }
+                        entry.setValue(records.nextShardIterator());
+                        for (Record record : records.records()) {
+                            UnifiedMessage msg = new UnifiedMessage();
+                            msg.setConnectionId(profile.getId());
+                            msg.setProtocol(ProtocolType.KINESIS);
+                            msg.setDestination(stream);
+                            msg.setDirection(MessageDirection.INBOUND);
+                            PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(record.data().asByteArray());
+                            msg.setPayload(decoded.text());
+                            msg.setContentType(decoded.contentType());
+                            msg.putHeader("shardId", entry.getKey());
+                            msg.putHeader("sequenceNumber", record.sequenceNumber());
+                            msg.putHeader("partitionKey", record.partitionKey());
+                            handler.onMessage(msg);
+                        }
                     }
-                    GetRecordsResponse records = kinesis.getRecords(
-                            GetRecordsRequest.builder().shardIterator(entry.getValue()).limit(100).build());
-                    entry.setValue(records.nextShardIterator());
-                    for (Record record : records.records()) {
-                        UnifiedMessage msg = new UnifiedMessage();
-                        msg.setConnectionId(profile.getId());
-                        msg.setProtocol(ProtocolType.KINESIS);
-                        msg.setDestination(stream);
-                        msg.setDirection(MessageDirection.INBOUND);
-                        msg.setPayload(new String(record.data().asByteArray(), StandardCharsets.UTF_8));
-                        msg.getHeaders().put("shardId", entry.getKey());
-                        msg.getHeaders().put("sequenceNumber", record.sequenceNumber());
-                        msg.getHeaders().put("partitionKey", record.partitionKey());
-                        handler.onMessage(msg);
+                    backoffMs = POLL_INTERVAL_MS;
+                    Thread.sleep(POLL_INTERVAL_MS);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Exception e) {
+                    if (!running.get()) {
+                        return;
                     }
+                    // Back off exponentially on repeated failures instead of hot-spinning;
+                    // the delay resets after the next successful poll.
+                    log.warn("Kinesis poll failed for connection {} stream {}; retrying in {} ms",
+                            profile.getId(), stream, backoffMs, e);
+                    handler.onError(e.getMessage());
+                    Thread.sleep(backoffMs);
+                    backoffMs = Math.min(backoffMs * 2, MAX_BACKOFF_MS);
                 }
-                Thread.sleep(500);
             }
         } catch (InterruptedException ignored) {
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             if (running.get()) {
+                log.warn("Kinesis poll loop failed for connection {} stream {}", profile.getId(), stream, e);
                 handler.onError(e.getMessage());
             }
         }
+    }
+
+    private static String latestIterator(KinesisClient kinesis, String stream, String shardId) {
+        return kinesis.getShardIterator(GetShardIteratorRequest.builder()
+                        .streamName(stream)
+                        .shardId(shardId)
+                        .shardIteratorType(ShardIteratorType.LATEST)
+                        .build())
+                .shardIterator();
     }
 
     @Override
@@ -147,23 +191,42 @@ public class KinesisMessagingConnector implements MessagingConnector {
             kinesis.putRecord(PutRecordRequest.builder()
                     .streamName(request.getDestination())
                     .partitionKey(key)
-                    .data(SdkBytes.fromString(
-                            request.getPayload() != null ? request.getPayload() : "",
-                            StandardCharsets.UTF_8))
+                    .data(SdkBytes.fromByteArray(
+                            PayloadCodec.toBytes(request.getPayload(), request.getContentType())))
                     .build());
         } catch (Exception e) {
+            log.warn("Kinesis publish failed for connection {} stream {}",
+                    profile.getId(), request.getDestination(), e);
             throw new IllegalStateException("Kinesis publish failed: " + e.getMessage(), e);
         }
+    }
+
+    private static List<Shard> listAllShards(KinesisClient kinesis, String stream) {
+        List<Shard> shards = new ArrayList<>();
+        String nextToken = null;
+        do {
+            ListShardsRequest.Builder builder = ListShardsRequest.builder();
+            if (nextToken == null) {
+                builder.streamName(stream);
+            } else {
+                builder.nextToken(nextToken);
+            }
+            var response = kinesis.listShards(builder.build());
+            shards.addAll(response.shards());
+            nextToken = response.nextToken();
+        } while (nextToken != null);
+        return shards;
     }
 
     @Override
     public void close(String connectionId) {
         active.entrySet().removeIf(e -> {
-            if (e.getKey().startsWith(connectionId)) {
+            if (SubscriptionKeys.belongsToConnection(e.getKey(), connectionId)) {
                 try {
                     e.getValue().close();
-                } catch (Exception ignored) {
-                    // ignore
+                } catch (Exception ex) {
+                    log.debug("Error closing Kinesis subscription {} while closing connection {}",
+                            e.getKey(), connectionId, ex);
                 }
                 return true;
             }
@@ -176,8 +239,8 @@ public class KinesisMessagingConnector implements MessagingConnector {
         if (existing != null) {
             try {
                 existing.close();
-            } catch (Exception ignored) {
-                // ignore
+            } catch (Exception e) {
+                log.debug("Error closing previous Kinesis subscription for key {}", key, e);
             }
         }
     }

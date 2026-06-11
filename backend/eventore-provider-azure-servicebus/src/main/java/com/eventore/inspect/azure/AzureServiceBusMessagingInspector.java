@@ -1,7 +1,6 @@
 package com.eventore.inspect.azure;
 
 import com.eventore.connector.azure.AzureServiceBusMessagingConnector;
-import com.eventore.connector.cloud.CloudClientSupport;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.ProtocolType;
 import com.eventore.domain.UnifiedMessage;
@@ -34,7 +33,7 @@ public class AzureServiceBusMessagingInspector implements MessagingInspector {
     @Override
     public ProtocolInspectCapabilities capabilities() {
         ProtocolInspectCapabilities c = new ProtocolInspectCapabilities();
-        c.setFeatures(List.of("cluster", "queues", "topics", "queue-detail", "message-search"));
+        c.setFeatures(List.of("cluster", "queues", "topics", "queue-detail"));
         return c;
     }
 
@@ -42,8 +41,8 @@ public class AzureServiceBusMessagingInspector implements MessagingInspector {
     public ClusterInfo clusterInfo(ConnectionProfile profile) {
         ClusterInfo info = new ClusterInfo();
         info.setClusterId(profile.getBrokerUrl());
-        info.getAttributes().put("cloudProvider", "AZURE");
-        info.getAttributes().put("service", "Service Bus");
+        info.putAttribute("cloudProvider", "AZURE");
+        info.putAttribute("service", "Service Bus");
         return info;
     }
 
@@ -68,7 +67,7 @@ public class AzureServiceBusMessagingInspector implements MessagingInspector {
             }
             TopicDetail td = new TopicDetail();
             td.setName(ref.getName());
-            td.getConfig().put("type", ref.getType());
+            td.putConfig("type", ref.getType());
             list.add(td);
         }
         return list;

@@ -1,6 +1,7 @@
 package com.eventore.inspect.kafka;
 
 import com.eventore.connector.kafka.KafkaClientSupport;
+import com.eventore.connector.spi.PayloadCodec;
 import com.eventore.connector.spi.PublishRequest;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.inspect.kafka.KafkaAdminModels.AlterTopicConfigsRequest;
@@ -41,7 +42,6 @@ import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePattern;
 import org.apache.kafka.common.resource.ResourcePatternFilter;
 import org.apache.kafka.common.resource.ResourceType;
-import org.apache.kafka.common.security.auth.KafkaPrincipal;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -65,9 +65,7 @@ public class KafkaAdminService {
             throws Exception {
         Properties props = KafkaClientSupport.producerProps(profile);
         try (KafkaProducer<String, byte[]> producer = new KafkaProducer<>(props)) {
-            byte[] bytes = request.getPayload() != null
-                    ? request.getPayload().getBytes(StandardCharsets.UTF_8)
-                    : new byte[0];
+            byte[] bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
             String key = headerValue(request, "key");
             Integer partition = parsePartition(request);
             ProducerRecord<String, byte[]> record =
@@ -175,8 +173,10 @@ public class KafkaAdminService {
     }
 
     public void replaceAcl(ConnectionProfile profile, ReplaceAclRequest req) throws Exception {
-        deleteAcl(profile, req.getOldBinding());
+        // Create the replacement first so a failure never leaves the resource with
+        // no ACL at all; only then remove the old binding.
         createAcl(profile, req.getNewBinding());
+        deleteAcl(profile, req.getOldBinding());
     }
 
     private static Collection<TopicPartition> buildPartitions(AdminClient admin, String topic, Integer partition)
@@ -228,7 +228,11 @@ public class KafkaAdminService {
         if (p == null || p.isBlank()) {
             return null;
         }
-        return Integer.parseInt(p);
+        try {
+            return Integer.parseInt(p.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid 'partition' header value: " + p, e);
+        }
     }
 
     private static List<org.apache.kafka.clients.admin.AlterConfigOp> toAlterOps(Map<String, String> configs) {
@@ -276,7 +280,7 @@ public class KafkaAdminService {
         ResourceType resourceTypeFilter =
                 resourceType != null && !resourceType.isBlank()
                         ? ResourceType.fromString(resourceType)
-                        : null;
+                        : ResourceType.ANY;
         ResourcePatternFilter patternFilter = new ResourcePatternFilter(
                 resourceTypeFilter,
                 resourceName != null && !resourceName.isBlank() ? resourceName : null,

@@ -36,23 +36,50 @@ export interface ConnectionProfileResponse {
   hasCredentials?: boolean;
 }
 
+const REQUEST_TIMEOUT_MS = 30_000;
+
+export function authHeaders(): Record<string, string> {
+  const { apiToken } = getRuntimeConfig();
+  if (!apiToken) {
+    return {};
+  }
+  return {
+    Authorization: `Bearer ${apiToken}`,
+  };
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const { apiBaseUrl } = getRuntimeConfig();
-  const res = await fetch(`${apiBaseUrl}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetch(`${apiBaseUrl}${path}`, {
+      ...init,
+      signal: init?.signal ?? controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(),
+        ...(init?.headers ?? {}),
+      },
+    });
+  } catch (err) {
+    if (!init?.signal && controller.signal.aborted) {
+      throw new Error(`Request timed out after ${REQUEST_TIMEOUT_MS}ms: ${path}`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
   if (!res.ok) {
-    const text = await res.text();
-    let msg = text;
+    let msg = '';
     try {
+      const text = await res.text();
+      msg = text;
       const j = JSON.parse(text) as { error?: string };
       if (j.error) msg = j.error;
     } catch {
-      // use raw
+      // non-JSON or unreadable body — keep raw text (or fall back to status text)
     }
     throw new Error(msg || res.statusText);
   }
@@ -60,6 +87,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     return undefined as T;
   }
   return res.json() as Promise<T>;
+}
+
+function connectionPath(connectionId: string, suffix: string): string {
+  return `/connections/${encodeURIComponent(connectionId)}${suffix}`;
 }
 
 export const api = {
@@ -73,16 +104,16 @@ export const api = {
       body: JSON.stringify(body),
     }),
   updateConnection: (id: string, body: ConnectionProfile) =>
-    request<ConnectionProfileResponse>(`/connections/${id}`, {
+    request<ConnectionProfileResponse>(connectionPath(id, ''), {
       method: 'PUT',
       body: JSON.stringify(body),
     }),
   deleteConnection: (id: string) =>
-    request<void>(`/connections/${id}`, { method: 'DELETE' }),
+    request<void>(connectionPath(id, ''), { method: 'DELETE' }),
   validateConnection: (id: string) =>
-    request<{ status: string }>(`/connections/${id}/validate`, { method: 'POST' }),
+    request<{ status: string }>(connectionPath(id, '/validate'), { method: 'POST' }),
   listDestinations: (connectionId: string) =>
-    request<TopicRef[]>(`/connections/${connectionId}/destinations`),
+    request<TopicRef[]>(connectionPath(connectionId, '/destinations')),
   publish: (
     connectionId: string,
     body: {
@@ -92,7 +123,7 @@ export const api = {
       headers?: Record<string, string>;
     },
   ) =>
-    request<{ status: string }>(`/connections/${connectionId}/publish`, {
+    request<{ status: string }>(connectionPath(connectionId, '/publish'), {
       method: 'POST',
       body: JSON.stringify({
         destination: body.destination,
@@ -103,33 +134,33 @@ export const api = {
     }),
 
   inspectCapabilities: (connectionId: string) =>
-    request<InspectCapabilities>(`/connections/${connectionId}/inspect/capabilities`),
+    request<InspectCapabilities>(connectionPath(connectionId, '/inspect/capabilities')),
   inspectCluster: (connectionId: string) =>
-    request<ClusterInfo>(`/connections/${connectionId}/inspect/cluster`),
+    request<ClusterInfo>(connectionPath(connectionId, '/inspect/cluster')),
   inspectBrokers: (connectionId: string) =>
     request<{ cluster: ClusterInfo; brokerInfo: Record<string, unknown> }>(
-      `/connections/${connectionId}/inspect/brokers`,
+      connectionPath(connectionId, '/inspect/brokers'),
     ),
   inspectConsumerGroups: (connectionId: string) =>
-    request<ConsumerGroupSummary[]>(`/connections/${connectionId}/inspect/consumer-groups`),
+    request<ConsumerGroupSummary[]>(connectionPath(connectionId, '/inspect/consumer-groups')),
   inspectConsumerGroup: (connectionId: string, groupId: string) =>
     request<ConsumerGroupDetail>(
-      `/connections/${connectionId}/inspect/consumer-groups/${encodeURIComponent(groupId)}`,
+      `${connectionPath(connectionId, '/inspect/consumer-groups/')}${encodeURIComponent(groupId)}`,
     ),
   inspectTopics: (connectionId: string, filter?: string) =>
     request<TopicDetail[]>(
-      `/connections/${connectionId}/inspect/topics${filter ? `?filter=${encodeURIComponent(filter)}` : ''}`,
+      `${connectionPath(connectionId, '/inspect/topics')}${filter ? `?filter=${encodeURIComponent(filter)}` : ''}`,
     ),
   inspectTopic: (connectionId: string, topic: string) =>
     request<TopicDetail>(
-      `/connections/${connectionId}/inspect/topics/${encodeURIComponent(topic)}`,
+      `${connectionPath(connectionId, '/inspect/topics/')}${encodeURIComponent(topic)}`,
     ),
   inspectLag: (connectionId: string, groupId: string, topic?: string) =>
     request<GroupOffset[]>(
-      `/connections/${connectionId}/inspect/lag?groupId=${encodeURIComponent(groupId)}${topic ? `&topic=${encodeURIComponent(topic)}` : ''}`,
+      `${connectionPath(connectionId, '/inspect/lag')}?groupId=${encodeURIComponent(groupId)}${topic ? `&topic=${encodeURIComponent(topic)}` : ''}`,
     ),
   inspectSearch: (connectionId: string, body: MessageSearchRequest) =>
-    request<UnifiedMessage[]>(`/connections/${connectionId}/inspect/search`, {
+    request<UnifiedMessage[]>(connectionPath(connectionId, '/inspect/search'), {
       method: 'POST',
       body: JSON.stringify(body),
     }),
@@ -145,7 +176,7 @@ export const api = {
     },
   ) => {
     const q = body.flush ? '?flush=true' : '';
-    return request<PublishResult>(`/connections/${connectionId}/kafka/publish${q}`, {
+    return request<PublishResult>(`${connectionPath(connectionId, '/kafka/publish')}${q}`, {
       method: 'POST',
       body: JSON.stringify({
         destination: body.destination,
@@ -156,18 +187,18 @@ export const api = {
     });
   },
   kafkaCreateTopic: (connectionId: string, body: CreateTopicRequest) =>
-    request<{ status: string; topic: string }>(`/connections/${connectionId}/kafka/topics`, {
+    request<{ status: string; topic: string }>(connectionPath(connectionId, '/kafka/topics'), {
       method: 'POST',
       body: JSON.stringify(body),
     }),
   kafkaDeleteTopic: (connectionId: string, topic: string) =>
     request<{ status: string; topic: string }>(
-      `/connections/${connectionId}/kafka/topics/${encodeURIComponent(topic)}`,
+      `${connectionPath(connectionId, '/kafka/topics/')}${encodeURIComponent(topic)}`,
       { method: 'DELETE' },
     ),
   kafkaFlushTopic: (connectionId: string, topic: string, body: { mode?: string; partition?: number }) =>
     request<Record<string, unknown>>(
-      `/connections/${connectionId}/kafka/topics/${encodeURIComponent(topic)}/flush`,
+      `${connectionPath(connectionId, '/kafka/topics/')}${encodeURIComponent(topic)}/flush`,
       { method: 'POST', body: JSON.stringify(body) },
     ),
   kafkaAlterTopicConfigs: (
@@ -176,7 +207,7 @@ export const api = {
     configs: Record<string, string>,
   ) =>
     request<{ status: string; topic: string }>(
-      `/connections/${connectionId}/kafka/topics/${encodeURIComponent(topic)}/configs`,
+      `${connectionPath(connectionId, '/kafka/topics/')}${encodeURIComponent(topic)}/configs`,
       { method: 'PUT', body: JSON.stringify({ configs }) },
     ),
   kafkaListAcls: (
@@ -188,20 +219,20 @@ export const api = {
     if (filter?.resourceName) params.set('resourceName', filter.resourceName);
     if (filter?.principal) params.set('principal', filter.principal);
     const q = params.toString() ? `?${params}` : '';
-    return request<KafkaAclEntry[]>(`/connections/${connectionId}/kafka/acls${q}`);
+    return request<KafkaAclEntry[]>(`${connectionPath(connectionId, '/kafka/acls')}${q}`);
   },
   kafkaCreateAcl: (connectionId: string, entry: KafkaAclEntry) =>
-    request<{ status: string }>(`/connections/${connectionId}/kafka/acls`, {
+    request<{ status: string }>(connectionPath(connectionId, '/kafka/acls'), {
       method: 'POST',
       body: JSON.stringify(entry),
     }),
   kafkaDeleteAcl: (connectionId: string, entry: KafkaAclEntry) =>
-    request<{ status: string }>(`/connections/${connectionId}/kafka/acls`, {
+    request<{ status: string }>(connectionPath(connectionId, '/kafka/acls'), {
       method: 'DELETE',
       body: JSON.stringify(entry),
     }),
   kafkaReplaceAcl: (connectionId: string, body: ReplaceAclRequest) =>
-    request<{ status: string }>(`/connections/${connectionId}/kafka/acls`, {
+    request<{ status: string }>(connectionPath(connectionId, '/kafka/acls'), {
       method: 'PUT',
       body: JSON.stringify(body),
     }),

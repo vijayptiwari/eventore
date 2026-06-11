@@ -19,6 +19,47 @@ const emptyForm = (protocol: ProtocolType): ConnectionProfile => ({
   credentials: {},
 });
 
+interface ProtocolFieldDescriptor {
+  kind: 'property' | 'credential';
+  key: string;
+  label: string;
+  defaultValue?: string;
+  password?: boolean;
+  /** The KINESIS region doubles as the broker URL. */
+  syncBrokerUrl?: boolean;
+}
+
+const PROTOCOL_EXTRA_FIELDS: Partial<Record<ProtocolType, ProtocolFieldDescriptor[]>> = {
+  MQTT: [{ kind: 'property', key: 'topicFilter', label: 'Topic filter', defaultValue: '#' }],
+  RABBITMQ: [
+    { kind: 'property', key: 'vhost', label: 'Virtual host', defaultValue: '/' },
+    { kind: 'property', key: 'queue', label: 'Default queue', defaultValue: 'eventore.queue' },
+  ],
+  GCP_PUBSUB: [
+    {
+      kind: 'property',
+      key: 'subscription',
+      label: 'Subscription name (for consume)',
+      defaultValue: 'eventore-sub',
+    },
+  ],
+  AZURE_SERVICE_BUS: [
+    {
+      kind: 'property',
+      key: 'entityPath',
+      label: 'Entity path (queue or topic)',
+      defaultValue: 'eventore',
+    },
+    { kind: 'credential', key: 'connectionString', label: 'Connection string', password: true },
+  ],
+  KINESIS: [
+    { kind: 'property', key: 'region', label: 'AWS region', syncBrokerUrl: true },
+    { kind: 'credential', key: 'accessKeyId', label: 'Access key ID' },
+    { kind: 'credential', key: 'secretAccessKey', label: 'Secret access key', password: true },
+  ],
+  JMS: [{ kind: 'property', key: 'queue', label: 'Default queue', defaultValue: 'eventore.queue' }],
+};
+
 export default function ConnectionsPage() {
   const { data: config } = useAppConfig();
   const { connectionProtocols: controlProtocols } = useControlPlane();
@@ -71,9 +112,30 @@ export default function ConnectionsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['connections'] }),
   });
 
-  const validateMutation = useMutation({
-    mutationFn: api.validateConnection,
-  });
+  type RowValidationState =
+    | { status: 'pending' }
+    | { status: 'success'; result: string }
+    | { status: 'error'; message: string };
+
+  const [validationById, setValidationById] = useState<Record<string, RowValidationState>>({});
+
+  const testConnection = (id: string) => {
+    setValidationById((prev) => ({ ...prev, [id]: { status: 'pending' } }));
+    api
+      .validateConnection(id)
+      .then((data) => {
+        setValidationById((prev) => ({
+          ...prev,
+          [id]: { status: 'success', result: data?.status ?? 'OK' },
+        }));
+      })
+      .catch((err) => {
+        setValidationById((prev) => ({
+          ...prev,
+          [id]: { status: 'error', message: String(err) },
+        }));
+      });
+  };
 
   const onProtocolChange = (protocol: ProtocolType) => {
     setSelectedPresetKey('');
@@ -186,147 +248,31 @@ export default function ConnectionsPage() {
                 }
               />
             </div>
-            {form.protocol === 'MQTT' && (
-              <div className="form-row">
-                <label>Topic filter</label>
-                <input
-                  value={form.properties?.topicFilter ?? '#'}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      properties: { ...form.properties, topicFilter: e.target.value },
-                    })
-                  }
-                />
-              </div>
-            )}
-            {form.protocol === 'RABBITMQ' && (
-              <>
-                <div className="form-row">
-                  <label>Virtual host</label>
+            {(PROTOCOL_EXTRA_FIELDS[form.protocol] ?? []).map((field) => {
+              const current =
+                field.kind === 'property'
+                  ? form.properties?.[field.key]
+                  : form.credentials?.[field.key];
+              const fallback = field.syncBrokerUrl ? form.brokerUrl : (field.defaultValue ?? '');
+              return (
+                <div className="form-row" key={`${form.protocol}-${field.key}`}>
+                  <label>{field.label}</label>
                   <input
-                    value={form.properties?.vhost ?? '/'}
+                    type={field.password ? 'password' : 'text'}
+                    value={current ?? fallback}
                     onChange={(e) =>
-                      setForm({
-                        ...form,
-                        properties: { ...form.properties, vhost: e.target.value },
-                      })
+                      setForm((f) => ({
+                        ...f,
+                        ...(field.kind === 'property'
+                          ? { properties: { ...f.properties, [field.key]: e.target.value } }
+                          : { credentials: { ...f.credentials, [field.key]: e.target.value } }),
+                        ...(field.syncBrokerUrl ? { brokerUrl: e.target.value } : {}),
+                      }))
                     }
                   />
                 </div>
-                <div className="form-row">
-                  <label>Default queue</label>
-                  <input
-                    value={form.properties?.queue ?? 'eventore.queue'}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        properties: { ...form.properties, queue: e.target.value },
-                      })
-                    }
-                  />
-                </div>
-              </>
-            )}
-            {form.protocol === 'GCP_PUBSUB' && (
-              <div className="form-row">
-                <label>Subscription name (for consume)</label>
-                <input
-                  value={form.properties?.subscription ?? 'eventore-sub'}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      properties: { ...form.properties, subscription: e.target.value },
-                    })
-                  }
-                />
-              </div>
-            )}
-            {form.protocol === 'AZURE_SERVICE_BUS' && (
-              <>
-                <div className="form-row">
-                  <label>Entity path (queue or topic)</label>
-                  <input
-                    value={form.properties?.entityPath ?? 'eventore'}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        properties: { ...form.properties, entityPath: e.target.value },
-                      })
-                    }
-                  />
-                </div>
-                <div className="form-row">
-                  <label>Connection string</label>
-                  <input
-                    type="password"
-                    value={form.credentials?.connectionString ?? ''}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        credentials: { ...form.credentials, connectionString: e.target.value },
-                      })
-                    }
-                  />
-                </div>
-              </>
-            )}
-            {form.protocol === 'KINESIS' && (
-              <>
-                <div className="form-row">
-                  <label>AWS region</label>
-                  <input
-                    value={form.properties?.region ?? form.brokerUrl}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        properties: { ...form.properties, region: e.target.value },
-                        brokerUrl: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="form-row">
-                  <label>Access key ID</label>
-                  <input
-                    value={form.credentials?.accessKeyId ?? ''}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        credentials: { ...form.credentials, accessKeyId: e.target.value },
-                      })
-                    }
-                  />
-                </div>
-                <div className="form-row">
-                  <label>Secret access key</label>
-                  <input
-                    type="password"
-                    value={form.credentials?.secretAccessKey ?? ''}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        credentials: { ...form.credentials, secretAccessKey: e.target.value },
-                      })
-                    }
-                  />
-                </div>
-              </>
-            )}
-            {form.protocol === 'JMS' && (
-              <div className="form-row">
-                <label>Default queue</label>
-                <input
-                  value={form.properties?.queue ?? 'eventore.queue'}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      properties: { ...form.properties, queue: e.target.value },
-                    })
-                  }
-                />
-              </div>
-            )}
+              );
+            })}
           </div>
           <button
             disabled={!form.name || createMutation.isPending}
@@ -335,7 +281,7 @@ export default function ConnectionsPage() {
             Save connection
           </button>
           {createMutation.isError && (
-            <p style={{ color: '#f87171' }}>{String(createMutation.error)}</p>
+            <p className="stream-error">{String(createMutation.error)}</p>
           )}
         </div>
       )}
@@ -362,19 +308,32 @@ export default function ConnectionsPage() {
                 <td>
                   <button
                     className="secondary"
-                    onClick={() => c.id && validateMutation.mutate(c.id)}
-                    disabled={validateMutation.isPending}
+                    onClick={() => c.id && testConnection(c.id)}
+                    disabled={c.id ? validationById[c.id]?.status === 'pending' : false}
                   >
                     Test
                   </button>{' '}
                   {canManage && (
                     <button
                       className="secondary"
-                      onClick={() => c.id && deleteMutation.mutate(c.id)}
+                      onClick={() => {
+                        if (c.id && window.confirm(`Delete connection "${c.name}"?`)) {
+                          deleteMutation.mutate(c.id);
+                        }
+                      }}
                       disabled={deleteMutation.isPending}
                     >
                       Delete
                     </button>
+                  )}
+                  {c.id && validationById[c.id]?.status === 'pending' && (
+                    <span className="inspector-meta"> Testing…</span>
+                  )}
+                  {c.id && validationById[c.id]?.status === 'success' && (
+                    <span className="tag tag-ok"> {validationById[c.id].result}</span>
+                  )}
+                  {c.id && validationById[c.id]?.status === 'error' && (
+                    <span className="stream-error"> {validationById[c.id].message}</span>
                   )}
                 </td>
               </tr>

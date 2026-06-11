@@ -1,5 +1,6 @@
 package com.eventore.controlplane;
 
+import com.eventore.dataplane.DataPlaneRegistry;
 import com.eventore.domain.ProtocolType;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
@@ -24,14 +25,17 @@ public class ControlPlaneController {
 
     private final ControlPlaneCoordinator coordinator;
     private final ControlPlaneRegistry controlPlane;
+    private final DataPlaneRegistry dataPlane;
     private final DeploymentModePolicy policy;
 
     public ControlPlaneController(
             ControlPlaneCoordinator coordinator,
             ControlPlaneRegistry controlPlane,
+            DataPlaneRegistry dataPlane,
             DeploymentModePolicy policy) {
         this.coordinator = coordinator;
         this.controlPlane = controlPlane;
+        this.dataPlane = dataPlane;
         this.policy = policy;
     }
 
@@ -66,10 +70,7 @@ public class ControlPlaneController {
     @DeleteMapping("/providers/{protocol}/register")
     public StreamProviderDescriptor deregister(@PathVariable ProtocolType protocol) {
         policy.require(Action.ADMIN_BROKER_OPS);
-        if (controlPlane.listRegistered().size() <= 1) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "Cannot deregister the last active provider");
-        }
+        // Last-active-provider guard is enforced atomically inside the coordinator.
         return coordinator.deregister(protocol);
     }
 
@@ -82,7 +83,7 @@ public class ControlPlaneController {
                 "protocol", protocol.name(),
                 "state", descriptor.getState().name(),
                 "registered", descriptor.isActive(),
-                "dataPlaneRoutable", descriptor.isActive() && coordinator.canRegister(protocol),
+                "dataPlaneRoutable", dataPlane.canRoute(protocol),
                 "revision", controlPlane.revision());
     }
 }

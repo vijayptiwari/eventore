@@ -2,6 +2,9 @@ package com.eventore.api.dto;
 
 import com.eventore.domain.ProtocolType;
 import com.eventore.security.DeploymentMode;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,27 +25,27 @@ public class AppConfigResponse {
     }
 
     public List<String> getAllowedActions() {
-        return allowedActions;
+        return allowedActions != null ? Collections.unmodifiableList(allowedActions) : List.of();
     }
 
     public void setAllowedActions(List<String> allowedActions) {
-        this.allowedActions = allowedActions;
+        this.allowedActions = allowedActions != null ? new ArrayList<>(allowedActions) : null;
     }
 
     public Set<ProtocolType> getSupportedProtocols() {
-        return supportedProtocols;
+        return supportedProtocols != null ? Collections.unmodifiableSet(supportedProtocols) : Set.of();
     }
 
     public void setSupportedProtocols(Set<ProtocolType> supportedProtocols) {
-        this.supportedProtocols = supportedProtocols;
+        this.supportedProtocols = supportedProtocols != null ? new HashSet<>(supportedProtocols) : null;
     }
 
     public List<String> getLoadedModules() {
-        return loadedModules;
+        return loadedModules != null ? Collections.unmodifiableList(loadedModules) : List.of();
     }
 
     public void setLoadedModules(List<String> loadedModules) {
-        this.loadedModules = loadedModules;
+        this.loadedModules = loadedModules != null ? new ArrayList<>(loadedModules) : null;
     }
 
     public ControlPlaneView getControlPlane() {

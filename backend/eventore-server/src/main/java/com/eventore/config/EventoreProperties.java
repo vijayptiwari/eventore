@@ -10,11 +10,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class EventoreProperties {
 
     private DeploymentMode deploymentMode = DeploymentMode.DEV;
+    private Security security = new Security();
     /**
      * Comma-separated protocols to activate (e.g. KAFKA,KINESIS). Empty = all provider modules present on
      * classpath. Must match Maven provider dependencies baked into the image.
      */
     private String enabledProtocols = "";
+    private long maxPublishBytes = 10_485_760L;
     private Subscriptions subscriptions = new Subscriptions();
     private Dev dev = new Dev();
     private ControlPlane controlPlane = new ControlPlane();
@@ -34,6 +36,60 @@ public class EventoreProperties {
 
     public void setEnabledProtocols(String enabledProtocols) {
         this.enabledProtocols = enabledProtocols != null ? enabledProtocols : "";
+    }
+
+    public long getMaxPublishBytes() {
+        return maxPublishBytes;
+    }
+
+    public void setMaxPublishBytes(long maxPublishBytes) {
+        if (maxPublishBytes < 1) {
+            throw new IllegalArgumentException("maxPublishBytes must be at least 1");
+        }
+        this.maxPublishBytes = maxPublishBytes;
+    }
+
+    public Security getSecurity() {
+        return security;
+    }
+
+    public void setSecurity(Security security) {
+        this.security = security;
+    }
+
+    public static class Security {
+        /** Static API token. Empty = authentication disabled (dev only). */
+        private String apiToken = "";
+        /** Comma-separated allowed origins for CORS and WebSocket. "*" = all (dev only). */
+        private String allowedOrigins = "*";
+
+        public String getApiToken() {
+            return apiToken;
+        }
+
+        public void setApiToken(String apiToken) {
+            this.apiToken = apiToken != null ? apiToken : "";
+        }
+
+        public String getAllowedOrigins() {
+            return allowedOrigins;
+        }
+
+        public void setAllowedOrigins(String allowedOrigins) {
+            this.allowedOrigins =
+                    allowedOrigins != null && !allowedOrigins.isBlank() ? allowedOrigins : "*";
+        }
+
+        public boolean isAuthEnabled() {
+            return !apiToken.isBlank();
+        }
+
+        public String[] allowedOriginsArray() {
+            return java.util.Arrays.stream(allowedOrigins.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+        }
     }
 
     public Subscriptions getSubscriptions() {
@@ -130,6 +186,9 @@ public class EventoreProperties {
         }
 
         public void setMaxPublishBytes(long maxPublishBytes) {
+            if (maxPublishBytes < 1) {
+                throw new IllegalArgumentException("dev.maxPublishBytes must be at least 1");
+            }
             this.maxPublishBytes = maxPublishBytes;
         }
     }

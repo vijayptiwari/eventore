@@ -3,26 +3,34 @@ package com.eventore.connector.gcp;
 import com.eventore.connector.cloud.CloudClientSupport;
 import com.eventore.connector.spi.MessageHandler;
 import com.eventore.connector.spi.MessagingConnector;
+import com.eventore.connector.spi.PayloadCodec;
 import com.eventore.connector.spi.PublishRequest;
 import com.eventore.connector.spi.SubscribeDestinations;
 import com.eventore.connector.spi.SubscribeRequest;
+import com.eventore.connector.spi.SubscriptionKeys;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.MessageDirection;
 import com.eventore.domain.ProtocolType;
 import com.eventore.domain.TopicRef;
 import com.eventore.domain.UnifiedMessage;
+import com.google.api.core.ApiService;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.rpc.NotFoundException;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.ProjectName;
 import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PubsubMessage;
+import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
 import java.io.ByteArrayInputStream;
@@ -31,10 +39,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GcpPubSubMessagingConnector implements MessagingConnector {
+
+    private static final Logger log = LoggerFactory.getLogger(GcpPubSubMessagingConnector.class);
 
     private final Map<String, Subscriber> subscribers = new ConcurrentHashMap<>();
 
@@ -91,15 +103,26 @@ public class GcpPubSubMessagingConnector implements MessagingConnector {
                 unified.setProtocol(ProtocolType.GCP_PUBSUB);
                 unified.setDestination(topic);
                 unified.setDirection(MessageDirection.INBOUND);
-                unified.setPayload(msg.getData().toStringUtf8());
-                unified.getHeaders().put("messageId", msg.getMessageId());
-                unified.getHeaders().put("subscription", subName);
+                PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(msg.getData().toByteArray());
+                unified.setPayload(decoded.text());
+                unified.setContentType(decoded.contentType());
+                unified.putHeader("messageId", msg.getMessageId());
+                unified.putHeader("subscription", subName);
                 handler.onMessage(unified);
                 consumer.ack();
             };
             Subscriber subscriber = Subscriber.newBuilder(subscriptionName, receiver)
                     .setCredentialsProvider(credentials(profile))
                     .build();
+            // startAsync() failures (auth, missing subscription, stream errors) surface
+            // through the service listener, not as exceptions from this method.
+            subscriber.addListener(new Subscriber.Listener() {
+                @Override
+                public void failed(ApiService.State from, Throwable failure) {
+                    log.warn("Pub/Sub subscriber failed for subscription {}", subName, failure);
+                    handler.onError(failure != null ? failure.getMessage() : "Pub/Sub subscriber failed");
+                }
+            }, MoreExecutors.directExecutor());
             subscriber.startAsync();
             subscribers.put(key, subscriber);
             return () -> {
@@ -125,7 +148,8 @@ public class GcpPubSubMessagingConnector implements MessagingConnector {
         }
         try {
             PubsubMessage message = PubsubMessage.newBuilder()
-                    .setData(ByteString.copyFromUtf8(request.getPayload() != null ? request.getPayload() : ""))
+                    .setData(ByteString.copyFrom(
+                            PayloadCodec.toBytes(request.getPayload(), request.getContentType())))
                     .build();
             publisher.publish(message).get();
         } catch (Exception e) {
@@ -138,7 +162,7 @@ public class GcpPubSubMessagingConnector implements MessagingConnector {
     @Override
     public void close(String connectionId) {
         subscribers.entrySet().removeIf(e -> {
-            if (e.getKey().startsWith(connectionId)) {
+            if (SubscriptionKeys.belongsToConnection(e.getKey(), connectionId)) {
                 e.getValue().stopAsync();
                 return true;
             }
@@ -149,15 +173,15 @@ public class GcpPubSubMessagingConnector implements MessagingConnector {
     private void ensureSubscription(
             ConnectionProfile profile, TopicName topicName, ProjectSubscriptionName subscriptionName)
             throws Exception {
-        try (var admin = com.google.cloud.pubsub.v1.SubscriptionAdminClient.create(
-                com.google.cloud.pubsub.v1.SubscriptionAdminSettings.newBuilder()
+        try (SubscriptionAdminClient admin = SubscriptionAdminClient.create(
+                SubscriptionAdminSettings.newBuilder()
                         .setCredentialsProvider(credentials(profile))
                         .build())) {
             try {
                 admin.getSubscription(subscriptionName);
-            } catch (Exception notFound) {
+            } catch (NotFoundException notFound) {
                 admin.createSubscription(
-                        com.google.pubsub.v1.Subscription.newBuilder()
+                        Subscription.newBuilder()
                                 .setName(subscriptionName.toString())
                                 .setTopic(topicName.toString())
                                 .build());
@@ -184,6 +208,11 @@ public class GcpPubSubMessagingConnector implements MessagingConnector {
                     GoogleCredentials.fromStream(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
             return FixedCredentialsProvider.create(creds);
         }
+        CloudClientSupport.requireFallbackAllowed(profile, "GCP Application Default Credentials");
+        log.warn(
+                "Connection '{}' has no serviceAccountJson credential; falling back to "
+                        + "Application Default Credentials",
+                profile.getId());
         return FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault());
     }
 }

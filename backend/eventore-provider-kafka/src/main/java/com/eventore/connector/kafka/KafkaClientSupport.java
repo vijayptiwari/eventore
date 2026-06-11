@@ -17,7 +17,23 @@ public final class KafkaClientSupport {
         Properties props = new Properties();
         props.put("bootstrap.servers", profile.getBrokerUrl());
         applySecurity(profile, props);
+        mergeProfileProperties(profile, props);
         return props;
+    }
+
+    /**
+     * Copies native Kafka client configuration from the profile (dotted keys such as
+     * {@code security.protocol} or {@code ssl.truststore.location}) into the client
+     * properties last, so explicitly configured values win over derived defaults.
+     * Eventore-specific camelCase keys (e.g. {@code saslMechanism}) are not Kafka
+     * configs and are skipped.
+     */
+    private static void mergeProfileProperties(ConnectionProfile profile, Properties props) {
+        profile.getProperties().forEach((key, value) -> {
+            if (key != null && value != null && key.indexOf('.') >= 0) {
+                props.put(key, value);
+            }
+        });
     }
 
     public static Properties consumerProps(ConnectionProfile profile, String group) {

@@ -8,14 +8,47 @@ const COOKIE_DAYS = 30;
 const CHUNK_SIZE = 2800;
 const MAX_STREAMS = 40;
 
+/**
+ * localStorage throws in some privacy modes / blocked-storage contexts;
+ * this adapter degrades gracefully so callers can fall back to cookies.
+ */
+const safeLocalStorage = {
+  get(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  set(key: string, value: string): boolean {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  remove(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // storage unavailable — nothing to remove
+    }
+  },
+};
+
 function setCookie(name: string, value: string): void {
   const maxAge = COOKIE_DAYS * 86400;
   const secure = window.location.protocol === 'https:' ? ';Secure' : '';
   document.cookie = `${name}=${encodeURIComponent(value)};path=/;max-age=${maxAge};SameSite=Lax${secure}`;
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escapeRegExp(name)}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
 }
 
@@ -55,7 +88,7 @@ function saveToCookies(sessions: PersistedStreamSession[]): void {
   if (!json || json === '[]') return;
   const chunks = Math.ceil(json.length / CHUNK_SIZE);
   if (chunks > 12) {
-    localStorage.setItem(SESSION_KEY, json);
+    safeLocalStorage.set(SESSION_KEY, json);
     return;
   }
   for (let i = 0; i < chunks; i++) {
@@ -66,7 +99,7 @@ function saveToCookies(sessions: PersistedStreamSession[]): void {
 
 export function loadStreamSessionsFromStorage(): PersistedStreamSession[] {
   try {
-    const ls = localStorage.getItem(SESSION_KEY);
+    const ls = safeLocalStorage.get(SESSION_KEY);
     if (ls) {
       const parsed = JSON.parse(ls) as PersistedStreamSession[];
       if (Array.isArray(parsed)) return parsed.slice(0, MAX_STREAMS);
@@ -79,24 +112,20 @@ export function loadStreamSessionsFromStorage(): PersistedStreamSession[] {
 
 export function saveStreamSessionsToStorage(sessions: PersistedStreamSession[]): void {
   const trimmed = sessions.slice(0, MAX_STREAMS);
-  try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(trimmed));
-  } catch {
-    // quota
-  }
+  safeLocalStorage.set(SESSION_KEY, JSON.stringify(trimmed));
   saveToCookies(trimmed);
 }
 
 export function loadActiveStreamIdFromStorage(): string | null {
-  return localStorage.getItem(ACTIVE_KEY) ?? getCookie('eventore_active_stream');
+  return safeLocalStorage.get(ACTIVE_KEY) ?? getCookie('eventore_active_stream');
 }
 
 export function saveActiveStreamIdToStorage(id: string | null): void {
   if (id) {
-    localStorage.setItem(ACTIVE_KEY, id);
+    safeLocalStorage.set(ACTIVE_KEY, id);
     setCookie('eventore_active_stream', id);
   } else {
-    localStorage.removeItem(ACTIVE_KEY);
+    safeLocalStorage.remove(ACTIVE_KEY);
     deleteCookie('eventore_active_stream');
   }
 }

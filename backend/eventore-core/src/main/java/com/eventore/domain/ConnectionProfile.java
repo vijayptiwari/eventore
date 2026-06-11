@@ -1,5 +1,6 @@
 package com.eventore.domain;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -63,20 +64,22 @@ public class ConnectionProfile {
         this.brokerUrl = brokerUrl;
     }
 
+    /** Returns an unmodifiable view; use {@link #setProperties(Map)} to replace entries. */
     public Map<String, String> getProperties() {
-        return properties;
+        return properties == null ? Map.of() : Collections.unmodifiableMap(properties);
     }
 
     public void setProperties(Map<String, String> properties) {
-        this.properties = properties != null ? properties : new HashMap<>();
+        this.properties = properties != null ? new HashMap<>(properties) : new HashMap<>();
     }
 
+    /** Returns an unmodifiable view; use {@link #setCredentials(Map)} to replace entries. */
     public Map<String, String> getCredentials() {
-        return credentials;
+        return credentials == null ? Map.of() : Collections.unmodifiableMap(credentials);
     }
 
     public void setCredentials(Map<String, String> credentials) {
-        this.credentials = credentials != null ? credentials : new HashMap<>();
+        this.credentials = credentials != null ? new HashMap<>(credentials) : new HashMap<>();
     }
 
     public String property(String key) {
@@ -88,7 +91,11 @@ public class ConnectionProfile {
         return value != null && !value.isBlank() ? value : defaultValue;
     }
 
+    /**
+     * Returns the credential value, resolving {@code env:} and {@code file:}
+     * secret references so profiles can avoid storing plaintext secrets.
+     */
     public String credential(String key) {
-        return credentials.get(key);
+        return SecretRefs.resolve(credentials.get(key));
     }
 }

@@ -34,6 +34,9 @@
 
     <properties>
         <java.version>21</java.version>
+        <!-- Integration tests (Testcontainers) are excluded by default; run them with
+             mvn test -DexcludedTestGroups= (requires Docker) -->
+        <excludedTestGroups>integration</excludedTestGroups>
         <eventore.version>0.1.0-SNAPSHOT</eventore.version>
         <pulsar.version>3.3.2</pulsar.version>
         <aws.sdk.version>2.28.21</aws.sdk.version>
@@ -109,4 +112,18 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <excludedGroups>${excludedTestGroups}</excludedGroups>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

@@ -2,9 +2,11 @@ package com.eventore.connector.kafka;
 
 import com.eventore.connector.spi.MessageHandler;
 import com.eventore.connector.spi.MessagingConnector;
+import com.eventore.connector.spi.PayloadCodec;
 import com.eventore.connector.spi.PublishRequest;
 import com.eventore.connector.spi.SubscribeDestinations;
 import com.eventore.connector.spi.SubscribeRequest;
+import com.eventore.connector.spi.SubscriptionKeys;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.MessageDirection;
 import com.eventore.domain.ProtocolType;
@@ -20,7 +22,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -28,12 +32,17 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class KafkaMessagingConnector implements MessagingConnector {
 
+    private static final Logger log = LoggerFactory.getLogger(KafkaMessagingConnector.class);
+
     private final Map<String, AutoCloseable> activeConsumers = new ConcurrentHashMap<>();
+    private final Map<String, KafkaProducer<String, byte[]>> producers = new ConcurrentHashMap<>();
 
     @Override
     public ProtocolType protocol() {
@@ -75,24 +84,61 @@ public class KafkaMessagingConnector implements MessagingConnector {
         closeExisting(key);
         Properties props = KafkaClientSupport.consumerProps(profile, group);
         List<String> topics = SubscribeDestinations.resolve(request);
-        KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(topics);
         AtomicBoolean running = new AtomicBoolean(true);
+        // The consumer is created and closed inside the poll thread: KafkaConsumer is
+        // not thread-safe, so the closeable only signals shutdown via wakeup().
+        AtomicReference<KafkaConsumer<String, byte[]>> consumerRef = new AtomicReference<>();
         ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
             Thread t = new Thread(r, "kafka-sub-" + key);
             t.setDaemon(true);
             return t;
         });
-        executor.submit(() -> pollLoop(profile, handler, consumer, running));
         AutoCloseable closeable = () -> {
             running.set(false);
-            consumer.wakeup();
-            consumer.close(Duration.ofSeconds(5));
-            executor.shutdownNow();
+            KafkaConsumer<String, byte[]> consumer = consumerRef.get();
+            if (consumer != null) {
+                consumer.wakeup();
+            }
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                executor.shutdownNow();
+            }
             activeConsumers.remove(key);
         };
+        executor.submit(() -> runSubscription(profile, handler, props, topics, running, consumerRef));
         activeConsumers.put(key, closeable);
         return closeable;
+    }
+
+    private void runSubscription(
+            ConnectionProfile profile,
+            MessageHandler handler,
+            Properties props,
+            List<String> topics,
+            AtomicBoolean running,
+            AtomicReference<KafkaConsumer<String, byte[]>> consumerRef) {
+        if (!running.get()) {
+            return;
+        }
+        try (KafkaConsumer<String, byte[]> consumer = newConsumer(props)) {
+            consumerRef.set(consumer);
+            consumer.subscribe(topics);
+            pollLoop(profile, handler, consumer, running);
+        } catch (Exception e) {
+            if (running.get()) {
+                log.warn("Kafka subscription failed for connection {}", profile.getId(), e);
+                handler.onError(e.getMessage());
+            }
+        }
+    }
+
+    KafkaConsumer<String, byte[]> newConsumer(Properties props) {
+        return new KafkaConsumer<>(props);
     }
 
     private void closeExisting(String key) {
@@ -100,8 +146,8 @@ public class KafkaMessagingConnector implements MessagingConnector {
         if (existing != null) {
             try {
                 existing.close();
-            } catch (Exception ignored) {
-                // ignore
+            } catch (Exception e) {
+                log.debug("Error closing previous Kafka consumer for subscription key {}", key, e);
             }
         }
     }
@@ -119,20 +165,17 @@ public class KafkaMessagingConnector implements MessagingConnector {
                     msg.setProtocol(ProtocolType.KAFKA);
                     msg.setDestination(record.topic());
                     msg.setDirection(MessageDirection.INBOUND);
-                    msg.setPayload(record.value() != null
-                            ? new String(record.value(), StandardCharsets.UTF_8)
-                            : "");
-                    msg.getHeaders().put("partition", String.valueOf(record.partition()));
-                    msg.getHeaders().put("offset", String.valueOf(record.offset()));
+                    PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(record.value());
+                    msg.setPayload(decoded.text());
+                    msg.setContentType(decoded.contentType());
+                    msg.putHeader("partition", String.valueOf(record.partition()));
+                    msg.putHeader("offset", String.valueOf(record.offset()));
                     if (record.key() != null) {
-                        msg.getHeaders().put("key", record.key());
+                        msg.putHeader("key", record.key());
                     }
                     for (Header header : record.headers()) {
                         if (header.key() != null && header.value() != null) {
-                            msg.getHeaders()
-                                    .put(
-                                            header.key(),
-                                            new String(header.value(), StandardCharsets.UTF_8));
+                            msg.putHeader(header.key(), PayloadCodec.fromBytes(header.value()).text());
                         }
                     }
                     handler.onMessage(msg);
@@ -140,6 +183,7 @@ public class KafkaMessagingConnector implements MessagingConnector {
             }
         } catch (Exception e) {
             if (running.get()) {
+                log.warn("Kafka poll loop failed for connection {}", profile.getId(), e);
                 handler.onError(e.getMessage());
             }
         }
@@ -147,11 +191,13 @@ public class KafkaMessagingConnector implements MessagingConnector {
 
     @Override
     public void publish(ConnectionProfile profile, PublishRequest request) {
-        Properties props = KafkaClientSupport.producerProps(profile);
-        try (KafkaProducer<String, byte[]> producer = new KafkaProducer<>(props)) {
-            byte[] bytes = request.getPayload() != null
-                    ? request.getPayload().getBytes(StandardCharsets.UTF_8)
-                    : new byte[0];
+        // KafkaProducer is thread-safe; one cached instance per connection profile,
+        // closed in close(connectionId).
+        KafkaProducer<String, byte[]> producer = producers.computeIfAbsent(
+                profile.getId(),
+                id -> new KafkaProducer<>(KafkaClientSupport.producerProps(profile)));
+        try {
+            byte[] bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
             String key = request.getHeaders() != null ? request.getHeaders().get("key") : null;
             Integer partition = parsePartitionHeader(request);
             ProducerRecord<String, byte[]> record = partition != null
@@ -170,6 +216,8 @@ public class KafkaMessagingConnector implements MessagingConnector {
                 producer.flush();
             }
         } catch (Exception e) {
+            log.warn("Kafka publish failed for connection {} destination {}",
+                    profile.getId(), request.getDestination(), e);
             throw new IllegalStateException("Kafka publish failed: " + e.getMessage(), e);
         }
     }
@@ -182,17 +230,30 @@ public class KafkaMessagingConnector implements MessagingConnector {
         if (p == null || p.isBlank()) {
             return null;
         }
-        return Integer.parseInt(p);
+        try {
+            return Integer.parseInt(p.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid partition header: " + p);
+        }
     }
 
     @Override
     public void close(String connectionId) {
+        KafkaProducer<String, byte[]> producer = producers.remove(connectionId);
+        if (producer != null) {
+            try {
+                producer.close(Duration.ofSeconds(5));
+            } catch (Exception e) {
+                log.debug("Error closing Kafka producer for connection {}", connectionId, e);
+            }
+        }
         activeConsumers.entrySet().removeIf(entry -> {
-            if (entry.getKey().startsWith(connectionId)) {
+            if (SubscriptionKeys.belongsToConnection(entry.getKey(), connectionId)) {
                 try {
                     entry.getValue().close();
-                } catch (Exception ignored) {
-                    // ignore
+                } catch (Exception e) {
+                    log.debug("Error closing Kafka consumer {} while closing connection {}",
+                            entry.getKey(), connectionId, e);
                 }
                 return true;
             }

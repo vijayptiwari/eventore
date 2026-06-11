@@ -37,7 +37,7 @@ public class KinesisMessagingInspector implements MessagingInspector {
     @Override
     public ProtocolInspectCapabilities capabilities() {
         ProtocolInspectCapabilities c = new ProtocolInspectCapabilities();
-        c.setFeatures(List.of("cluster", "streams", "stream-detail", "shard-info", "message-search"));
+        c.setFeatures(List.of("cluster", "streams", "stream-detail"));
         return c;
     }
 
@@ -45,8 +45,8 @@ public class KinesisMessagingInspector implements MessagingInspector {
     public ClusterInfo clusterInfo(ConnectionProfile profile) {
         ClusterInfo info = new ClusterInfo();
         info.setClusterId(CloudClientSupport.awsRegion(profile).id());
-        info.getAttributes().put("cloudProvider", "AWS");
-        info.getAttributes().put("service", "Kinesis");
+        info.putAttribute("cloudProvider", "AWS");
+        info.putAttribute("service", "Kinesis");
         return info;
     }
 
@@ -88,10 +88,10 @@ public class KinesisMessagingInspector implements MessagingInspector {
                             DescribeStreamSummaryRequest.builder().streamName(topic).build())
                     .streamDescriptionSummary();
             td.setPartitionCount(summary.openShardCount());
-            td.getConfig().put("status", summary.streamStatusAsString());
-            td.getConfig().put("retentionHours", String.valueOf(summary.retentionPeriodHours()));
+            td.putConfig("status", summary.streamStatusAsString());
+            td.putConfig("retentionHours", String.valueOf(summary.retentionPeriodHours()));
         } catch (Exception e) {
-            td.getConfig().put("error", e.getMessage());
+            td.putConfig("error", e.getMessage());
         }
         return td;
     }

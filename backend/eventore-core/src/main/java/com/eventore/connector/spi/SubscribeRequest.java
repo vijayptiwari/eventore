@@ -1,6 +1,7 @@
 package com.eventore.connector.spi;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +25,11 @@ public class SubscribeRequest {
     }
 
     public List<String> getDestinations() {
-        return destinations;
+        return destinations == null ? List.of() : Collections.unmodifiableList(destinations);
     }
 
     public void setDestinations(List<String> destinations) {
-        this.destinations = destinations != null ? destinations : new ArrayList<>();
+        this.destinations = destinations != null ? new ArrayList<>(destinations) : new ArrayList<>();
     }
 
     public String getConsumerGroup() {
@@ -48,10 +49,10 @@ public class SubscribeRequest {
     }
 
     public Map<String, String> getOptions() {
-        return options;
+        return options == null ? Map.of() : Collections.unmodifiableMap(options);
     }
 
     public void setOptions(Map<String, String> options) {
-        this.options = options != null ? options : new HashMap<>();
+        this.options = options != null ? new HashMap<>(options) : new HashMap<>();
     }
 }

@@ -59,6 +59,7 @@ public class CoreConnectionsApiDelegateImpl implements ConnectionsApiDelegate {
             String connectionId, ConnectionProfile connectionProfile) {
         policy.require(Action.MANAGE_CONNECTIONS);
         policy.requireProtocol(connectionProfile.getProtocol());
+        CoreDelegateSupport.profile(connectionRegistry, connectionId);
         connectionProfile.setId(connectionId);
         return ResponseEntity.ok(ConnectionProfileResponse.from(connectionRegistry.save(connectionProfile)));
     }
@@ -66,8 +67,8 @@ public class CoreConnectionsApiDelegateImpl implements ConnectionsApiDelegate {
     @Override
     public ResponseEntity<Void> deleteConnection(String connectionId) {
         policy.require(Action.MANAGE_CONNECTIONS);
-        subscriptionManager.closeAllForConnection(connectionId);
         ConnectionProfile profile = CoreDelegateSupport.profile(connectionRegistry, connectionId);
+        subscriptionManager.closeAllForConnection(connectionId);
         connectorRegistry.get(profile.getProtocol()).close(connectionId);
         connectionRegistry.delete(connectionId);
         return ResponseEntity.noContent().build();

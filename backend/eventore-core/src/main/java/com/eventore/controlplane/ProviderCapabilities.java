@@ -1,6 +1,7 @@
 package com.eventore.controlplane;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /** Declarative capabilities exposed to the UI and API catalog (control plane only). */
@@ -45,10 +46,11 @@ public class ProviderCapabilities {
     }
 
     public List<String> getDataPlaneApiPrefixes() {
-        return dataPlaneApiPrefixes;
+        return Collections.unmodifiableList(dataPlaneApiPrefixes);
     }
 
     public void setDataPlaneApiPrefixes(List<String> dataPlaneApiPrefixes) {
-        this.dataPlaneApiPrefixes = dataPlaneApiPrefixes != null ? dataPlaneApiPrefixes : new ArrayList<>();
+        this.dataPlaneApiPrefixes =
+                dataPlaneApiPrefixes != null ? new ArrayList<>(dataPlaneApiPrefixes) : new ArrayList<>();
     }
 }

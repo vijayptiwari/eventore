@@ -20,10 +20,14 @@ import org.apache.pulsar.client.api.MessageId;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.Reader;
 import org.apache.pulsar.client.api.Schema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PulsarMessagingInspector implements MessagingInspector {
+
+    private static final Logger log = LoggerFactory.getLogger(PulsarMessagingInspector.class);
 
     @Override
     public ProtocolType protocol() {
@@ -34,7 +38,7 @@ public class PulsarMessagingInspector implements MessagingInspector {
     public ProtocolInspectCapabilities capabilities() {
         ProtocolInspectCapabilities c = new ProtocolInspectCapabilities();
         c.setFeatures(List.of(
-                "cluster", "topics", "subscriptions", "backlog", "lag", "message-search", "topic-create", "topic-delete"));
+                "cluster", "topics", "subscriptions", "backlog", "lag", "message-search"));
         return c;
     }
 
@@ -43,10 +47,10 @@ public class PulsarMessagingInspector implements MessagingInspector {
         ClusterInfo info = new ClusterInfo();
         try (PulsarAdmin admin = admin(profile)) {
             info.setClusterId(profile.getBrokerUrl());
-            info.getAttributes().put("clusters", String.join(",", admin.clusters().getClusters()));
-            info.getAttributes().put("tenants", String.join(",", admin.tenants().getTenants()));
+            info.putAttribute("clusters", String.join(",", admin.clusters().getClusters()));
+            info.putAttribute("tenants", String.join(",", admin.tenants().getTenants()));
         } catch (Exception e) {
-            info.getAttributes().put("error", e.getMessage());
+            info.putAttribute("error", e.getMessage());
         }
         return info;
     }
@@ -55,7 +59,7 @@ public class PulsarMessagingInspector implements MessagingInspector {
     public List<ConsumerGroupSummary> listConsumerGroups(ConnectionProfile profile) {
         List<ConsumerGroupSummary> groups = new ArrayList<>();
         try (PulsarAdmin admin = admin(profile)) {
-            for (String ns : admin.namespaces().getNamespaces("public")) {
+            for (String ns : admin.namespaces().getNamespaces(tenant(profile))) {
                 for (String topic : admin.topics().getList(ns)) {
                     for (String sub : admin.topics().getSubscriptions(topic)) {
                         ConsumerGroupSummary s = new ConsumerGroupSummary();
@@ -65,8 +69,9 @@ public class PulsarMessagingInspector implements MessagingInspector {
                     }
                 }
             }
-        } catch (Exception ignored) {
-            // partial
+        } catch (Exception e) {
+            log.warn("Pulsar subscription listing failed for connection {}; returning partial results",
+                    profile.getId(), e);
         }
         return groups;
     }
@@ -83,7 +88,7 @@ public class PulsarMessagingInspector implements MessagingInspector {
     public List<TopicDetail> listTopics(ConnectionProfile profile, String nameFilter) {
         List<TopicDetail> topics = new ArrayList<>();
         try (PulsarAdmin admin = admin(profile)) {
-            for (String ns : admin.namespaces().getNamespaces("public")) {
+            for (String ns : admin.namespaces().getNamespaces(tenant(profile))) {
                 for (String topic : admin.topics().getList(ns)) {
                     String shortName = topic.contains("/") ? topic.substring(topic.lastIndexOf('/') + 1) : topic;
                     if (nameFilter != null
@@ -93,7 +98,7 @@ public class PulsarMessagingInspector implements MessagingInspector {
                     }
                     TopicDetail td = new TopicDetail();
                     td.setName(shortName);
-                    td.getConfig().put("fullName", topic);
+                    td.putConfig("fullName", topic);
                     topics.add(td);
                 }
             }
@@ -108,10 +113,10 @@ public class PulsarMessagingInspector implements MessagingInspector {
         TopicDetail td = new TopicDetail();
         td.setName(topic);
         try (PulsarAdmin admin = admin(profile)) {
-            String full = topic.startsWith("persistent://") ? topic : "persistent://public/default/" + topic;
-            td.getConfig().put("partitions", String.valueOf(admin.topics().getPartitionedTopicMetadata(full).partitions));
+            String full = normalizeTopic(profile, topic);
+            td.putConfig("partitions", String.valueOf(admin.topics().getPartitionedTopicMetadata(full).partitions));
         } catch (Exception e) {
-            td.getConfig().put("error", e.getMessage());
+            td.putConfig("error", e.getMessage());
         }
         return td;
     }
@@ -120,7 +125,7 @@ public class PulsarMessagingInspector implements MessagingInspector {
     public List<GroupOffset> consumerLag(ConnectionProfile profile, String groupId, String topicFilter) {
         List<GroupOffset> lags = new ArrayList<>();
         try (PulsarAdmin admin = admin(profile)) {
-            for (String ns : admin.namespaces().getNamespaces("public")) {
+            for (String ns : admin.namespaces().getNamespaces(tenant(profile))) {
                 for (String topic : admin.topics().getList(ns)) {
                     if (topicFilter != null && !topic.contains(topicFilter)) {
                         continue;
@@ -133,8 +138,10 @@ public class PulsarMessagingInspector implements MessagingInspector {
                             go.setLag(stats.getSubscriptions().get(groupId).getMsgBacklog());
                             lags.add(go);
                         }
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
                         // subscription may not exist on topic
+                        log.debug("Skipping Pulsar topic {} while computing backlog for subscription {}",
+                                topic, groupId, e);
                     }
                 }
             }
@@ -150,9 +157,7 @@ public class PulsarMessagingInspector implements MessagingInspector {
             throw new IllegalArgumentException("topic is required");
         }
         int max = request.getMaxMessages() != null ? Math.min(request.getMaxMessages(), 100) : 50;
-        String full = request.getTopic().startsWith("persistent://")
-                ? request.getTopic()
-                : "persistent://public/default/" + request.getTopic();
+        String full = normalizeTopic(profile, request.getTopic());
         List<UnifiedMessage> found = new ArrayList<>();
         try (PulsarClient client = PulsarClient.builder().serviceUrl(profile.getBrokerUrl()).build()) {
             try (Reader<byte[]> reader = client.newReader(Schema.BYTES)
@@ -176,7 +181,7 @@ public class PulsarMessagingInspector implements MessagingInspector {
                     um.setProtocol(ProtocolType.PULSAR);
                     um.setDestination(msg.getTopicName());
                     um.setPayload(payload);
-                    um.getHeaders().put("messageId", msg.getMessageId().toString());
+                    um.putHeader("messageId", msg.getMessageId().toString());
                     found.add(um);
                 }
             }
@@ -186,11 +191,35 @@ public class PulsarMessagingInspector implements MessagingInspector {
         return found;
     }
 
+    private String tenant(ConnectionProfile profile) {
+        return profile.propertyOrDefault("tenant", "public");
+    }
+
+    private String normalizeTopic(ConnectionProfile profile, String destination) {
+        if (destination.startsWith("persistent://") || destination.startsWith("non-persistent://")) {
+            return destination;
+        }
+        return "persistent://" + tenant(profile) + "/default/" + destination;
+    }
+
     private PulsarAdmin admin(ConnectionProfile profile) throws Exception {
+        return PulsarAdmin.builder().serviceHttpUrl(adminUrl(profile)).build();
+    }
+
+    /**
+     * Resolves the admin HTTP endpoint. An explicitly configured {@code adminUrl}
+     * property always wins; otherwise the URL is derived from the broker URL.
+     * Visible for tests.
+     */
+    String adminUrl(ConnectionProfile profile) {
+        String adminUrl = profile.property("adminUrl");
+        if (adminUrl != null && !adminUrl.isBlank()) {
+            return adminUrl;
+        }
         String http = profile.getBrokerUrl().replace("pulsar://", "http://").replace(":6650", ":8080");
         if (!http.startsWith("http")) {
-            http = profile.propertyOrDefault("adminUrl", "http://localhost:8080");
+            http = "http://localhost:8080";
         }
-        return PulsarAdmin.builder().serviceHttpUrl(http).build();
+        return http;
     }
 }

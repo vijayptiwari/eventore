@@ -10,10 +10,27 @@ import java.util.Map;
 
 public final class StreamPlatformCatalog {
 
+    private static final List<StreamPlatformPreset> PRESETS = List.copyOf(build());
+
     private StreamPlatformCatalog() {}
 
+    /** Returns the immutable preset catalog (built once). Callers must not mutate the presets. */
     public static List<StreamPlatformPreset> all() {
+        return PRESETS;
+    }
+
+    private static List<StreamPlatformPreset> build() {
         List<StreamPlatformPreset> list = new ArrayList<>();
+        addGenericOnPremPresets(list);
+        addAwsPresets(list);
+        addAzurePresets(list);
+        addGcpPresets(list);
+        addOcpPresets(list);
+        addAdditionalOnPremPresets(list);
+        return list;
+    }
+
+    private static void addGenericOnPremPresets(List<StreamPlatformPreset> list) {
         list.add(preset(
                 StreamPlatform.GENERIC,
                 "On-prem / generic",
@@ -24,6 +41,9 @@ public final class StreamPlatformCatalog {
                 Map.of(),
                 List.of("username", "password"),
                 List.of("full-inspect", "admin")));
+    }
+
+    private static void addAwsPresets(List<StreamPlatformPreset> list) {
         list.add(preset(
                 StreamPlatform.AWS_MSK,
                 "Amazon MSK",
@@ -67,16 +87,10 @@ public final class StreamPlatformCatalog {
                 Map.of("topicFilter", "#"),
                 List.of("username", "password"),
                 List.of("mqtt", "cloud-aws")));
-        list.add(preset(
-                StreamPlatform.AWS_SQS,
-                "Amazon SQS (via Service Bus pattern)",
-                "Point-to-point queues — use destination as queue URL/name in properties.",
-                CloudProvider.AWS,
-                ProtocolType.KAFKA,
-                "not-applicable",
-                Map.of("note", "Use Kinesis or SNS/SQS future connector"),
-                List.of(),
-                List.of("planned")));
+        // AWS_SQS omitted until a dedicated connector exists (StreamPlatform.AWS_SQS reserved).
+    }
+
+    private static void addAzurePresets(List<StreamPlatformPreset> list) {
         list.add(preset(
                 StreamPlatform.AZURE_EVENT_HUBS,
                 "Azure Event Hubs (Kafka surface)",
@@ -110,6 +124,9 @@ public final class StreamPlatformCatalog {
                 Map.of("topicFilter", "devices/+/messages/#"),
                 List.of("username", "password"),
                 List.of("mqtt", "cloud-azure")));
+    }
+
+    private static void addGcpPresets(List<StreamPlatformPreset> list) {
         list.add(preset(
                 StreamPlatform.GCP_PUBSUB,
                 "Google Cloud Pub/Sub",
@@ -130,6 +147,9 @@ public final class StreamPlatformCatalog {
                 Map.of("cloud.kafka", "gcp-managed"),
                 List.of("username", "password"),
                 List.of("kafka-full", "cloud-gcp")));
+    }
+
+    private static void addOcpPresets(List<StreamPlatformPreset> list) {
         list.add(preset(
                 StreamPlatform.OCP_AMQ_STREAMS,
                 "OpenShift AMQ Streams",
@@ -150,6 +170,9 @@ public final class StreamPlatformCatalog {
                 Map.of("security.protocol", "SSL", "cloud.kafka", "strimzi"),
                 List.of("username", "password"),
                 List.of("kafka-full", "cloud-ocp")));
+    }
+
+    private static void addAdditionalOnPremPresets(List<StreamPlatformPreset> list) {
         list.add(preset(
                 StreamPlatform.GENERIC,
                 "Apache Pulsar",
@@ -170,7 +193,6 @@ public final class StreamPlatformCatalog {
                 Map.of("managementPort", "15672", "queue", "eventore.queue"),
                 List.of("username", "password"),
                 List.of("queues", "purge", "message-get")));
-        return list;
     }
 
     private static StreamPlatformPreset preset(

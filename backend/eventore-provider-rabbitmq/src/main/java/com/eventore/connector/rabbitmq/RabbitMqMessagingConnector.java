@@ -2,8 +2,10 @@ package com.eventore.connector.rabbitmq;
 
 import com.eventore.connector.spi.MessageHandler;
 import com.eventore.connector.spi.MessagingConnector;
+import com.eventore.connector.spi.PayloadCodec;
 import com.eventore.connector.spi.PublishRequest;
 import com.eventore.connector.spi.SubscribeRequest;
+import com.eventore.connector.spi.SubscriptionKeys;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.MessageDirection;
 import com.eventore.domain.ProtocolType;
@@ -17,11 +19,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RabbitMqMessagingConnector implements MessagingConnector {
+
+    private static final Logger log = LoggerFactory.getLogger(RabbitMqMessagingConnector.class);
 
     private final Map<String, Connection> connections = new ConcurrentHashMap<>();
 
@@ -42,6 +49,8 @@ public class RabbitMqMessagingConnector implements MessagingConnector {
     @Override
     public List<TopicRef> listDestinations(ConnectionProfile profile) {
         List<TopicRef> refs = new ArrayList<>();
+        // The connection/channel is opened purely to validate broker reachability so
+        // callers get a connection error instead of silently static defaults.
         try (Connection conn = factory(profile).newConnection();
                 Channel ch = conn.createChannel()) {
             refs.add(new TopicRef(
@@ -60,8 +69,14 @@ public class RabbitMqMessagingConnector implements MessagingConnector {
 
     @Override
     public AutoCloseable subscribe(ConnectionProfile profile, SubscribeRequest request, MessageHandler handler) {
+        final Connection conn;
         try {
-            Connection conn = factory(profile).newConnection();
+            conn = factory(profile).newConnection();
+        } catch (Exception e) {
+            log.warn("RabbitMQ subscribe failed for connection {}", profile.getId(), e);
+            throw new IllegalStateException("RabbitMQ subscribe failed: " + e.getMessage(), e);
+        }
+        try {
             Channel channel = conn.createChannel();
             String queue = request.getDestination();
             channel.queueDeclare(queue, true, false, false, null);
@@ -74,8 +89,10 @@ public class RabbitMqMessagingConnector implements MessagingConnector {
                         msg.setProtocol(ProtocolType.RABBITMQ);
                         msg.setDestination(queue);
                         msg.setDirection(MessageDirection.INBOUND);
-                        msg.setPayload(new String(delivery.getBody(), StandardCharsets.UTF_8));
-                        msg.getHeaders().put("routingKey", delivery.getEnvelope().getRoutingKey());
+                        PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(delivery.getBody());
+                        msg.setPayload(decoded.text());
+                        msg.setContentType(decoded.contentType());
+                        msg.putHeader("routingKey", delivery.getEnvelope().getRoutingKey());
                         handler.onMessage(msg);
                     },
                     consumerTag -> {});
@@ -94,6 +111,14 @@ public class RabbitMqMessagingConnector implements MessagingConnector {
                 }
             };
         } catch (Exception e) {
+            // Setup failed after the connection opened; close it so it does not leak.
+            try {
+                conn.close();
+            } catch (Exception closeError) {
+                log.debug("Error closing RabbitMQ connection after failed subscribe", closeError);
+            }
+            log.warn("RabbitMQ subscribe failed for connection {} queue {}",
+                    profile.getId(), request.getDestination(), e);
             throw new IllegalStateException("RabbitMQ subscribe failed: " + e.getMessage(), e);
         }
     }
@@ -102,14 +127,17 @@ public class RabbitMqMessagingConnector implements MessagingConnector {
     public void publish(ConnectionProfile profile, PublishRequest request) {
         try (Connection conn = factory(profile).newConnection();
                 Channel channel = conn.createChannel()) {
-            String exchange = request.getHeaders().getOrDefault("exchange", "");
-            String routingKey = request.getHeaders().getOrDefault("routingKey", request.getDestination());
+            Map<String, String> headers = Optional.ofNullable(request.getHeaders()).orElseGet(Map::of);
+            String exchange = headers.getOrDefault("exchange", "");
+            String routingKey = headers.getOrDefault("routingKey", request.getDestination());
             channel.basicPublish(
                     exchange,
                     routingKey,
                     null,
-                    request.getPayload().getBytes(StandardCharsets.UTF_8));
+                    PayloadCodec.toBytes(request.getPayload(), request.getContentType()));
         } catch (Exception e) {
+            log.warn("RabbitMQ publish failed for connection {} destination {}",
+                    profile.getId(), request.getDestination(), e);
             throw new IllegalStateException("RabbitMQ publish failed: " + e.getMessage(), e);
         }
     }
@@ -119,8 +147,8 @@ public class RabbitMqMessagingConnector implements MessagingConnector {
         if (existing != null) {
             try {
                 existing.close();
-            } catch (Exception ignored) {
-                // ignore
+            } catch (Exception e) {
+                log.debug("Error closing previous RabbitMQ connection for subscription key {}", key, e);
             }
         }
     }
@@ -128,11 +156,12 @@ public class RabbitMqMessagingConnector implements MessagingConnector {
     @Override
     public void close(String connectionId) {
         connections.entrySet().removeIf(entry -> {
-            if (entry.getKey().startsWith(connectionId)) {
+            if (SubscriptionKeys.belongsToConnection(entry.getKey(), connectionId)) {
                 try {
                     entry.getValue().close();
-                } catch (Exception ignored) {
-                    // ignore
+                } catch (Exception e) {
+                    log.debug("Error closing RabbitMQ connection {} while closing connection {}",
+                            entry.getKey(), connectionId, e);
                 }
                 return true;
             }
@@ -142,10 +171,15 @@ public class RabbitMqMessagingConnector implements MessagingConnector {
 
     private ConnectionFactory factory(ConnectionProfile profile) {
         ConnectionFactory factory = new ConnectionFactory();
-        String[] parts = profile.getBrokerUrl().split(":");
-        factory.setHost(parts[0]);
-        if (parts.length > 1) {
-            factory.setPort(Integer.parseInt(parts[1]));
+        RabbitMqBrokerUrls.Endpoint endpoint = RabbitMqBrokerUrls.parse(profile.getBrokerUrl());
+        factory.setHost(endpoint.host());
+        factory.setPort(endpoint.port());
+        if (endpoint.tls()) {
+            try {
+                factory.useSslProtocol();
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to enable TLS for RabbitMQ: " + e.getMessage(), e);
+            }
         }
         factory.setVirtualHost(profile.propertyOrDefault("vhost", "/"));
         String username = profile.credential("username");

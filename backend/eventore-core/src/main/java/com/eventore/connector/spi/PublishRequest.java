@@ -1,5 +1,6 @@
 package com.eventore.connector.spi;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,10 +36,10 @@ public class PublishRequest {
     }
 
     public Map<String, String> getHeaders() {
-        return headers;
+        return headers == null ? Map.of() : Collections.unmodifiableMap(headers);
     }
 
     public void setHeaders(Map<String, String> headers) {
-        this.headers = headers != null ? headers : new HashMap<>();
+        this.headers = headers != null ? new HashMap<>(headers) : new HashMap<>();
     }
 }

@@ -1,6 +1,8 @@
 package com.eventore.inspect.kafka;
 
 import com.eventore.connector.kafka.KafkaClientSupport;
+import com.eventore.connector.spi.PayloadCodec;
+import com.eventore.dataplane.ResourceNotFoundException;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.MessageDirection;
 import com.eventore.domain.ProtocolType;
@@ -20,14 +22,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.ConsumerGroupListing;
@@ -40,7 +40,6 @@ import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.stereotype.Component;
@@ -76,9 +75,9 @@ public class KafkaMessagingInspector implements MessagingInspector {
                 b.setHost(node.host());
                 b.setPort(node.port());
                 b.setRack(node.rack());
-                info.getBrokers().add(b);
+                info.addBroker(b);
             }
-            info.getAttributes().put("controller", String.valueOf(cluster.controller().get().id()));
+            info.putAttribute("controller", String.valueOf(cluster.controller().get().id()));
             return info;
         } catch (Exception e) {
             throw new IllegalStateException("Kafka cluster info failed: " + e.getMessage(), e);
@@ -94,7 +93,7 @@ public class KafkaMessagingInspector implements MessagingInspector {
             for (ConsumerGroupListing listing : listings) {
                 ConsumerGroupSummary s = new ConsumerGroupSummary();
                 s.setGroupId(listing.groupId());
-                s.setState(listing.state().orElse(null) != null ? listing.state().get().name() : "UNKNOWN");
+                s.setState(listing.state().map(Enum::name).orElse("UNKNOWN"));
                 s.setProtocolType(null);
                 summaries.add(s);
             }
@@ -121,6 +120,9 @@ public class KafkaMessagingInspector implements MessagingInspector {
         try (AdminClient admin = AdminClient.create(KafkaClientSupport.clientProps(profile))) {
             ConsumerGroupDescription desc =
                     admin.describeConsumerGroups(List.of(groupId)).all().get().get(groupId);
+            if (desc == null) {
+                throw new ResourceNotFoundException("Consumer group not found: " + groupId);
+            }
             ConsumerGroupDetail detail = new ConsumerGroupDetail();
             detail.setGroupId(groupId);
             detail.setState(desc.state().name());
@@ -131,11 +133,13 @@ public class KafkaMessagingInspector implements MessagingInspector {
                 m.setClientId(member.clientId());
                 m.setHost(member.host());
                 member.assignment().topicPartitions().forEach(tp ->
-                        m.getAssignments().add(tp.topic() + "-" + tp.partition()));
-                detail.getMembers().add(m);
+                        m.addAssignment(tp.topic() + "-" + tp.partition()));
+                detail.addMember(m);
             }
             detail.setOffsets(consumerLag(profile, groupId, null));
             return detail;
+        } catch (ResourceNotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new IllegalStateException("Describe consumer group failed: " + e.getMessage(), e);
         }
@@ -173,7 +177,12 @@ public class KafkaMessagingInspector implements MessagingInspector {
     public TopicDetail describeTopic(ConnectionProfile profile, String topic) {
         try (AdminClient admin = AdminClient.create(KafkaClientSupport.clientProps(profile))) {
             TopicDescription td = admin.describeTopics(List.of(topic)).allTopicNames().get().get(topic);
+            if (td == null) {
+                throw new ResourceNotFoundException("Topic not found: " + topic);
+            }
             return toTopicDetail(td);
+        } catch (ResourceNotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new IllegalStateException("Describe topic failed: " + e.getMessage(), e);
         }
@@ -305,13 +314,13 @@ public class KafkaMessagingInspector implements MessagingInspector {
         msg.setProtocol(ProtocolType.KAFKA);
         msg.setDestination(record.topic());
         msg.setDirection(MessageDirection.INBOUND);
-        msg.setPayload(record.value() != null
-                ? new String(record.value(), StandardCharsets.UTF_8)
-                : "");
-        msg.getHeaders().put("partition", String.valueOf(record.partition()));
-        msg.getHeaders().put("offset", String.valueOf(record.offset()));
+        PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(record.value());
+        msg.setPayload(decoded.text());
+        msg.setContentType(decoded.contentType());
+        msg.putHeader("partition", String.valueOf(record.partition()));
+        msg.putHeader("offset", String.valueOf(record.offset()));
         if (record.key() != null) {
-            msg.getHeaders().put("key", record.key());
+            msg.putHeader("key", record.key());
         }
         return msg;
     }
@@ -326,9 +335,9 @@ public class KafkaMessagingInspector implements MessagingInspector {
             TopicPartitionInfo info = new TopicPartitionInfo();
             info.setPartition(pi.partition());
             info.setLeader(pi.leader() != null ? pi.leader().id() : -1);
-            pi.replicas().forEach(n -> info.getReplicas().add(n.id()));
-            pi.isr().forEach(n -> info.getIsr().add(n.id()));
-            detail.getPartitions().add(info);
+            pi.replicas().forEach(n -> info.addReplica(n.id()));
+            pi.isr().forEach(n -> info.addIsr(n.id()));
+            detail.addPartition(info);
         }
         return detail;
     }

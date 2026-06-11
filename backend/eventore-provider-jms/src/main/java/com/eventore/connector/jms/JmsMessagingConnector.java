@@ -2,8 +2,10 @@ package com.eventore.connector.jms;
 
 import com.eventore.connector.spi.MessageHandler;
 import com.eventore.connector.spi.MessagingConnector;
+import com.eventore.connector.spi.PayloadCodec;
 import com.eventore.connector.spi.PublishRequest;
 import com.eventore.connector.spi.SubscribeRequest;
+import com.eventore.connector.spi.SubscriptionKeys;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.MessageDirection;
 import com.eventore.domain.ProtocolType;
@@ -12,17 +14,24 @@ import com.eventore.domain.UnifiedMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JmsMessagingConnector implements MessagingConnector {
+
+    private static final Logger log = LoggerFactory.getLogger(JmsMessagingConnector.class);
 
     private final Map<String, Connection> connections = new ConcurrentHashMap<>();
 
@@ -54,11 +63,17 @@ public class JmsMessagingConnector implements MessagingConnector {
 
     @Override
     public AutoCloseable subscribe(ConnectionProfile profile, SubscribeRequest request, MessageHandler handler) {
+        final Connection conn;
         try {
-            Connection conn = factory(profile).createConnection();
+            conn = factory(profile).createConnection();
+        } catch (Exception e) {
+            throw new IllegalStateException("JMS subscribe failed: " + e.getMessage(), e);
+        }
+        try {
             conn.start();
             Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            String destType = request.getOptions().getOrDefault("destinationType", "queue");
+            String destType = Optional.ofNullable(request.getOptions()).orElseGet(Map::of)
+                    .getOrDefault("destinationType", "queue");
             MessageConsumer consumer;
             if ("topic".equalsIgnoreCase(destType)) {
                 consumer = session.createConsumer(session.createTopic(request.getDestination()));
@@ -74,6 +89,12 @@ public class JmsMessagingConnector implements MessagingConnector {
                 try {
                     if (message instanceof TextMessage textMessage) {
                         msg.setPayload(textMessage.getText());
+                    } else if (message instanceof BytesMessage bytesMessage) {
+                        byte[] body = new byte[(int) bytesMessage.getBodyLength()];
+                        bytesMessage.readBytes(body);
+                        PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(body);
+                        msg.setPayload(decoded.text());
+                        msg.setContentType(decoded.contentType());
                     } else {
                         msg.setPayload(message.toString());
                     }
@@ -98,6 +119,13 @@ public class JmsMessagingConnector implements MessagingConnector {
                 }
             };
         } catch (Exception e) {
+            // Session/consumer setup failed after the connection opened; close it so
+            // it does not leak.
+            try {
+                conn.close();
+            } catch (Exception closeError) {
+                log.debug("Error closing JMS connection after failed subscribe", closeError);
+            }
             throw new IllegalStateException("JMS subscribe failed: " + e.getMessage(), e);
         }
     }
@@ -107,8 +135,16 @@ public class JmsMessagingConnector implements MessagingConnector {
         try (Connection conn = factory(profile).createConnection()) {
             conn.start();
             Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            String destType = request.getHeaders().getOrDefault("destinationType", "queue");
-            TextMessage message = session.createTextMessage(request.getPayload());
+            String destType = Optional.ofNullable(request.getHeaders()).orElseGet(Map::of)
+                    .getOrDefault("destinationType", "queue");
+            Message message;
+            if (PayloadCodec.isBase64(request.getContentType())) {
+                BytesMessage bytesMessage = session.createBytesMessage();
+                bytesMessage.writeBytes(PayloadCodec.toBytes(request.getPayload(), request.getContentType()));
+                message = bytesMessage;
+            } else {
+                message = session.createTextMessage(request.getPayload() != null ? request.getPayload() : "");
+            }
             if ("topic".equalsIgnoreCase(destType)) {
                 session.createProducer(session.createTopic(request.getDestination())).send(message);
             } else {
@@ -125,8 +161,8 @@ public class JmsMessagingConnector implements MessagingConnector {
         if (existing != null) {
             try {
                 existing.close();
-            } catch (Exception ignored) {
-                // ignore
+            } catch (Exception e) {
+                log.debug("Error closing previous JMS connection for subscription key {}", key, e);
             }
         }
     }
@@ -134,11 +170,12 @@ public class JmsMessagingConnector implements MessagingConnector {
     @Override
     public void close(String connectionId) {
         connections.entrySet().removeIf(entry -> {
-            if (entry.getKey().startsWith(connectionId)) {
+            if (SubscriptionKeys.belongsToConnection(entry.getKey(), connectionId)) {
                 try {
                     entry.getValue().close();
-                } catch (Exception ignored) {
-                    // ignore
+                } catch (Exception e) {
+                    log.debug("Error closing JMS connection {} while closing connection {}",
+                            entry.getKey(), connectionId, e);
                 }
                 return true;
             }

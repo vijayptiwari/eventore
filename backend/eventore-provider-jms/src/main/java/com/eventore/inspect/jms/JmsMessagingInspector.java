@@ -34,8 +34,8 @@ public class JmsMessagingInspector implements MessagingInspector {
     public ClusterInfo clusterInfo(ConnectionProfile profile) {
         ClusterInfo info = new ClusterInfo();
         info.setClusterId(profile.getBrokerUrl());
-        info.getAttributes().put("broker", profile.getBrokerUrl());
-        info.getAttributes().put("implementation", "Apache Artemis");
+        info.putAttribute("broker", profile.getBrokerUrl());
+        info.putAttribute("implementation", "Apache Artemis");
         return info;
     }
 
@@ -56,7 +56,7 @@ public class JmsMessagingInspector implements MessagingInspector {
         if (nameFilter == null || nameFilter.isBlank() || queue.contains(nameFilter)) {
             TopicDetail q = new TopicDetail();
             q.setName(queue);
-            q.getConfig().put("destinationType", "queue");
+            q.putConfig("destinationType", "queue");
             list.add(q);
         }
         String topic = profile.property("topic");
@@ -64,7 +64,7 @@ public class JmsMessagingInspector implements MessagingInspector {
                 && (nameFilter == null || nameFilter.isBlank() || topic.contains(nameFilter))) {
             TopicDetail t = new TopicDetail();
             t.setName(topic);
-            t.getConfig().put("destinationType", "topic");
+            t.putConfig("destinationType", "topic");
             list.add(t);
         }
         return list;

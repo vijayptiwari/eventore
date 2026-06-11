@@ -35,8 +35,8 @@ public class MqttMessagingInspector implements MessagingInspector {
     public ClusterInfo clusterInfo(ConnectionProfile profile) {
         ClusterInfo info = new ClusterInfo();
         info.setClusterId(profile.getBrokerUrl());
-        info.getAttributes().put("brokerUrl", profile.getBrokerUrl());
-        info.getAttributes().put("topicFilter", profile.propertyOrDefault("topicFilter", "#"));
+        info.putAttribute("brokerUrl", profile.getBrokerUrl());
+        info.putAttribute("topicFilter", profile.propertyOrDefault("topicFilter", "#"));
         return info;
     }
 
@@ -54,8 +54,8 @@ public class MqttMessagingInspector implements MessagingInspector {
     public List<TopicDetail> listTopics(ConnectionProfile profile, String nameFilter) {
         TopicDetail td = new TopicDetail();
         td.setName(profile.propertyOrDefault("topicFilter", nameFilter != null ? nameFilter : "#"));
-        td.getConfig().put("type", "topic-filter");
-        td.getConfig().put("note", "MQTT brokers do not expose topic lists; use filters and live stream");
+        td.putConfig("type", "topic-filter");
+        td.putConfig("note", "MQTT brokers do not expose topic lists; use filters and live stream");
         return List.of(td);
     }
 
@@ -63,7 +63,7 @@ public class MqttMessagingInspector implements MessagingInspector {
     public TopicDetail describeTopic(ConnectionProfile profile, String topic) {
         TopicDetail td = new TopicDetail();
         td.setName(topic);
-        td.getConfig().put("qos-hint", "0,1,2");
+        td.putConfig("qos-hint", "0,1,2");
         return td;
     }
 

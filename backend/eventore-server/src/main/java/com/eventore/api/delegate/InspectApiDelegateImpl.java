@@ -36,21 +36,23 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
 
     @Override
     public ResponseEntity<Object> inspectCapabilities(String connectionId) {
-        return ResponseEntity.ok(inspector(connectionId).capabilities());
+        policy.require(Action.BROWSE_DESTINATIONS);
+        return ResponseEntity.ok(inspector(profile(connectionId)).capabilities());
     }
 
     @Override
     public ResponseEntity<Object> inspectCluster(String connectionId) {
         policy.require(Action.BROWSE_DESTINATIONS);
-        return ResponseEntity.ok(inspector(connectionId).clusterInfo(profile(connectionId)));
+        ConnectionProfile profile = profile(connectionId);
+        return ResponseEntity.ok(inspector(profile).clusterInfo(profile));
     }
 
     @Override
     public ResponseEntity<Object> inspectBrokers(String connectionId) {
         policy.require(Action.BROWSE_DESTINATIONS);
-        MessagingInspector insp = inspector(connectionId);
-        Map<String, Object> result = new LinkedHashMap<>();
         ConnectionProfile profile = profile(connectionId);
+        MessagingInspector insp = inspector(profile);
+        Map<String, Object> result = new LinkedHashMap<>();
         result.put("cluster", insp.clusterInfo(profile));
         result.put("brokerInfo", insp.brokerInfo(profile));
         return ResponseEntity.ok(result);
@@ -59,28 +61,29 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
     @Override
     public ResponseEntity<List<Object>> listConsumerGroups(String connectionId) {
         policy.require(Action.BROWSE_DESTINATIONS);
-        return ResponseEntity.ok(toObjectList(inspector(connectionId)
-                .listConsumerGroups(profile(connectionId))));
+        ConnectionProfile profile = profile(connectionId);
+        return ResponseEntity.ok(toObjectList(inspector(profile).listConsumerGroups(profile)));
     }
 
     @Override
     public ResponseEntity<Object> describeConsumerGroup(String connectionId, String groupId) {
         policy.require(Action.BROWSE_DESTINATIONS);
-        return ResponseEntity.ok(inspector(connectionId)
-                .describeConsumerGroup(profile(connectionId), groupId));
+        ConnectionProfile profile = profile(connectionId);
+        return ResponseEntity.ok(inspector(profile).describeConsumerGroup(profile, groupId));
     }
 
     @Override
     public ResponseEntity<List<Object>> listInspectTopics(String connectionId, String filter) {
         policy.require(Action.BROWSE_DESTINATIONS);
-        return ResponseEntity.ok(toObjectList(inspector(connectionId)
-                .listTopics(profile(connectionId), filter)));
+        ConnectionProfile profile = profile(connectionId);
+        return ResponseEntity.ok(toObjectList(inspector(profile).listTopics(profile, filter)));
     }
 
     @Override
     public ResponseEntity<Object> describeInspectTopic(String connectionId, String topic) {
         policy.require(Action.BROWSE_DESTINATIONS);
-        return ResponseEntity.ok(inspector(connectionId).describeTopic(profile(connectionId), topic));
+        ConnectionProfile profile = profile(connectionId);
+        return ResponseEntity.ok(inspector(profile).describeTopic(profile, topic));
     }
 
     @Override
@@ -89,16 +92,16 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
         if (groupId == null || groupId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "groupId is required for lag");
         }
-        return ResponseEntity.ok(toObjectList(inspector(connectionId)
-                .consumerLag(profile(connectionId), groupId, topic)));
+        ConnectionProfile profile = profile(connectionId);
+        return ResponseEntity.ok(toObjectList(inspector(profile).consumerLag(profile, groupId, topic)));
     }
 
     @Override
     public ResponseEntity<List<UnifiedMessage>> searchMessages(
             String connectionId, MessageSearchRequest messageSearchRequest) {
         policy.require(Action.BROWSE_DESTINATIONS);
-        return ResponseEntity.ok(inspector(connectionId)
-                .searchMessages(profile(connectionId), messageSearchRequest));
+        ConnectionProfile profile = profile(connectionId);
+        return ResponseEntity.ok(inspector(profile).searchMessages(profile, messageSearchRequest));
     }
 
     private ConnectionProfile profile(String connectionId) {
@@ -112,8 +115,7 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
         return (List<Object>) (List<?>) source;
     }
 
-    private MessagingInspector inspector(String connectionId) {
-        ConnectionProfile profile = profile(connectionId);
+    private MessagingInspector inspector(ConnectionProfile profile) {
         policy.requireProtocol(profile.getProtocol());
         return inspectorRegistry.get(profile.getProtocol());
     }

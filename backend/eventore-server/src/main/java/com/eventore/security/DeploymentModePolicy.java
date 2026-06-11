@@ -16,6 +16,7 @@ public class DeploymentModePolicy {
 
     private final EventoreProperties properties;
     private final ControlPlaneRegistry controlPlane;
+    private volatile List<String> cachedAllowedActionStrings;
 
     public DeploymentModePolicy(EventoreProperties properties, ControlPlaneRegistry controlPlane) {
         this.properties = properties;
@@ -68,16 +69,23 @@ public class DeploymentModePolicy {
     }
 
     public void validatePublishSize(long bytes) {
-        if (mode() == DeploymentMode.DEV && bytes > properties.getDev().getMaxPublishBytes()) {
+        long limit = properties.getMaxPublishBytes();
+        if (mode() == DeploymentMode.DEV) {
+            limit = Math.min(limit, properties.getDev().getMaxPublishBytes());
+        }
+        if (bytes > limit) {
             throw new ResponseStatusException(
                     HttpStatus.PAYLOAD_TOO_LARGE,
-                    "Publish exceeds DEV max size of " + properties.getDev().getMaxPublishBytes());
+                    "Publish exceeds max size of " + limit + " bytes");
         }
     }
 
     /** Intersection of control-plane registration and DEV allow-list. */
     public Set<ProtocolType> supportedProtocols() {
-        Set<ProtocolType> deployed = EnumSet.copyOf(controlPlane.registeredProtocols());
+        Set<ProtocolType> registered = controlPlane.registeredProtocols();
+        Set<ProtocolType> deployed = registered.isEmpty()
+                ? EnumSet.noneOf(ProtocolType.class)
+                : EnumSet.copyOf(registered);
         if (mode() == DeploymentMode.DEV) {
             Set<ProtocolType> allowed = properties.getDev().getAllowedProtocols();
             if (allowed != null && !allowed.isEmpty()) {
@@ -88,10 +96,16 @@ public class DeploymentModePolicy {
     }
 
     public List<String> allowedActionsAsStrings() {
+        List<String> cached = cachedAllowedActionStrings;
+        if (cached != null) {
+            return cached;
+        }
         List<String> names = new ArrayList<>();
         for (Action action : allowedActions()) {
             names.add(action.name());
         }
-        return names;
+        cached = List.copyOf(names);
+        cachedAllowedActionStrings = cached;
+        return cached;
     }
 }

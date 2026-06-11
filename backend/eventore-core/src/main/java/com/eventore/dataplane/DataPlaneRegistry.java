@@ -5,9 +5,10 @@ import com.eventore.controlplane.ControlPlaneRegistry;
 import com.eventore.domain.ProtocolType;
 import com.eventore.inspect.spi.MessagingInspector;
 import com.eventore.provider.StreamProvider;
-import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Data-plane registry: runtime {@link StreamProvider} handles used for broker I/O.
@@ -16,13 +17,15 @@ import java.util.Optional;
 public class DataPlaneRegistry {
 
     private final ControlPlaneRegistry controlPlane;
-    private final Map<ProtocolType, StreamProvider> providers = new EnumMap<>(ProtocolType.class);
+    private final Map<ProtocolType, StreamProvider> providers = new ConcurrentHashMap<>();
 
     public DataPlaneRegistry(ControlPlaneRegistry controlPlane) {
         this.controlPlane = controlPlane;
     }
 
     public void attach(ProtocolType protocol, StreamProvider provider) {
+        Objects.requireNonNull(protocol, "protocol");
+        Objects.requireNonNull(provider, "stream provider");
         providers.put(protocol, provider);
     }
 
@@ -52,6 +55,10 @@ public class DataPlaneRegistry {
                 .orElseThrow(() -> new DataPlaneException("No inspector for " + protocol));
     }
 
+    /**
+     * Returns the inspector for {@code protocol} when registered and attached; {@link Optional#empty()}
+     * when the protocol is not control-plane registered, not data-plane attached, or has no inspector.
+     */
     public Optional<MessagingInspector> inspectorOptional(ProtocolType protocol) {
         if (!controlPlane.isRegistered(protocol)) {
             return Optional.empty();

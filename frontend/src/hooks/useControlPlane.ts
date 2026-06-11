@@ -17,16 +17,14 @@ export function useControlPlane() {
 
   const connectionProtocols: ProtocolType[] =
     cascade?.connectionProtocols?.length
-      ? (cascade.connectionProtocols as ProtocolType[])
+      ? cascade.connectionProtocols
       : (configQuery.data?.supportedProtocols ?? []);
 
   const inspectProtocols: ProtocolType[] =
-    cascade?.inspectProtocols?.length
-      ? (cascade.inspectProtocols as ProtocolType[])
-      : connectionProtocols;
+    cascade?.inspectProtocols?.length ? cascade.inspectProtocols : connectionProtocols;
 
   const adminProtocols: ProtocolType[] =
-    cascade?.adminProtocols?.length ? (cascade.adminProtocols as ProtocolType[]) : [];
+    cascade?.adminProtocols?.length ? cascade.adminProtocols : [];
 
   return {
     config: configQuery.data,

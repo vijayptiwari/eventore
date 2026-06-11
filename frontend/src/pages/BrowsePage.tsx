@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useStreamWorkspace } from '../stream/StreamWorkspaceContext';
 
@@ -34,6 +34,20 @@ export default function BrowsePage() {
     navigate('/stream');
   };
 
+  if (connections && connections.length === 0) {
+    return (
+      <div>
+        <h1>Browse destinations</h1>
+        <div className="card">
+          <p>
+            No connections yet. <Link to="/connections">Create a connection</Link> to browse its
+            topics and queues.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h1>Browse destinations</h1>
@@ -60,7 +74,7 @@ export default function BrowsePage() {
           </thead>
           <tbody>
             {destinations?.map((d) => (
-              <tr key={d.name}>
+              <tr key={`${d.name}:${d.type}`}>
                 <td>{d.name}</td>
                 <td>{d.type}</td>
                 <td>

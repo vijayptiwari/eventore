@@ -1,21 +1,22 @@
 package com.eventore.connector.spi;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public final class SubscribeDestinations {
 
     private SubscribeDestinations() {}
 
     public static List<String> resolve(SubscribeRequest request) {
-        if (request.getDestinations() != null && !request.getDestinations().isEmpty()) {
+        Objects.requireNonNull(request, "subscribe request");
+        if (!request.getDestinations().isEmpty()) {
             return request.getDestinations().stream()
                     .filter(s -> s != null && !s.isBlank())
                     .distinct()
                     .toList();
         }
-        String topicsOpt = request.getOptions().get("topics");
+        String topicsOpt = request.getOptions() != null ? request.getOptions().get("topics") : null;
         if (topicsOpt != null && !topicsOpt.isBlank()) {
             return Arrays.stream(topicsOpt.split(","))
                     .map(String::trim)

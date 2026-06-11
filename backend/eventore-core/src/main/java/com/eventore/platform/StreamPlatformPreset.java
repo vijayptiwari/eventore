@@ -3,6 +3,8 @@ package com.eventore.platform;
 import com.eventore.domain.CloudProvider;
 import com.eventore.domain.ProtocolType;
 import com.eventore.domain.StreamPlatform;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +18,8 @@ public class StreamPlatformPreset {
     private ProtocolType protocol;
     private String brokerUrlHint;
     private Map<String, String> defaultProperties = new LinkedHashMap<>();
-    private List<String> credentialFields;
-    private List<String> features;
+    private List<String> credentialFields = new ArrayList<>();
+    private List<String> features = new ArrayList<>();
 
     public StreamPlatform getPlatform() {
         return platform;
@@ -68,26 +70,26 @@ public class StreamPlatformPreset {
     }
 
     public Map<String, String> getDefaultProperties() {
-        return defaultProperties;
+        return Collections.unmodifiableMap(defaultProperties);
     }
 
     public void setDefaultProperties(Map<String, String> defaultProperties) {
-        this.defaultProperties = defaultProperties;
+        this.defaultProperties = defaultProperties != null ? new LinkedHashMap<>(defaultProperties) : new LinkedHashMap<>();
     }
 
     public List<String> getCredentialFields() {
-        return credentialFields;
+        return Collections.unmodifiableList(credentialFields);
     }
 
     public void setCredentialFields(List<String> credentialFields) {
-        this.credentialFields = credentialFields;
+        this.credentialFields = credentialFields != null ? new ArrayList<>(credentialFields) : new ArrayList<>();
     }
 
     public List<String> getFeatures() {
-        return features;
+        return Collections.unmodifiableList(features);
     }
 
     public void setFeatures(List<String> features) {
-        this.features = features;
+        this.features = features != null ? new ArrayList<>(features) : new ArrayList<>();
     }
 }

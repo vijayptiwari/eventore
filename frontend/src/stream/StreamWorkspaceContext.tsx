@@ -21,9 +21,9 @@ import type {
   LiveStreamSession,
   LiveViewDurationMinutes,
   LiveViewState,
-  StreamFrame,
   StreamStatus,
 } from './types';
+import { parseWsFrame } from './wsFrameParse';
 
 interface StreamWorkspaceContextValue {
   wsConnected: boolean;
@@ -86,6 +86,8 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
   const [liveViews, setLiveViews] = useState<Record<string, LiveViewState>>({});
   const wsRef = useRef<WebSocket | null>(null);
   const retryRef = useRef(0);
+  const reconnectTimerRef = useRef<number | null>(null);
+  const disposedRef = useRef(false);
   const sessionsRef = useRef(sessions);
   const activeIdRef = useRef(activeSessionId);
   const liveViewsRef = useRef(liveViews);
@@ -99,13 +101,17 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
     saveActiveStreamIdToStorage(activeId);
   }, []);
 
+  // Persisting in an effect (rather than inside setState updaters) keeps the
+  // updaters pure, so StrictMode double-invocation cannot double the writes.
+  useEffect(() => {
+    persist(sessions, activeSessionId);
+  }, [persist, sessions, activeSessionId]);
+
   const updateSession = useCallback((id: string, patch: Partial<LiveStreamSession>) => {
-    setSessions((prev) => {
-      const next = prev.map((s) => (s.id === id ? { ...s, ...patch, updatedAt: Date.now() } : s));
-      persist(next, activeIdRef.current);
-      return next;
-    });
-  }, [persist]);
+    setSessions((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...patch, updatedAt: Date.now() } : s)),
+    );
+  }, []);
 
   const sendWsUnsubscribe = useCallback((session: LiveStreamSession) => {
     const ws = wsRef.current;
@@ -144,10 +150,18 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
   );
 
   const connectWs = useCallback(() => {
-    const { wsUrl } = getRuntimeConfig();
+    if (disposedRef.current) return;
+    if (reconnectTimerRef.current != null) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    const { wsUrl, apiToken } = getRuntimeConfig();
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-    const ws = new WebSocket(wsUrl);
+    const wsEndpoint = apiToken
+      ? `${wsUrl}${wsUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(apiToken)}`
+      : wsUrl;
+    const ws = new WebSocket(wsEndpoint);
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -161,10 +175,20 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
     };
 
     ws.onmessage = (ev) => {
+      let parsed: unknown;
       try {
-        const frame = JSON.parse(ev.data) as StreamFrame;
-        const streamId = frame.clientStreamId;
-        if (!streamId) return;
+        parsed = JSON.parse(ev.data);
+      } catch (err) {
+        console.warn('Malformed WebSocket frame JSON:', err, ev.data);
+        return;
+      }
+      const frame = parseWsFrame(parsed);
+      if (!frame) {
+        console.warn('Ignoring WebSocket frame with invalid shape:', ev.data);
+        return;
+      }
+      const streamId = frame.clientStreamId;
+      if (!streamId) return;
 
         if (frame.type === 'SUBSCRIBED' && frame.subscriptionId) {
           updateSession(streamId, {
@@ -173,21 +197,20 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
             lastError: undefined,
           });
         } else if (frame.type === 'MESSAGE' && frame.message) {
-          setSessions((prev) => {
-            const next = prev.map((s) => {
+          setSessions((prev) =>
+            prev.map((s) => {
               if (s.id !== streamId) return s;
               const messages = [frame.message!, ...s.messages].slice(0, 500);
               return {
                 ...s,
                 status: 'active' as StreamStatus,
                 messages,
-                messageCount: messages.length,
+                // Monotonic total; the messages buffer itself is capped at 500.
+                messageCount: s.messageCount + 1,
                 updatedAt: Date.now(),
               };
-            });
-            persist(next, activeIdRef.current);
-            return next;
-          });
+            }),
+          );
         } else if (frame.type === 'ERROR') {
           if (liveViewsRef.current[streamId]?.active) {
             setLiveViews((prev) => {
@@ -250,9 +273,6 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
             };
           });
         }
-      } catch {
-        // ignore malformed
-      }
     };
 
     ws.onclose = () => {
@@ -270,26 +290,31 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
         }
         return next;
       });
-      setSessions((prev) => {
-        const next = prev.map((s) =>
+      setSessions((prev) =>
+        prev.map((s) =>
           s.status === 'active' || s.status === 'connecting'
             ? { ...s, status: 'idle' as StreamStatus, subscriptionId: undefined }
             : s,
-        );
-        persist(next, activeIdRef.current);
-        return next;
-      });
+        ),
+      );
+      if (disposedRef.current) return;
       const delay = Math.min(30_000, 1000 * 2 ** retryRef.current);
       retryRef.current += 1;
-      setTimeout(connectWs, delay);
+      reconnectTimerRef.current = window.setTimeout(connectWs, delay);
     };
 
     ws.onerror = () => setWsConnected(false);
-  }, [persist, sendSubscribe, updateSession]);
+  }, [sendSubscribe, updateSession]);
 
   useEffect(() => {
+    disposedRef.current = false;
     connectWs();
     return () => {
+      disposedRef.current = true;
+      if (reconnectTimerRef.current != null) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
       wsRef.current?.close();
       wsRef.current = null;
     };
@@ -340,18 +365,14 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
         updatedAt: now,
       };
 
-      setSessions((prev) => {
-        const next = [...prev, session];
-        persist(next, id);
-        return next;
-      });
+      setSessions((prev) => [...prev, session]);
       setActiveSessionId(id);
       if (params.autoStart !== false) {
         if (!sendSubscribe(session)) connectWs();
       }
       return id;
     },
-    [connectWs, persist, sendSubscribe, setActiveSessionId],
+    [connectWs, sendSubscribe, setActiveSessionId],
   );
 
   const stopStream = useCallback(
@@ -417,6 +438,19 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
       const ws = wsRef.current;
       if (!ws || ws.readyState !== WebSocket.OPEN) {
         connectWs();
+        setLiveViews((prev) => ({
+          ...prev,
+          [sessionId]: {
+            active: false,
+            status: 'error',
+            topics: config.topics,
+            headerRegex: config.headerRegex ?? '',
+            bodyRegex: config.bodyRegex ?? '',
+            durationMinutes: config.durationMinutes,
+            messages: [],
+            lastError: 'WebSocket not connected',
+          },
+        }));
         return;
       }
       setLiveViews((prev) => ({
@@ -456,11 +490,10 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
         const newActive =
           activeIdRef.current === id ? (next[0]?.id ?? null) : activeIdRef.current;
         setActiveSessionIdState(newActive);
-        persist(next, newActive);
         return next;
       });
     },
-    [persist, sendWsUnsubscribe, stopLiveView],
+    [sendWsUnsubscribe, stopLiveView],
   );
 
   const restartAllStreams = useCallback(() => {

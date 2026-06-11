@@ -38,7 +38,7 @@ public class CoreSubscribeApiDelegateImpl implements SubscribeApiDelegate {
                 subscriptionManager.subscribe(profile, subscribeRequest, event -> {}, true);
         return ResponseEntity.ok(Map.of(
                 "subscriptionId", subscriptionId,
-                "sseUrl", "/api/v1/stream/" + subscriptionId));
+                "sseUrl", "/api/v1/stream/" + subscriptionId + "?connectionId=" + connectionId));
     }
 
     @Override
