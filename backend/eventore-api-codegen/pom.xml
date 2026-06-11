@@ -147,6 +147,9 @@
                             <importMappings>
                                 <importMapping>MessageSearchRequest=com.eventore.inspect.domain.InspectModels.MessageSearchRequest</importMapping>
                                 <importMapping>UnifiedMessage=com.eventore.domain.UnifiedMessage</importMapping>
+                                <importMapping>TopicRef=com.eventore.domain.TopicRef</importMapping>
+                                <importMapping>ProtocolType=com.eventore.domain.ProtocolType</importMapping>
+                                <importMapping>ProtocolInspectCapabilities=com.eventore.inspect.domain.InspectModels.ProtocolInspectCapabilities</importMapping>
                             </importMappings>
                         </configuration>
                     </execution>

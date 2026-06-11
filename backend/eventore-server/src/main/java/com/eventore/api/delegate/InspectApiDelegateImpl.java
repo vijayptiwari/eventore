@@ -2,9 +2,11 @@ package com.eventore.api.delegate;
 
 import com.eventore.api.generated.inspect.InspectApiDelegate;
 import com.eventore.domain.ConnectionProfile;
+import com.eventore.domain.TopicRef;
 import com.eventore.domain.UnifiedMessage;
 import com.eventore.inspect.InspectorRegistry;
 import com.eventore.inspect.domain.InspectModels.MessageSearchRequest;
+import com.eventore.inspect.domain.InspectModels.ProtocolInspectCapabilities;
 import com.eventore.inspect.spi.MessagingInspector;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
@@ -39,7 +41,7 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Object> inspectCapabilities(String connectionId) {
+    public ResponseEntity<ProtocolInspectCapabilities> inspectCapabilities(String connectionId) {
         policy.require(Action.BROWSE_DESTINATIONS);
         return ResponseEntity.ok(inspector(profile(connectionId)).capabilities());
     }
@@ -63,10 +65,11 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
     }
 
     @Override
-    public ResponseEntity<List<Object>> listConsumerGroups(String connectionId) {
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<List<TopicRef>> listConsumerGroups(String connectionId) {
         policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = profile(connectionId);
-        return ResponseEntity.ok(toObjectList(inspector(profile).listConsumerGroups(profile)));
+        return ResponseEntity.ok((List) inspector(profile).listConsumerGroups(profile));
     }
 
     @Override
@@ -77,10 +80,11 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
     }
 
     @Override
-    public ResponseEntity<List<Object>> listInspectTopics(String connectionId, String filter) {
+    @SuppressWarnings("unchecked")
+    public ResponseEntity<List<TopicRef>> listInspectTopics(String connectionId, String filter) {
         policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = profile(connectionId);
-        return ResponseEntity.ok(toObjectList(inspector(profile).listTopics(profile, filter)));
+        return ResponseEntity.ok((List) inspector(profile).listTopics(profile, filter));
     }
 
     @Override
