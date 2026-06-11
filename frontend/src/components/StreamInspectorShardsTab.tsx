@@ -20,8 +20,8 @@ export default function StreamInspectorShardsTab({
   return (
     <div className="card">
       <h3>Kinesis shards — {streamName}</h3>
-      {isLoading && <p>Loading shards...</p>}
-      {error && <p className="stream-error">{String(error)}</p>}
+      {isLoading ? <p>Loading shards...</p> : null}
+      {error != null ? <p className="stream-error">{String(error)}</p> : null}
       {!isLoading && !error && (
         <table>
           <thead>

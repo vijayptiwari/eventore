@@ -17,10 +17,11 @@ interface Props {
 export default function StreamInspectorGroupsTab({
   protocol,
   groups,
-  selectedGroup,
+  selectedGroup: _selectedGroup,
   onSelectedGroupChange,
   groupDetail,
 }: Props) {
+  void _selectedGroup;
   return (
     <div className="card">
       {protocol === 'RABBITMQ' && (
@@ -57,9 +58,9 @@ export default function StreamInspectorGroupsTab({
           ))}
         </tbody>
       </table>
-      {groupDetail && (
+      {groupDetail != null ? (
         <pre className="inspector-pre">{JSON.stringify(groupDetail, null, 2)}</pre>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -80,6 +80,17 @@ export default function ConnectionsPage() {
     | { status: 'success'; result: string }
     | { status: 'error'; message: string };
 
+  function renderValidationStatus(state: RowValidationState | undefined) {
+    if (!state) return null;
+    if (state.status === 'pending') {
+      return <span className="inspector-meta"> Testing…</span>;
+    }
+    if (state.status === 'success') {
+      return <span className="tag tag-ok"> {state.result}</span>;
+    }
+    return <span className="stream-error"> {state.message}</span>;
+  }
+
   const [validationById, setValidationById] = useState<Record<string, RowValidationState>>({});
 
   const testConnection = (id: string) => {
@@ -262,15 +273,7 @@ export default function ConnectionsPage() {
                       Delete
                     </button>
                   )}
-                  {c.id && validationById[c.id]?.status === 'pending' && (
-                    <span className="inspector-meta"> Testing…</span>
-                  )}
-                  {c.id && validationById[c.id]?.status === 'success' && (
-                    <span className="tag tag-ok"> {validationById[c.id].result}</span>
-                  )}
-                  {c.id && validationById[c.id]?.status === 'error' && (
-                    <span className="stream-error"> {validationById[c.id].message}</span>
-                  )}
+                  {c.id ? renderValidationStatus(validationById[c.id]) : null}
                 </td>
               </tr>
             ))}

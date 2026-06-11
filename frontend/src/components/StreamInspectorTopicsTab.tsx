@@ -71,7 +71,7 @@ export default function StreamInspectorTopicsTab({
           ))}
         </tbody>
       </table>
-      {topicDetail && (
+      {topicDetail != null ? (
         <>
           <ExportResultActions
             filenameBase={`topic-detail_${detailsTopic}`}
@@ -80,7 +80,7 @@ export default function StreamInspectorTopicsTab({
           />
           <pre className="inspector-pre">{JSON.stringify(topicDetail, null, 2)}</pre>
         </>
-      )}
+      ) : null}
       {canDump && (
         <>
           <hr />
