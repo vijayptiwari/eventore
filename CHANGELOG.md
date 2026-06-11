@@ -40,7 +40,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `client.test.ts` — `canAction`, protocol defaults, URL encoding for connection IDs with special characters.
 - `exportData.test.ts` — filename sanitization.
 
+### Changed
+- **Documentation sync (Wave 3 + CI)**: `README.md`, `deploy/README.md`, `docs/HA.md`, `docs/REQUIREMENTS.md`, `docs/TESTING.md`, GitHub Pages guides (local development, deployment, configuration), `backend/README.md`, `backend/openapi/README.md`, `EPICS-WAVE3.md` — reflect PVC persistence, diagnostics OpenAPI, CI gates, and integration-test notes.
+
 ### Fixed
+
+#### CI stabilization (2026-06-11)
+- **Frontend production build**: `tsconfig.json` excludes `*.test.ts`; inspector tabs and `ConnectionsPage` use discriminated-union-safe JSX patterns for `tsc -b`.
+- **Inspect OpenAPI delegate**: `InspectApiDelegateImpl` return types aligned with codegen; inspect stream import mappings for `TopicRef` and `ProtocolInspectCapabilities`.
+- **Spring cloud inspectors**: `@Autowired` on public constructors for `AzureServiceBusMessagingInspector` and `GcpPubSubMessagingInspector` (multi-constructor beans).
+- **MQTT integration tests**: Testcontainers mounts `mosquitto.conf` (`allow_anonymous true`); subscribe-before-publish ordering.
+- **Pulsar integration tests**: Admin HTTP wait for `public/default` namespace; `pulsar-client-admin` dependency; admin URL port mapping (`6650` → `8080`).
+- **MCP CI on Linux**: test glob uses `dist/*.test.js` (no `**` expansion).
 
 #### Security & integrity
 - **SSE subscription hijacking**: `/api/v1/stream/{subscriptionId}` now requires `connectionId` query param and verifies ownership via `SubscriptionManager.ownsSubscription`.

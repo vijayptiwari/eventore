@@ -121,7 +121,14 @@ eventore.enabled-protocols=KAFKA,KINESIS</code></pre>
   streamProviders:
     - KAFKA
     - KINESIS
-  deploymentMode: ADMIN</code></pre>
+  deploymentMode: ADMIN
+  connections:
+    persistence:
+      enabled: false
+      volumeType: emptyDir   # or pvc + size / existingClaim
+  security:
+    apiToken: ""             # or apiTokenExistingSecret
+    allowedOrigins: "*"</code></pre>
       <p>Image tag auto-derived: <code>kafka-kinesis</code>. Eight providers → tag <code>all</code>.</p>
       <pre><code>helm install eventore ./deploy/helm/eventore \
   -f deploy/helm/eventore/values-kafka-kinesis.yaml</code></pre>
@@ -147,7 +154,12 @@ DELETE /api/v1/control/providers/MQTT/register</code></pre>
       <h2>OpenAPI catalog</h2>
       <p>Active stream contracts for this deployment:</p>
       <pre><code>GET /api/v1/openapi/catalog</code></pre>
-      <p>Per-stream YAML is served under <code>/openapi/streams/{id}-api.yaml</code> when that provider is registered.</p>
+      <p>Per-stream YAML is served under <code>/openapi/streams/{id}-api.yaml</code> when that provider is registered. Streams include <strong>core</strong>, <strong>inspect</strong>, <strong>diagnostics</strong>, <strong>kafka</strong>, and <strong>kinesis</strong>.</p>
+
+      <h2>Diagnostics API</h2>
+      <pre><code>GET /api/v1/diagnostics/subscriptions</code></pre>
+      <p>Subscription health for the dashboard; requires API token when <code>eventore.security.api-token</code> is set. Documented in <code>diagnostics-api.yaml</code>.</p>
+
       <p>Related: <a href="control-data-plane.html">Control &amp; data plane</a> · <a href="deployment.html">Deployment</a></p>
     </main>
   </div>

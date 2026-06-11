@@ -91,3 +91,15 @@
 ## Deferred (Wave 4)
 
 REQ-61 live Playwright E2E, REQ-62 frontend OpenAPI drift CI, REQ-64 MCP HTTP integration test, REQ-65–72 P3 items.
+
+## Post-ship: CI stabilization (2026-06-11)
+
+After Wave 3 feature delivery, `publish-artifacts.yml` was brought green with:
+
+- Frontend `tsc -b` fixes (test file exclusion, JSX narrowing)
+- `InspectApiDelegateImpl` typed against OpenAPI codegen
+- Spring `@Autowired` on Azure/GCP messaging inspectors
+- MQTT Testcontainers `mosquitto.conf` + subscribe-before-publish
+- Pulsar namespace bootstrap via admin REST + `pulsar-client-admin` dependency
+
+Documented in `CHANGELOG.md` and `docs/TESTING.md`.

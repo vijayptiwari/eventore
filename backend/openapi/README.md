@@ -12,6 +12,8 @@ Contracts are split by integration surface so each stream provider can evolve in
 
 Shared schemas: `common/schemas.yaml`
 
+Inspect codegen reuses domain types where possible (`TopicRef`, `ProtocolInspectCapabilities`, `MessageSearchRequest`, `UnifiedMessage`) via `importMappings` in `eventore-api-codegen/pom.xml`. Delegate implementations must match generated return types.
+
 ## Regenerate server API
 
 ```bash

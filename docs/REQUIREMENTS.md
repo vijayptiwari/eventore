@@ -1,25 +1,44 @@
-# Eventore Requirements Backlog (Post–Wave 2)
+# Eventore Requirements Backlog (Post–Wave 3)
 
-Generated from **functionality-requirements-analyst** (evidence-based analysis after commit `99f608a`) and **business-analyst** (value scoring for Wave 3).
+Generated from Wave 2 analysis and delivered in Wave 3 (commits through `7dcf7a9`). **Wave 3 epics EPIC-12–EPIC-17 are complete** — see `docs/EPICS-WAVE3.md`.
 
 **Date:** 2026-06-11  
-**Supersedes:** Post-MVP `REQUIREMENTS.md` / completed items in `EPICS-WAVE2.md`
+**Supersedes:** Post–Wave 2 backlog (REQ-50+ planning items now shipped)
 
 ---
 
 ## Executive Summary
 
-Wave 2 epics **EPIC-7 through EPIC-11** are shipped: HA safety guidance, optional file-backed connection persistence, SSE/API-token regression tests, JMS Testcontainers CI, and the protocol-native MCP toolkit.
+Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress session affinity), typed OpenAPI for inspect and diagnostics, a complete stream security regression gate, Playwright CI smoke, MCP Helm auth wiring, audit expansion, network policy TLS ports, and MQTT/JMS/Pulsar MCP tools. CI on `main` is green (`publish-artifacts.yml`).
 
-**Highest-value themes for Wave 3:**
+**Highest-value themes for Wave 4:**
 
-1. **Production-trustworthy persistence** (BVS 92) — code path exists but Helm still mounts `emptyDir`; multi-replica without PVC/RWX or sticky sessions is a split-brain risk
-2. **Contract stability** (BVS 85) — `DiagnosticsController` and inspect responses are untyped in OpenAPI; UI/MCP rely on hand-written types
-3. **Security test completeness** (BVS 82) — REST auth and SSE 403 ship; WS/SSE token rejection and inspect policy HTTP tests remain open
-4. **Cloud broker CI strategy** (BVS 76) — 5/8 protocols proven in CI; Kinesis/GCP/Azure need emulator spike or documented mock-only stance
-5. **Operator UX polish** (BVS 68) — docs drift, MCP README stale, Playwright scaffold unused in CI
+1. **Cloud broker CI** (BVS 76) — Kinesis/GCP/Azure still mock-only in CI; spike documented in `docs/CLOUD-CI-SPIKE.md`
+2. **Live-stack E2E** (BVS 62) — Playwright mocked smoke ships; real backend + brokers deferred (REQ-61)
+3. **Frontend OpenAPI drift gate** (REQ-62) — codegen check in CI
+4. **Enterprise OIDC** (BVS 55) — API token sufficient for OSS v1
+5. **Full HA Pattern C** — externalized subscription registry (see `docs/HA.md`)
 
-**Recommended next step:** Hand Rank #1–#3 business briefs + P0/P1 REQs to **feature-epic-planner** for Wave 3 epics.
+**Recommended next step:** Prioritize Wave 4 deferred items in `docs/EPICS-WAVE3.md` § Deferred.
+
+---
+
+## Wave 3 Completed (Do Not Re-Plan)
+
+| REQ | Title | Evidence |
+|-----|-------|----------|
+| REQ-50 | Helm PVC for connection persistence | `persistence-pvc.yaml`, `volumeType: emptyDir\|pvc` in `values.yaml` |
+| REQ-51 | Typed OpenAPI inspect + diagnostics | `diagnostics-api.yaml`, inspect import mappings, catalog + springdoc |
+| REQ-52 | Complete REQ-31 security tests | `ApiTokenSecurityIntegrationTest`, `DeploymentModePolicyIntegrationTest`, `InspectApiDelegateImplTest` |
+| REQ-53 | Testing docs sync | `docs/TESTING.md` — 5-protocol CI matrix |
+| REQ-54 | Ingress session affinity | `ingress.sessionAffinity` in Helm when `replicaCount > 1` |
+| REQ-55 | MCP Helm API token | `eventore-mcp` chart `EVENTORE_API_TOKEN` secret wiring |
+| REQ-56 | MCP README refresh | `mcp/eventore-mcp/README.md` |
+| REQ-57 | Playwright CI smoke | `build-frontend-e2e` job |
+| REQ-58 | Cloud CI spike doc | `docs/CLOUD-CI-SPIKE.md` |
+| REQ-59 | Audit subscribe/validate/inspect | `AuditService` in `SubscriptionManager`, validate, inspect search |
+| REQ-60 | Network policy TLS ports | `networkPolicy.extraBrokerPorts` |
+| REQ-63 | MQTT/JMS/Pulsar MCP tools | `protocol-tools.ts`, prompts |
 
 ---
 
@@ -48,21 +67,21 @@ Wave 2 epics **EPIC-7 through EPIC-11** are shipped: HA safety guidance, optiona
 |------|--------|----------|
 | 8 stream providers | Implemented | `backend/eventore-provider-*` |
 | Control / data plane | Implemented | `ControlPlaneController`, connector SPI |
-| Connection CRUD | **Partial** | Optional JSON persistence; Helm uses `emptyDir` when enabled |
+| Connection CRUD | **Partial** | Optional JSON persistence; Helm supports `emptyDir` or `pvc` |
 | Publish/subscribe | Implemented | WS + SSE; `SecretRefs` for credentials |
 | API token auth | Implemented | Backend, frontend, Helm, MCP SSE |
 | Inspector parity | Implemented | `docs/INSPECTOR_PARITY.md`; honest 501s |
-| Diagnostics REST | Implemented | `DiagnosticsController` — **not in OpenAPI** |
+| Diagnostics REST | Implemented | `DiagnosticsController` + `diagnostics-api.yaml` in catalog |
 | Kafka admin | Implemented | Full OpenAPI + UI + MCP |
 | Kinesis shards | Implemented | Admin API + UI + MCP |
-| MCP toolkit | **Partial** | Rabbit/GCP/Azure dedicated tools; MQTT/JMS/Pulsar still generic inspect |
+| MCP toolkit | Implemented | Generic + Rabbit/GCP/Azure/MQTT/JMS/Pulsar protocol tools |
 | Integration tests | **Partial** | **5/8** protocols in CI (Kafka, RabbitMQ, MQTT, Pulsar, JMS) |
-| Playwright E2E | **Partial** | Mocked scaffold in `frontend/e2e/`; not in CI |
-| Audit logging | **Partial** | Publish + connection CRUD + provider lifecycle; subscribe/inspect/validate unaudited |
-| Network policy | **Partial** | Fixed plaintext ports; no TLS variants (5671, 9094, etc.) |
-| HA multi-replica | **Risk** | Warnings shipped; no PVC/RWX or ingress sticky sessions |
+| Playwright E2E | **Partial** | Mocked smoke in CI; live backend deferred (REQ-61) |
+| Audit logging | Implemented | Publish, connection CRUD, provider lifecycle, subscribe, validate, inspect search |
+| Network policy | **Partial** | Configurable `extraBrokerPorts` for TLS; off by default |
+| HA multi-replica | **Partial** | PVC + ingress affinity (Pattern B); not full active-active |
 | Enterprise OIDC | Missing | API token only |
-| Docs accuracy | **Drift** | `TESTING.md`, `INSPECTOR_PARITY.md` still describe 4-protocol CI |
+| Docs accuracy | Current | `TESTING.md`, `HA.md`, deployment guides synced with Wave 3 |
 
 ---
 

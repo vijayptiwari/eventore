@@ -66,7 +66,41 @@ Add a new multi-provider combo: extend `deploy/ci-backend-images.json` and push 
 | `kafka-kinesis` | Kafka + Kinesis bundle |
 | `all` | All eight providers |
 
-Workflow: `.github/workflows/publish-artifacts.yml`. Frontend/MCP still use `latest` on `main`.
+Workflow: `.github/workflows/publish-artifacts.yml`. Gates: `build-backend`, `backend-integration-tests`, `build-frontend`, `build-frontend-e2e`, `build-mcp`, `helm-lint` — all must pass before backend images and the Helm chart publish. Frontend/MCP images publish after frontend/mcp/helm jobs succeed.
+
+## Persistence & HA (Helm)
+
+Connection profile file persistence (optional):
+
+```yaml
+eventore:
+  connections:
+    persistence:
+      enabled: true
+      volumeType: pvc       # emptyDir (dev) | pvc (survives pod delete)
+      filePath: /data/connections.json
+      size: 1Gi
+```
+
+Multi-replica SSE requires ingress session affinity when `backend.replicaCount > 1`:
+
+```yaml
+ingress:
+  sessionAffinity:
+    enabled: true
+```
+
+See `docs/HA.md` for Pattern A/B guidance and `NOTES.txt` post-install warnings.
+
+## Network policy
+
+When enabled, extend broker egress for TLS ports:
+
+```yaml
+networkPolicy:
+  enabled: true
+  extraBrokerPorts: [5671, 9094]
+```
 
 ## Docker Compose (local)
 
@@ -94,7 +128,8 @@ docker build -f docker/Dockerfile.backend \
 
 ```bash
 helm install eventore-mcp deploy/helm/eventore-mcp \
-  --set eventore.apiUrl=http://eventore-backend:8080/api/v1
+  --set eventore.apiUrl=http://eventore-backend:8080/api/v1 \
+  --set eventore.apiTokenExistingSecret=eventore-api-token
 ```
 
-Replace `eventore-backend` with `<release-name>-backend` when the release name is not `eventore`.
+Replace `eventore-backend` with `<release-name>-backend` when the release name is not `eventore`. Set `eventore.apiTokenExistingSecret` when the backend requires `EVENTORE_API_TOKEN`.

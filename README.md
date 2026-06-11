@@ -116,9 +116,18 @@ Set `image.backend.repository` / `image.frontend.repository` to your registry. B
 | `GET /api/v1/config` | Deployment mode and allowed actions |
 | `GET/POST/DELETE /api/v1/connections` | Connection profiles |
 | `GET /api/v1/connections/{id}/destinations` | List topics/queues |
+| `GET /api/v1/connections/{id}/inspect/*` | Broker inspection (capabilities, topics, lag, search) |
+| `GET /api/v1/diagnostics/subscriptions` | Active subscription health (requires auth when token set) |
 | `POST /api/v1/connections/{id}/subscribe` | Start subscription (SSE) |
 | `POST /api/v1/connections/{id}/publish` | Publish message |
+| `GET /api/v1/openapi/catalog` | Active OpenAPI stream contracts |
 | `WS /ws/stream` | Realtime subscribe/unsubscribe |
+
+OpenAPI streams: `core`, `inspect`, `diagnostics`, `kafka`, `kinesis` — see `backend/openapi/README.md`.
+
+## CI
+
+Push to `main` runs `.github/workflows/publish-artifacts.yml`: backend unit + integration tests, frontend Vitest + build + Playwright smoke, MCP tests, Helm lint, then GHCR image and chart publish. See `docs/TESTING.md`.
 
 ## MCP for AI agents (optional)
 

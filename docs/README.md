@@ -43,6 +43,8 @@ Prefer **`.html` URLs** (e.g. `http://localhost:3456/guide/pulsar.html`). Shortc
 | MCP for AI agents | `guide/mcp.html` |
 | Local development (contributors) | `guide/local-development.html` |
 
+**Maintainer docs (Markdown, repo root):** `docs/TESTING.md`, `docs/HA.md`, `docs/REQUIREMENTS.md`, `docs/EPICS-WAVE3.md`, `CHANGELOG.md`.
+
 **About** (not in the product guide): [`about.html`](about.html) — tabs for About Eventore, About the developer, and How to contribute. Linked from the home page and main nav.
 
 ## Path resolution

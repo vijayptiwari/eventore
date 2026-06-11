@@ -123,10 +123,23 @@ npm run dev</code></pre>
       <p>Published image tags mirror this — see <a href="./deployment.html#published-artifacts">Published artifacts</a>.</p>
 
       <h2 id="openapi">OpenAPI and codegen</h2>
-      <p>Contracts live under <code>openapi/streams/</code>. After changing YAML:</p>
-      <pre><code>mvn -pl eventore-api-codegen generate-sources
+      <p>Contracts live under <code>backend/openapi/streams/</code>: <strong>core</strong>, <strong>inspect</strong>, <strong>diagnostics</strong>, <strong>kafka</strong>, <strong>kinesis</strong>. After changing YAML:</p>
+      <pre><code>cd backend
+mvn -pl eventore-api-codegen generate-sources
 mvn -pl eventore-server -am package</code></pre>
-      <p>Delegates are implemented under <code>com.eventore.api.delegate</code> in <code>eventore-server</code>.</p>
+      <p>Delegates are implemented under <code>com.eventore.api.delegate</code> in <code>eventore-server</code>. Inspect codegen maps domain types (<code>TopicRef</code>, <code>ProtocolInspectCapabilities</code>, …) — see <code>backend/openapi/README.md</code>.</p>
+
+      <h2 id="testing">Tests and CI</h2>
+      <pre><code># Backend unit tests
+cd backend && mvn test
+
+# Integration tests (Docker required)
+mvn test -DexcludedTestGroups= \
+  -pl eventore-provider-kafka,eventore-provider-rabbitmq,eventore-provider-mqtt,eventore-provider-pulsar,eventore-provider-jms -am
+
+# Frontend
+cd frontend && npm test && npm run test:e2e</code></pre>
+      <p>CI workflow <code>.github/workflows/publish-artifacts.yml</code> runs unit tests, five-protocol Testcontainers suites, Vitest, Playwright smoke, MCP tests, and Helm lint before publishing images. Details: <code>docs/TESTING.md</code>.</p>
 
       <h2 id="docs-preview">Documentation site</h2>
       <pre><code>npx serve docs -l 3456</code></pre>

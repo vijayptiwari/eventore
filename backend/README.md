@@ -68,14 +68,29 @@ java -jar eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar
 
 ## OpenAPI (per-stream, code-generated)
 
-Specs live under `openapi/streams/` (core, inspect, kafka, kinesis). The `eventore-api-codegen` module generates Spring controllers + delegate interfaces; `eventore-server` implements delegates in `com.eventore.api.delegate`.
+Specs live under `openapi/streams/` (core, inspect, diagnostics, kafka, kinesis). The `eventore-api-codegen` module generates Spring controllers + delegate interfaces; `eventore-server` implements delegates in `com.eventore.api.delegate`.
+
+| Stream | Spec | Delegate |
+|--------|------|----------|
+| core | `streams/core-api.yaml` | `Core*ApiDelegateImpl` |
+| inspect | `streams/inspect-api.yaml` | `InspectApiDelegateImpl` |
+| diagnostics | `streams/diagnostics-api.yaml` | `DiagnosticsController` (hand-written) |
+| kafka | `streams/kafka-api.yaml` | `KafkaAdminApiDelegateImpl` |
+| kinesis | `streams/kinesis-api.yaml` | `KinesisAdminApiDelegateImpl` |
+
+Inspect codegen maps domain types (`TopicRef`, `ProtocolInspectCapabilities`, `MessageSearchRequest`, `UnifiedMessage`) via `importMappings` in `eventore-api-codegen/pom.xml`.
+
+Pulsar admin operations use `pulsar-client-admin` (in addition to `pulsar-client`) for `PulsarAdmin` at runtime.
 
 | URL | Description |
 |-----|-------------|
 | http://localhost:8080/swagger-ui.html | Swagger UI (per-stream YAML + runtime) |
 | http://localhost:8080/api/v1/openapi/catalog | Which stream contracts are active in this deployment |
 | http://localhost:8080/openapi/streams/kafka-api.yaml | Kafka-only contract |
+| http://localhost:8080/openapi/streams/diagnostics-api.yaml | Diagnostics contract |
 | `openapi/README.md` | Regeneration and frontend client steps |
+
+See `docs/TESTING.md` for unit, integration, and CI commands.
 
 Regenerate after contract changes:
 

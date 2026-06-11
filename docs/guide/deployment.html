@@ -134,6 +134,24 @@ helm install eventore-mcp oci://ghcr.io/vijayptiwari/charts/eventore-mcp --versi
   --set eventore.apiUrl=http://eventore-backend:8080/api/v1</code></pre>
       <p>New multi-provider combos: add an entry to <code>deploy/ci-backend-images.json</code> and merge to <code>main</code> so CI publishes that tag.</p>
 
+      <h3>CI quality gates</h3>
+      <p>Every push to <code>main</code> runs unit tests, five-protocol Testcontainers integration tests, frontend Vitest + production build + Playwright smoke, MCP tests, and Helm lint. Backend images and the Helm chart publish only when all gates pass. See <code>docs/TESTING.md</code>.</p>
+
+      <h3>Persistence and HA (Helm)</h3>
+      <pre><code>eventore:
+  connections:
+    persistence:
+      enabled: true
+      volumeType: pvc    # emptyDir = pod-local only; pvc survives pod delete
+
+backend:
+  replicaCount: 2      # requires ingress session affinity for SSE/WS
+
+ingress:
+  sessionAffinity:
+    enabled: true</code></pre>
+      <p>Full guidance: <code>docs/HA.md</code> · chart <code>NOTES.txt</code> warnings after install.</p>
+
       <h3>Build from source (custom provider sets)</h3>
       <pre><code>docker build -f docker/Dockerfile.backend \
   --build-arg EVENTORE_STREAM_PROFILES=provider-kafka,provider-kinesis \
