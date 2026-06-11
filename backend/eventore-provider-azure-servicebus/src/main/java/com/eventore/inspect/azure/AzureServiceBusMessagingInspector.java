@@ -16,6 +16,7 @@ import com.eventore.inspect.spi.MessagingInspector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,6 +28,7 @@ public class AzureServiceBusMessagingInspector implements MessagingInspector {
     private final Function<BacklogRequest, List<GroupOffset>> backlogReader;
     private final Function<PeekRequest, List<UnifiedMessage>> messagePeeker;
 
+    @Autowired
     public AzureServiceBusMessagingInspector(AzureServiceBusMessagingConnector connector) {
         this(
                 connector,

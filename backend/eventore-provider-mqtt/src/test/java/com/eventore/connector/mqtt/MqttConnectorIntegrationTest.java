@@ -20,6 +20,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 /**
  * Broker round-trip tests against Eclipse Mosquitto started by Testcontainers.
@@ -32,7 +33,10 @@ class MqttConnectorIntegrationTest {
     @Container
     static final GenericContainer<?> MOSQUITTO = new GenericContainer<>(
                     DockerImageName.parse("eclipse-mosquitto:2.0"))
-            .withExposedPorts(1883);
+            .withExposedPorts(1883)
+            .withCopyFileToContainer(
+                    MountableFile.forClasspathResource("mosquitto.conf"),
+                    "/mosquitto/config/mosquitto.conf");
 
     private final MqttMessagingConnector connector = new MqttMessagingConnector();
 
@@ -51,11 +55,6 @@ class MqttConnectorIntegrationTest {
         ConnectionProfile profile = profile();
         String topic = "it/mqtt/" + UUID.randomUUID();
 
-        PublishRequest publish = new PublishRequest();
-        publish.setDestination(topic);
-        publish.setPayload("hello-mqtt-integration");
-        connector.publish(profile, publish);
-
         List<UnifiedMessage> received = new CopyOnWriteArrayList<>();
         CountDownLatch latch = new CountDownLatch(1);
         SubscribeRequest subscribe = new SubscribeRequest();
@@ -71,6 +70,11 @@ class MqttConnectorIntegrationTest {
             public void onError(String error) {}
         });
         try {
+            PublishRequest publish = new PublishRequest();
+            publish.setDestination(topic);
+            publish.setPayload("hello-mqtt-integration");
+            connector.publish(profile, publish);
+
             assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
         } finally {
             subscription.close();
