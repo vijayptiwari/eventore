@@ -22,6 +22,11 @@ eventore:
     persistence:
       enabled: false
       filePath: /data/connections.json
+      # emptyDir survives container restart only; use pvc for pod reschedule durability
+      volumeType: emptyDir
+      existingClaim: ""
+      storageClass: ""
+      size: 1Gi
   dev:
     maxPublishBytes: 1048576
   # API token auth (production). Prefer apiTokenExistingSecret over inline apiToken.
@@ -65,14 +70,18 @@ ingress:
   className: ""
   host: eventore.local
   annotations: {}
-
-secrets:
-  create: true
-  brokerCredentials: {}
+  sessionAffinity:
+    enabled: false
+    cookieName: eventore-affinity
 
 networkPolicy:
   enabled: false
   brokerCidrs: []
+  extraBrokerPorts: []
+
+secrets:
+  create: true
+  brokerCredentials: {}
 
 podDisruptionBudget:
   enabled: false

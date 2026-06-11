@@ -44,4 +44,45 @@ public class AuditService {
     public void providerDeregistered(ProtocolType protocol) {
         AUDIT.info("event=PROVIDER_DEREGISTER protocol={}", protocol);
     }
+
+    public void subscribeStarted(
+            String subscriptionId,
+            String connectionId,
+            ProtocolType protocol,
+            String destination,
+            String transport) {
+        AUDIT.info(
+                "event=SUBSCRIBE_START subscriptionId={} connectionId={} protocol={} destination={} transport={}",
+                subscriptionId,
+                connectionId,
+                protocol,
+                destination,
+                transport);
+    }
+
+    public void subscribeStopped(String subscriptionId, String connectionId, ProtocolType protocol) {
+        AUDIT.info(
+                "event=SUBSCRIBE_STOP subscriptionId={} connectionId={} protocol={}",
+                subscriptionId,
+                connectionId,
+                protocol);
+    }
+
+    public void validateConnection(String connectionId, ProtocolType protocol, boolean success, String message) {
+        AUDIT.info(
+                "event=VALIDATE connectionId={} protocol={} success={} message={}",
+                connectionId,
+                protocol,
+                success,
+                message != null ? message : "");
+    }
+
+    public void inspectSearch(String connectionId, ProtocolType protocol, String topic, int maxMessages) {
+        AUDIT.info(
+                "event=INSPECT_SEARCH connectionId={} protocol={} topic={} maxMessages={}",
+                connectionId,
+                protocol,
+                topic,
+                maxMessages);
+    }
 }

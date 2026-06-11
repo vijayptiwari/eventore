@@ -95,9 +95,11 @@ public class CoreConnectionsApiDelegateImpl implements ConnectionsApiDelegate {
         try {
             connectorRegistry.get(profile.getProtocol()).validate(profile);
             validationHistoryService.recordSuccess(connectionId, profile.getProtocol());
+            auditService.validateConnection(connectionId, profile.getProtocol(), true, "ok");
             return ResponseEntity.ok(Map.of("status", "ok"));
         } catch (RuntimeException e) {
             validationHistoryService.recordFailure(connectionId, profile.getProtocol(), e.getMessage());
+            auditService.validateConnection(connectionId, profile.getProtocol(), false, e.getMessage());
             throw e;
         }
     }

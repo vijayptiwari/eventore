@@ -37,6 +37,8 @@ springdoc:
         url: /openapi/streams/core-api.yaml
       - name: Inspect stream contract
         url: /openapi/streams/inspect-api.yaml
+      - name: Diagnostics API
+        url: /openapi/streams/diagnostics-api.yaml
       - name: Kafka stream contract
         url: /openapi/streams/kafka-api.yaml
       - name: Kinesis stream contract

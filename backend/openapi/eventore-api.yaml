@@ -14,6 +14,8 @@ x-eventore-streams:
     catalog: /api/v1/openapi/catalog
   - id: inspect
     spec: /openapi/streams/inspect-api.yaml
+  - id: diagnostics
+    spec: /openapi/streams/diagnostics-api.yaml
   - id: kafka
     spec: /openapi/streams/kafka-api.yaml
     protocol: KAFKA

@@ -27,6 +27,14 @@ Eventore installed.
   WARNING: backend.replicaCount is {{ .Values.backend.replicaCount }}.
   Subscriptions and SSE streams are in-memory per pod — multi-replica without sticky sessions
   will break consume flows. See docs/HA.md. Prefer replicaCount: 1 until shared persistence ships.
+  Enable ingress.sessionAffinity when using nginx ingress with multiple backend replicas.
+
+{{- end }}
+
+{{- if and .Values.eventore.connections.persistence.enabled (eq .Values.eventore.connections.persistence.volumeType "emptyDir") }}
+
+  NOTE: connection persistence uses emptyDir — profiles survive container restart but NOT pod delete.
+  Set eventore.connections.persistence.volumeType: pvc for durable storage.
 
 {{- end }}
 

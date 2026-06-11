@@ -22,4 +22,4 @@ Capability tokens drive UI tab gating (`hasInspectFeature`). This matrix documen
 
 ## Deferred / emulator gaps
 
-KINESIS, GCP_PUBSUB, AZURE_SERVICE_BUS, and JMS do not have Testcontainers integration tests in CI (credential/emulator cost). See `docs/TESTING.md`.
+KINESIS, GCP_PUBSUB, and AZURE_SERVICE_BUS do not have Testcontainers integration tests in CI (credential/emulator cost). JMS is covered via Artemis in CI. See `docs/TESTING.md` and `docs/CLOUD-CI-SPIKE.md`.

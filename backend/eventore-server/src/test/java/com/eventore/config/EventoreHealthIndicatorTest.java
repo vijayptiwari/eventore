@@ -6,6 +6,7 @@ import com.eventore.connector.spi.MessagingConnector;
 import com.eventore.connector.spi.SubscribeRequest;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.ProtocolType;
+import com.eventore.service.AuditService;
 import com.eventore.service.MetricsService;
 import com.eventore.service.SubscriptionManager;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -38,7 +39,7 @@ class EventoreHealthIndicatorTest {
         properties = new EventoreProperties();
         properties.getDiagnostics().setErrorSubscriptionThreshold(2);
         MetricsService metricsService = new MetricsService(new SimpleMeterRegistry());
-        subscriptionManager = new SubscriptionManager(connectorRegistry, properties, metricsService);
+        subscriptionManager = new SubscriptionManager(connectorRegistry, properties, metricsService, new AuditService());
         indicator = new EventoreHealthIndicator(properties, subscriptionManager);
     }
 

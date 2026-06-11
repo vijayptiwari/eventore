@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Eventore Diagnostics API
+  description: |
+    Operator diagnostics for subscription health and connection validation history.
+    x-eventore-stream: diagnostics
+    x-eventore-scope: operator
+  version: 0.1.0
+servers:
+  - url: /api/v1
+tags:
+  - name: Diagnostics
+paths:
+  /diagnostics/subscriptions:
+    get:
+      tags: [Diagnostics]
+      operationId: listSubscriptionDiagnostics
+      summary: Active subscription health snapshot
+      responses:
+        '200':
+          description: Subscription rows for operator triage
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../common/schemas.yaml#/components/schemas/SubscriptionDiagnostic'
+        '403':
+          description: SUBSCRIBE action not allowed in deployment mode
+  /diagnostics/connections/{connectionId}/validations:
+    parameters:
+      - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
+    get:
+      tags: [Diagnostics]
+      operationId: listValidationHistory
+      summary: Recent validate-connection results for one profile
+      responses:
+        '200':
+          description: Validation history newest-last
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../common/schemas.yaml#/components/schemas/ValidationRecord'
+        '404':
+          description: Connection not found

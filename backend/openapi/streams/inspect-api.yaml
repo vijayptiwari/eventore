@@ -23,7 +23,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '../common/schemas.yaml#/components/schemas/ProtocolInspectCapabilities'
   /connections/{connectionId}/inspect/cluster:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
@@ -64,7 +64,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  $ref: '../common/schemas.yaml#/components/schemas/TopicRef'
   /connections/{connectionId}/inspect/consumer-groups/{groupId}:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
@@ -101,7 +101,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  $ref: '../common/schemas.yaml#/components/schemas/TopicRef'
   /connections/{connectionId}/inspect/topics/{topic}:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'

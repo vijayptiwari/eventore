@@ -3,7 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'backend', 'openapi');
-const streams = ['core', 'inspect', 'kafka', 'kinesis'];
+const streams = ['core', 'inspect', 'diagnostics', 'kafka', 'kinesis'];
 const common = readFileSync(join(root, 'common', 'schemas.yaml'), 'utf8');
 
 function extractPaths(yaml) {

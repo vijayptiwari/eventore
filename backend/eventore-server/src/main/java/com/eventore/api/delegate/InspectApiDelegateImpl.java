@@ -8,6 +8,7 @@ import com.eventore.inspect.domain.InspectModels.MessageSearchRequest;
 import com.eventore.inspect.spi.MessagingInspector;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
+import com.eventore.service.AuditService;
 import com.eventore.service.ConnectionRegistry;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -24,14 +25,17 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
     private final ConnectionRegistry connectionRegistry;
     private final InspectorRegistry inspectorRegistry;
     private final DeploymentModePolicy policy;
+    private final AuditService auditService;
 
     public InspectApiDelegateImpl(
             ConnectionRegistry connectionRegistry,
             InspectorRegistry inspectorRegistry,
-            DeploymentModePolicy policy) {
+            DeploymentModePolicy policy,
+            AuditService auditService) {
         this.connectionRegistry = connectionRegistry;
         this.inspectorRegistry = inspectorRegistry;
         this.policy = policy;
+        this.auditService = auditService;
     }
 
     @Override
@@ -101,6 +105,14 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
             String connectionId, MessageSearchRequest messageSearchRequest) {
         policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = profile(connectionId);
+        int maxMessages = messageSearchRequest != null && messageSearchRequest.getMaxMessages() != null
+                ? messageSearchRequest.getMaxMessages()
+                : 0;
+        auditService.inspectSearch(
+                connectionId,
+                profile.getProtocol(),
+                messageSearchRequest != null ? messageSearchRequest.getTopic() : null,
+                maxMessages);
         return ResponseEntity.ok(inspector(profile).searchMessages(profile, messageSearchRequest));
     }
 

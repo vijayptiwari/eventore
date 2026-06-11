@@ -53,6 +53,25 @@ export const destinations = [
   { name: 'payments', type: 'topic', protocol: 'KAFKA' },
 ];
 
+export const diagnosticsSubscriptions = [
+  {
+    subscriptionId: 'sub-1',
+    connectionId: 'conn-kafka-1',
+    connectionName: 'Local Kafka',
+    protocol: 'KAFKA',
+    destination: 'orders',
+    transport: 'SSE',
+    messageCount: 3,
+    lastError: null,
+    startedAt: '2026-06-11T10:00:00Z',
+    status: 'ACTIVE',
+  },
+];
+
+export const validationHistory = [
+  { timestamp: '2026-06-11T09:55:00Z', status: 'OK', message: 'ok' },
+];
+
 /** Stubs every backend API route the SPA calls so E2E runs without a server. */
 export async function mockApi(page: Page): Promise<void> {
   await page.route('**/api/v1/config', (route) =>
@@ -76,5 +95,11 @@ export async function mockApi(page: Page): Promise<void> {
   );
   await page.route('**/api/v1/connections/*/publish', (route) =>
     route.fulfill({ status: 204, body: '' }),
+  );
+  await page.route('**/api/v1/diagnostics/subscriptions', (route) =>
+    route.fulfill({ json: diagnosticsSubscriptions }),
+  );
+  await page.route('**/api/v1/diagnostics/connections/*/validations', (route) =>
+    route.fulfill({ json: validationHistory }),
   );
 }

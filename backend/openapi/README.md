@@ -6,6 +6,7 @@ Contracts are split by integration surface so each stream provider can evolve in
 |--------|------|----------------|----------|
 | **core** | `streams/core-api.yaml` | `com.eventore.api.generated.core.*` | `CoreApiDelegates` |
 | **inspect** | `streams/inspect-api.yaml` | `com.eventore.api.generated.inspect.*` | `InspectApiDelegateImpl` |
+| **diagnostics** | `streams/diagnostics-api.yaml` | *(hand-written REST)* | `DiagnosticsController` |
 | **kafka** | `streams/kafka-api.yaml` | `com.eventore.api.generated.kafka.*` | `KafkaAdminApiDelegateImpl` |
 | **kinesis** | `streams/kinesis-api.yaml` | `com.eventore.api.generated.kinesis.*` | `KinesisAdminApiDelegateImpl` |
 

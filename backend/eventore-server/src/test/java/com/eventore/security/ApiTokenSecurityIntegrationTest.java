@@ -50,4 +50,21 @@ class ApiTokenSecurityIntegrationTest {
                                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + TOKEN))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void sseStreamRequiresApiToken() throws Exception {
+        mockMvc.perform(get("/api/v1/stream/sub-test").param("connectionId", "conn-test"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void webSocketHandshakeRejectedWithoutToken() throws Exception {
+        mockMvc.perform(
+                        get("/ws/stream")
+                                .header("Upgrade", "websocket")
+                                .header("Connection", "Upgrade")
+                                .header("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==")
+                                .header("Sec-WebSocket-Version", "13"))
+                .andExpect(status().isUnauthorized());
+    }
 }

@@ -108,4 +108,51 @@ export function registerProtocolTools(server: McpServer, client: EventoreClient)
     {},
     async () => inspectToolResult(await client.diagnosticsSubscriptions()),
   );
+
+  server.tool(
+    'eventore_mqtt_list_topics',
+    'MQTT: list topics (optional filter).',
+    { connectionId: z.string(), filter: z.string().optional() },
+    async (args) => inspectToolResult(await client.inspectTopics(args.connectionId, args.filter)),
+  );
+
+  server.tool(
+    'eventore_mqtt_topic_detail',
+    'MQTT: describe one topic or subscription filter.',
+    { connectionId: z.string(), topic: z.string() },
+    async (args) => inspectToolResult(await client.inspectTopic(args.connectionId, args.topic)),
+  );
+
+  server.tool(
+    'eventore_jms_list_destinations',
+    'JMS: list queues and topics on the broker.',
+    { connectionId: z.string(), filter: z.string().optional() },
+    async (args) => inspectToolResult(await client.inspectTopics(args.connectionId, args.filter)),
+  );
+
+  server.tool(
+    'eventore_jms_destination_detail',
+    'JMS: metadata for one queue or topic destination.',
+    { connectionId: z.string(), destination: z.string() },
+    async (args) => inspectToolResult(await client.inspectTopic(args.connectionId, args.destination)),
+  );
+
+  server.tool(
+    'eventore_pulsar_list_topics',
+    'Pulsar: list topics in the tenant namespace.',
+    { connectionId: z.string(), filter: z.string().optional() },
+    async (args) => inspectToolResult(await client.inspectTopics(args.connectionId, args.filter)),
+  );
+
+  server.tool(
+    'eventore_pulsar_subscription_backlog',
+    'Pulsar: subscription backlog for a topic (groupId = subscription name).',
+    {
+      connectionId: z.string(),
+      topic: z.string(),
+      subscription: z.string(),
+    },
+    async (args) =>
+      inspectToolResult(await client.inspectLag(args.connectionId, args.subscription, args.topic)),
+  );
 }

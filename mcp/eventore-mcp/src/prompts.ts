@@ -190,6 +190,75 @@ export function registerPrompts(server: McpServer, client: EventoreClient): void
   );
 
   server.prompt(
+    'eventore_mqtt_inspection',
+    'Playbook: MQTT broker topics and topic filters.',
+    {
+      connectionId: z.string().describe('Saved MQTT connection id'),
+      topic: z.string().optional().describe('Topic for detail'),
+    },
+    async (args) => {
+      return promptText(
+        [
+          'MQTT inspection sequence:',
+          '',
+          `1. eventore_mqtt_list_topics — connectionId=${args.connectionId}`,
+          args.topic
+            ? `2. eventore_mqtt_topic_detail — topic=${args.topic}`
+            : '2. (optional) eventore_mqtt_topic_detail',
+          '',
+          'Use eventore_consume_messages with destination=topic for live samples.',
+        ].join('\n'),
+      );
+    },
+  );
+
+  server.prompt(
+    'eventore_jms_inspection',
+    'Playbook: JMS queues and topics on Artemis/ActiveMQ.',
+    {
+      connectionId: z.string().describe('Saved JMS connection id'),
+      destination: z.string().optional().describe('Queue or topic name'),
+    },
+    async (args) => {
+      return promptText(
+        [
+          'JMS inspection sequence:',
+          '',
+          `1. eventore_jms_list_destinations — connectionId=${args.connectionId}`,
+          args.destination
+            ? `2. eventore_jms_destination_detail — destination=${args.destination}`
+            : '2. (optional) eventore_jms_destination_detail',
+          '',
+          'Publish/subscribe: set header destinationType=queue|topic.',
+        ].join('\n'),
+      );
+    },
+  );
+
+  server.prompt(
+    'eventore_pulsar_inspection',
+    'Playbook: Pulsar topics, subscriptions, and backlog.',
+    {
+      connectionId: z.string().describe('Saved PULSAR connection id'),
+      topic: z.string().optional().describe('Topic name'),
+      subscription: z.string().optional().describe('Subscription for backlog'),
+    },
+    async (args) => {
+      return promptText(
+        [
+          'Pulsar inspection sequence:',
+          '',
+          `1. eventore_pulsar_list_topics — connectionId=${args.connectionId}`,
+          '2. eventore_inspect_consumer_groups — list subscriptions',
+          args.topic && args.subscription
+            ? `3. eventore_pulsar_subscription_backlog — topic=${args.topic}, subscription=${args.subscription}`
+            : '3. (optional) eventore_pulsar_subscription_backlog',
+        ].join('\n'),
+      );
+    },
+  );
+
+  server.prompt(
     'eventore_control_plane_ops',
     'Playbook: register or deregister stream providers (ADMIN + ADMIN_BROKER_OPS).',
     {

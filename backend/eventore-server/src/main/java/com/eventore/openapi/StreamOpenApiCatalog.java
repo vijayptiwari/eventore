@@ -37,6 +37,15 @@ public class StreamOpenApiCatalog {
                         true,
                         "data"));
         ALL.put(
+                "diagnostics",
+                new StreamSpec(
+                        "diagnostics",
+                        "Eventore Diagnostics API",
+                        null,
+                        "/openapi/streams/diagnostics-api.yaml",
+                        true,
+                        "operator"));
+        ALL.put(
                 "kafka",
                 new StreamSpec(
                         "kafka",

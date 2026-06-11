@@ -45,10 +45,21 @@ describe('FEAT-11.4 diagnostics MCP tool', () => {
   });
 });
 
+describe('FEAT-17.3 MQTT/JMS/Pulsar MCP tools', () => {
+  it('registers dedicated broker tools', () => {
+    assert.match(protocolToolsSource, /'eventore_mqtt_list_topics'/);
+    assert.match(protocolToolsSource, /'eventore_jms_list_destinations'/);
+    assert.match(protocolToolsSource, /'eventore_pulsar_list_topics'/);
+  });
+});
+
 describe('FEAT-11.5 protocol inspect prompts', () => {
-  it('defines RabbitMQ, GCP, and Azure inspection playbooks', () => {
+  it('defines RabbitMQ, GCP, Azure, MQTT, JMS, and Pulsar inspection playbooks', () => {
     assert.match(promptsSource, /'eventore_rabbitmq_inspection'/);
     assert.match(promptsSource, /'eventore_gcp_pubsub_inspection'/);
     assert.match(promptsSource, /'eventore_azure_servicebus_inspection'/);
+    assert.match(promptsSource, /'eventore_mqtt_inspection'/);
+    assert.match(promptsSource, /'eventore_jms_inspection'/);
+    assert.match(promptsSource, /'eventore_pulsar_inspection'/);
   });
 });

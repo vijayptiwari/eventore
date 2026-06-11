@@ -1,0 +1,20 @@
+Eventore MCP installed.
+
+  Backend API: {{ .Values.eventore.apiUrl }}
+
+{{- if .Values.eventore.apiTokenExistingSecret }}
+
+  Backend API token auth: wired from secret {{ .Values.eventore.apiTokenExistingSecret }} (key {{ .Values.eventore.apiTokenSecretKey }}).
+  Use the same token as the main Eventore backend chart.
+
+{{- else }}
+
+  Backend API token auth: not configured. Set eventore.apiTokenExistingSecret when the backend requires EVENTORE_API_TOKEN.
+
+{{- end }}
+
+{{- if .Values.mcp.authToken }}
+
+  MCP HTTP transport auth is enabled (MCP_AUTH_TOKEN).
+
+{{- end }}

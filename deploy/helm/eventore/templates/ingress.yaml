@@ -5,10 +5,15 @@ metadata:
   name: {{ include "eventore.fullname" . }}
   labels:
     {{- include "eventore.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
+    {{- if and .Values.ingress.sessionAffinity.enabled (gt (int .Values.backend.replicaCount) 1) }}
+    nginx.ingress.kubernetes.io/affinity: cookie
+    nginx.ingress.kubernetes.io/session-cookie-name: {{ .Values.ingress.sessionAffinity.cookieName | quote }}
+    nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- end }}
 spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}

@@ -18,9 +18,9 @@ Optional **Model Context Protocol (MCP)** adapter for AI agents. Exposes Eventor
 
 The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV / READONLY) is enforced on the backend.
 
-## Tools (28)
+## Tools (~47)
 
-### Control plane
+### Control plane (6)
 
 | Tool | Description |
 |------|-------------|
@@ -31,7 +31,7 @@ The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV
 | `eventore_register_provider` | Runtime register (ADMIN) |
 | `eventore_deregister_provider` | Runtime deregister (ADMIN) |
 
-### Data plane — core
+### Data plane — core (11)
 
 | Tool | Description |
 |------|-------------|
@@ -47,7 +47,7 @@ The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV
 | `eventore_protocol_guide` | Hints or NL protocol suggestion |
 | `eventore_quick_probe` | Ephemeral probe workflow |
 
-### Data plane — inspect & Kafka
+### Generic inspect (8)
 
 | Tool | Description |
 |------|-------------|
@@ -59,29 +59,58 @@ The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV
 | `eventore_inspect_lag` | Consumer lag |
 | `eventore_inspect_search` | Topic search |
 | `eventore_kinesis_list_shards` | Kinesis shard listing (requires KINESIS in adminProtocols) |
+
+### Kafka admin (4)
+
+| Tool | Description |
+|------|-------------|
 | `eventore_kafka_publish` | Kafka produce with key/partition |
 | `eventore_kafka_create_topic` | Create topic |
 | `eventore_kafka_delete_topic` | Delete topic |
 | `eventore_kafka_list_acls` | List ACLs |
+
+### Protocol-specific inspect (18)
+
+| Protocol | Tools |
+|----------|-------|
+| RabbitMQ | `eventore_rabbitmq_list_queues`, `eventore_rabbitmq_queue_detail`, `eventore_rabbitmq_queue_depth` |
+| GCP Pub/Sub | `eventore_gcp_list_topics`, `eventore_gcp_list_subscriptions`, `eventore_gcp_subscription_backlog` |
+| Azure Service Bus | `eventore_azure_list_entities`, `eventore_azure_list_subscriptions`, `eventore_azure_peek_messages`, `eventore_azure_entity_backlog` |
+| MQTT | `eventore_mqtt_list_topics`, `eventore_mqtt_topic_detail` |
+| JMS | `eventore_jms_list_destinations`, `eventore_jms_destination_detail` |
+| Pulsar | `eventore_pulsar_list_topics`, `eventore_pulsar_subscription_backlog` |
+
+### Operator diagnostics (1)
+
+| Tool | Description |
+|------|-------------|
+| `eventore_diagnostics_subscriptions` | Active subscription health snapshot |
 
 ## Resources
 
 | URI | Content |
 |-----|---------|
 | `eventore://architecture` | Plane map and agent workflow |
+| `eventore://capability-matrix` | Static inspector parity matrix |
 | `eventore://config` | Live `GET /config` |
 | `eventore://control-plane` | Live `GET /control/plane` |
 | `eventore://providers` | Live provider list |
 | `eventore://connections` | Live connections |
 | `eventore://protocol-guides` | Static hints (8 protocol types) |
 
-## Prompts
+## Prompts (10)
 
 | Prompt | Purpose |
 |--------|---------|
 | `eventore_discover` | Onboarding: config + control plane + architecture |
 | `eventore_probe_broker` | Playbook for `eventore_quick_probe` |
 | `eventore_kafka_inspection` | Cluster → groups → lag → search |
+| `eventore_rabbitmq_inspection` | Queue inventory → depth → search |
+| `eventore_gcp_pubsub_inspection` | Topics → subscriptions → backlog |
+| `eventore_azure_servicebus_inspection` | Entities → subscriptions → peek |
+| `eventore_mqtt_inspection` | Topics and topic detail |
+| `eventore_jms_inspection` | Queues and topics |
+| `eventore_pulsar_inspection` | Topics → subscriptions → backlog |
 | `eventore_control_plane_ops` | Register / deregister / status checklist |
 
 ## Configuration
@@ -113,7 +142,8 @@ docker run -p 3100:3100 -e MCP_TRANSPORT=http \
 
 ```bash
 helm install eventore-mcp deploy/helm/eventore-mcp \
-  --set eventore.apiUrl=http://eventore-backend:8080/api/v1
+  --set eventore.apiUrl=http://eventore-backend:8080/api/v1 \
+  --set eventore.apiTokenExistingSecret=eventore-api-auth
 ```
 
 Product documentation: [MCP for AI agents](https://vijayptiwari.github.io/eventore/guide/mcp.html).

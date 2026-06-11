@@ -27,6 +27,13 @@ spec:
               value: {{ .Values.mcp.port | quote }}
             - name: EVENTORE_API_URL
               value: {{ .Values.eventore.apiUrl | quote }}
+            {{- if .Values.eventore.apiTokenExistingSecret }}
+            - name: EVENTORE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.eventore.apiTokenExistingSecret }}
+                  key: {{ .Values.eventore.apiTokenSecretKey }}
+            {{- end }}
             {{- if .Values.mcp.authToken }}
             - name: MCP_AUTH_TOKEN
               valueFrom:

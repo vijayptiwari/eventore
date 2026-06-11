@@ -1,0 +1,17 @@
+{{- if and .Values.eventore.connections.persistence.enabled (eq .Values.eventore.connections.persistence.volumeType "pvc") (not .Values.eventore.connections.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "eventore.fullname" . }}-connection-data
+  labels:
+    {{- include "eventore.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.eventore.connections.persistence.size | quote }}
+  {{- if .Values.eventore.connections.persistence.storageClass }}
+  storageClassName: {{ .Values.eventore.connections.persistence.storageClass | quote }}
+  {{- end }}
+{{- end }}

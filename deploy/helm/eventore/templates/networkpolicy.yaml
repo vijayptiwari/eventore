@@ -35,5 +35,9 @@ spec:
           port: 5672
         - protocol: TCP
           port: 8080
+        {{- range $.Values.networkPolicy.extraBrokerPorts }}
+        - protocol: TCP
+          port: {{ . }}
+        {{- end }}
     {{- end }}
 {{- end }}

@@ -47,7 +47,7 @@ class SubscriptionManagerTest {
     @BeforeEach
     void setUp() {
         props = new EventoreProperties();
-        manager = new SubscriptionManager(connectorRegistry, props, metricsService);
+        manager = new SubscriptionManager(connectorRegistry, props, metricsService, new AuditService());
     }
 
     private static ConnectionProfile kafkaProfile(String connectionId) {

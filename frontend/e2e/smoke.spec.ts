@@ -30,11 +30,26 @@ test('browse page loads destinations for a connection', async ({ page }) => {
 });
 
 test('navigation between pages works', async ({ page }) => {
+  const nav = page.getByRole('navigation', { name: 'Main' });
   await page.goto('/');
-  await page.getByRole('link', { name: /connections/i }).click();
+  await nav.getByRole('link', { name: 'Connections' }).click();
   await expect(page).toHaveURL(/\/connections/);
-  await page.getByRole('link', { name: /browse/i }).click();
+  await nav.getByRole('link', { name: 'Browse' }).click();
   await expect(page).toHaveURL(/\/browse/);
-  await page.getByRole('link', { name: /stream/i }).click();
+  await nav.getByRole('link', { name: 'Live Stream' }).click();
   await expect(page).toHaveURL(/\/stream/);
+});
+
+test('dashboard shows subscription health diagnostics', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Subscription health' })).toBeVisible();
+  const table = page.locator('table.diagnostics-table');
+  await expect(table.getByText('Local Kafka')).toBeVisible();
+  await expect(table.getByText('orders')).toBeVisible();
+});
+
+test('connection wizard opens from connections page', async ({ page }) => {
+  await page.goto('/connections');
+  await page.getByRole('button', { name: 'Open connection wizard' }).click();
+  await expect(page.getByRole('dialog').getByRole('heading', { name: 'New connection' })).toBeVisible();
 });

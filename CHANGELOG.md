@@ -16,6 +16,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **MCP Wave 2**: protocol-specific RabbitMQ/GCP/Azure tools, `eventore_diagnostics_subscriptions`, `eventore://capability-matrix` resource, inspection prompts; `build-mcp` CI job.
 - **Audit expansion**: connection CRUD and provider register/deregister events logged via `AuditService`.
 
+#### Wave 3 — production persistence, OpenAPI, security gate, E2E CI
+- **Helm PVC persistence**: `volumeType: pvc|emptyDir`, optional PVC template, NOTES on durability semantics.
+- **Ingress session affinity**: optional nginx cookie affinity when `backend.replicaCount > 1`.
+- **OpenAPI diagnostics stream**: `diagnostics-api.yaml`, typed `ProtocolInspectCapabilities` and diagnostics DTOs in catalog.
+- **Complete REQ-31**: SSE/WebSocket 401 tests, READONLY policy HTTP test, `InspectApiDelegateImplTest`.
+- **Audit subscribe/validate/inspect**: `AuditService` wired in `SubscriptionManager`, validate, inspect search.
+- **NetworkPolicy**: configurable `extraBrokerPorts` for TLS broker egress.
+- **MCP**: MQTT/JMS/Pulsar protocol tools + prompts; README refresh; Helm `EVENTORE_API_TOKEN` secret wiring.
+- **Playwright CI**: mocked wizard + diagnostics smoke in `build-frontend-e2e` job.
+- **Docs**: `TESTING.md` 5-protocol matrix, `CLOUD-CI-SPIKE.md`, `EPICS-WAVE3.md`.
+
 #### Backend tests (per-stream JUnit 5 suite)
 - **83+ unit tests** across `eventore-core` and all 8 stream providers (`Kafka`, `MQTT`, `JMS`, `Pulsar`, `RabbitMQ`, `Kinesis`, `GCP Pub/Sub`, `Azure Service Bus`).
 - Shared `StreamTestFixtures` helper in each module for consistent `ConnectionProfile` construction.

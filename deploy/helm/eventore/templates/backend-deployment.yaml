@@ -62,5 +62,10 @@ spec:
       {{- if .Values.eventore.connections.persistence.enabled }}
       volumes:
         - name: connection-data
+          {{- if eq .Values.eventore.connections.persistence.volumeType "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.eventore.connections.persistence.existingClaim | default (printf "%s-connection-data" (include "eventore.fullname" .)) }}
+          {{- else }}
           emptyDir: {}
+          {{- end }}
       {{- end }}

@@ -32,6 +32,7 @@ public class SubscriptionManager {
     private final ConnectorRegistry connectorRegistry;
     private final EventoreProperties properties;
     private final MetricsService metricsService;
+    private final AuditService auditService;
     private final Map<String, ActiveSubscription> subscriptions = new ConcurrentHashMap<>();
     /** Per-connection locks so connector I/O on one connection never blocks others. */
     private final Map<String, Object> connectionLocks = new ConcurrentHashMap<>();
@@ -41,10 +42,12 @@ public class SubscriptionManager {
     public SubscriptionManager(
             ConnectorRegistry connectorRegistry,
             EventoreProperties properties,
-            MetricsService metricsService) {
+            MetricsService metricsService,
+            AuditService auditService) {
         this.connectorRegistry = connectorRegistry;
         this.properties = properties;
         this.metricsService = metricsService;
+        this.auditService = auditService;
     }
 
     public String subscribe(
@@ -106,6 +109,12 @@ public class SubscriptionManager {
                     reserved = false;
                     metricsService.incrementSubscriptions();
                     metricsService.refreshSubscriptionErrorGauge(countSubscriptionsInError());
+                    auditService.subscribeStarted(
+                            subscriptionId,
+                            profile.getId(),
+                            profile.getProtocol(),
+                            request.getDestination(),
+                            useQueue ? "SSE" : "WS");
                     return subscriptionId;
                 } catch (Exception e) {
                     log.error(
@@ -130,6 +139,8 @@ public class SubscriptionManager {
             synchronized (lockFor(active.profile().getId())) {
                 active.close();
             }
+            auditService.subscribeStopped(
+                    subscriptionId, active.profile().getId(), active.profile().getProtocol());
             subscriptionCount.decrementAndGet();
             metricsService.decrementSubscriptions();
             metricsService.refreshSubscriptionErrorGauge(countSubscriptionsInError());

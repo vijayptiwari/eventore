@@ -1,5 +1,7 @@
 eventore:
   apiUrl: http://eventore-backend:8080/api/v1
+  apiTokenExistingSecret: ""
+  apiTokenSecretKey: api-token
 
 image:
   repository: ghcr.io/vijayptiwari/eventore-mcp

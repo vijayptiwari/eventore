@@ -193,3 +193,48 @@ components:
           type: object
           additionalProperties:
             type: string
+    ProtocolInspectCapabilities:
+      type: object
+      properties:
+        features:
+          type: array
+          items:
+            type: string
+          description: Inspect feature tokens (see docs/INSPECTOR_PARITY.md)
+    SubscriptionDiagnostic:
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+        connectionId:
+          type: string
+        connectionName:
+          type: string
+        protocol:
+          $ref: '#/components/schemas/ProtocolType'
+        destination:
+          type: string
+        transport:
+          type: string
+          enum: [SSE, WS]
+        messageCount:
+          type: integer
+        lastError:
+          type: string
+          nullable: true
+        startedAt:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, SLOW_CONSUMER, ERROR]
+    ValidationRecord:
+      type: object
+      properties:
+        timestamp:
+          type: string
+        status:
+          type: string
+          enum: [OK, FAILED]
+        message:
+          type: string
+          nullable: true
