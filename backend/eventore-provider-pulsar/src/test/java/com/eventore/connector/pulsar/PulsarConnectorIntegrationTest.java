@@ -10,6 +10,7 @@ import com.eventore.domain.ProtocolType;
 import com.eventore.domain.UnifiedMessage;
 import com.eventore.testsupport.StreamTestFixtures;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -35,13 +36,15 @@ class PulsarConnectorIntegrationTest {
                     DockerImageName.parse("apachepulsar/pulsar:3.3.2"))
             .withExposedPorts(6650, 8080)
             .withCommand("bin/pulsar", "standalone")
-            .waitingFor(Wait.forListeningPort());
+            .waitingFor(Wait.forHttp("/admin/v2/clusters").forPort(8080));
 
     private final PulsarMessagingConnector connector = new PulsarMessagingConnector();
 
     private ConnectionProfile profile() {
         String broker = "pulsar://" + PULSAR.getHost() + ":" + PULSAR.getMappedPort(6650);
-        return StreamTestFixtures.profile(ProtocolType.PULSAR, broker);
+        String adminUrl = "http://" + PULSAR.getHost() + ":" + PULSAR.getMappedPort(8080);
+        return StreamTestFixtures.profile(
+                ProtocolType.PULSAR, broker, Map.of("adminUrl", adminUrl), Map.of());
     }
 
     @Test
@@ -53,11 +56,6 @@ class PulsarConnectorIntegrationTest {
     void publishSubscribeTextRoundTrip() throws Exception {
         ConnectionProfile profile = profile();
         String topic = "it-pulsar-" + UUID.randomUUID();
-
-        PublishRequest publish = new PublishRequest();
-        publish.setDestination(topic);
-        publish.setPayload("hello-pulsar-integration");
-        connector.publish(profile, publish);
 
         List<UnifiedMessage> received = new CopyOnWriteArrayList<>();
         CountDownLatch latch = new CountDownLatch(1);
@@ -74,6 +72,11 @@ class PulsarConnectorIntegrationTest {
             public void onError(String error) {}
         });
         try {
+            PublishRequest publish = new PublishRequest();
+            publish.setDestination(topic);
+            publish.setPayload("hello-pulsar-integration");
+            connector.publish(profile, publish);
+
             assertThat(latch.await(45, TimeUnit.SECONDS)).isTrue();
         } finally {
             subscription.close();
