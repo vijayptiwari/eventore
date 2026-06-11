@@ -16,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.apache.pulsar.client.admin.PulsarAdmin;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -42,8 +42,8 @@ class PulsarConnectorIntegrationTest {
 
     private final PulsarMessagingConnector connector = new PulsarMessagingConnector();
 
-    @BeforeAll
-    static void awaitDefaultNamespace() throws Exception {
+    @BeforeEach
+    void awaitDefaultNamespace() throws Exception {
         String adminUrl = adminUrl();
         long deadline = System.currentTimeMillis() + 60_000;
         while (System.currentTimeMillis() < deadline) {
