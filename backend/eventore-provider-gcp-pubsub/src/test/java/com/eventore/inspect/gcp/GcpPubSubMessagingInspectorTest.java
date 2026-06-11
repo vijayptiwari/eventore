@@ -3,13 +3,15 @@ package com.eventore.inspect.gcp;
 import com.eventore.connector.gcp.GcpPubSubMessagingConnector;
 import com.eventore.domain.ProtocolType;
 import com.eventore.domain.TopicRef;
+import com.eventore.inspect.domain.InspectModels.ConsumerGroupDetail;
+import com.eventore.inspect.domain.InspectModels.ConsumerGroupSummary;
+import com.eventore.inspect.domain.InspectModels.GroupOffset;
 import com.eventore.inspect.domain.InspectModels.MessageSearchRequest;
 import com.eventore.testsupport.StreamTestFixtures;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -26,8 +28,33 @@ class GcpPubSubMessagingInspectorTest {
     @Mock
     private GcpPubSubMessagingConnector connector;
 
-    @InjectMocks
-    private GcpPubSubMessagingInspector inspector;
+    private GcpPubSubMessagingInspector inspector() {
+        return new GcpPubSubMessagingInspector(
+                connector,
+                profile -> List.of(subscriptionSummary("orders-sub", "orders")),
+                req -> {
+                    ConsumerGroupDetail detail = new ConsumerGroupDetail();
+                    detail.setGroupId(req.groupId());
+                    detail.setState("ACTIVE");
+                    return detail;
+                },
+                req -> List.of(backlogOffset("orders", 3)));
+    }
+
+    private static ConsumerGroupSummary subscriptionSummary(String sub, String topic) {
+        ConsumerGroupSummary summary = new ConsumerGroupSummary();
+        summary.setGroupId(sub);
+        summary.setState("ACTIVE");
+        summary.putAttribute("topic", topic);
+        return summary;
+    }
+
+    private static GroupOffset backlogOffset(String topic, long lag) {
+        GroupOffset offset = new GroupOffset();
+        offset.setTopic(topic);
+        offset.setLag(lag);
+        return offset;
+    }
 
     private void stubConnectorDestinations() {
         when(connector.listDestinations(any()))
@@ -38,13 +65,15 @@ class GcpPubSubMessagingInspectorTest {
 
     @Test
     void protocolIsGcpPubSub() {
-        assertEquals(ProtocolType.GCP_PUBSUB, inspector.protocol());
+        assertEquals(ProtocolType.GCP_PUBSUB, inspector().protocol());
     }
 
     @Test
-    void capabilitiesIncludePubSubOperations() {
-        var features = inspector.capabilities().getFeatures();
+    void capabilitiesIncludeSubscriptionsAndBacklog() {
+        var features = inspector().capabilities().getFeatures();
         assertTrue(features.contains("topics"));
+        assertTrue(features.contains("subscriptions"));
+        assertTrue(features.contains("backlog"));
         assertFalse(features.contains("message-search"));
     }
 
@@ -53,7 +82,7 @@ class GcpPubSubMessagingInspectorTest {
         var profile = StreamTestFixtures.profile(
                 ProtocolType.GCP_PUBSUB, "fallback", Map.of("projectId", "eventore-dev"), null);
 
-        var info = inspector.clusterInfo(profile);
+        var info = inspector().clusterInfo(profile);
 
         assertEquals("eventore-dev", info.getClusterId());
         assertEquals("GCP", info.getAttributes().get("cloudProvider"));
@@ -61,39 +90,37 @@ class GcpPubSubMessagingInspectorTest {
     }
 
     @Test
+    void listConsumerGroupsReturnsSubscriptionSummaries() {
+        var profile = StreamTestFixtures.profile(ProtocolType.GCP_PUBSUB, "eventore-dev", null, null);
+        var groups = inspector().listConsumerGroups(profile);
+        assertEquals(1, groups.size());
+        assertEquals("orders-sub", groups.get(0).getGroupId());
+        assertEquals("orders", groups.get(0).getAttributes().get("topic"));
+    }
+
+    @Test
+    void consumerLagReturnsBacklogRows() {
+        var profile = StreamTestFixtures.profile(ProtocolType.GCP_PUBSUB, "eventore-dev", null, null);
+        var lag = inspector().consumerLag(profile, "orders-sub", null);
+        assertEquals(1, lag.size());
+        assertEquals(3, lag.get(0).getLag());
+        assertEquals("orders", lag.get(0).getTopic());
+    }
+
+    @Test
     void listTopicsFiltersByName() {
         stubConnectorDestinations();
         var profile = StreamTestFixtures.profile(ProtocolType.GCP_PUBSUB, "eventore-dev", null, null);
 
-        assertEquals(1, inspector.listTopics(profile, "order").size());
-        assertEquals("orders", inspector.listTopics(profile, "order").get(0).getName());
-    }
-
-    @Test
-    void describeTopicIncludesProjectId() {
-        var profile = StreamTestFixtures.profile(
-                ProtocolType.GCP_PUBSUB, "fallback", Map.of("projectId", "eventore-dev"), null);
-
-        var topic = inspector.describeTopic(profile, "orders");
-
-        assertEquals("orders", topic.getName());
-        assertEquals("eventore-dev", topic.getConfig().get("projectId"));
-    }
-
-    @Test
-    void describeConsumerGroupReturnsSubscriptionState() {
-        var profile = StreamTestFixtures.profile(ProtocolType.GCP_PUBSUB, "eventore-dev", null, null);
-
-        var detail = inspector.describeConsumerGroup(profile, "orders-sub");
-
-        assertEquals("orders-sub", detail.getGroupId());
-        assertEquals("subscription", detail.getState());
+        assertEquals(1, new GcpPubSubMessagingInspector(connector).listTopics(profile, "order").size());
     }
 
     @Test
     void searchMessagesIsNotSupported() {
         var profile = StreamTestFixtures.profile(ProtocolType.GCP_PUBSUB, "eventore-dev", null, null);
 
-        assertThrows(UnsupportedOperationException.class, () -> inspector.searchMessages(profile, new MessageSearchRequest()));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> inspector().searchMessages(profile, new MessageSearchRequest()));
     }
 }

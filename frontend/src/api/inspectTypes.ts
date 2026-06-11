@@ -9,6 +9,7 @@ export interface ConsumerGroupSummary {
   state?: string;
   protocolType?: string;
   memberCount?: number;
+  attributes?: Record<string, string>;
 }
 
 export interface GroupOffset {
@@ -17,6 +18,7 @@ export interface GroupOffset {
   offset?: number;
   logEndOffset?: number;
   lag: number;
+  oldestUnackedMessageAge?: number | null;
 }
 
 export interface ConsumerGroupDetail {

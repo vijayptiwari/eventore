@@ -129,6 +129,8 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
             TopicDetail td = new TopicDetail();
             td.setName(topic);
             td.putConfig("messages", String.valueOf(q.path("messages").asInt()));
+            td.putConfig("messages_ready", String.valueOf(q.path("messages_ready").asInt()));
+            td.putConfig("messages_unacknowledged", String.valueOf(q.path("messages_unacknowledged").asInt()));
             td.putConfig("consumers", String.valueOf(q.path("consumers").asInt()));
             td.putConfig("message_bytes", String.valueOf(q.path("message_bytes").asLong()));
             return td;

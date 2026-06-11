@@ -43,6 +43,34 @@ class StreamProviderDescriptorFactoryTest {
     }
 
     @Test
+    void ac1_andAc4_kinesisAdminTrueMqttAdminFalse() {
+        StreamProviderDescriptor kinesis =
+                StreamProviderDescriptorFactory.fromProvider(mockProvider(ProtocolType.KINESIS));
+        StreamProviderDescriptor mqtt =
+                StreamProviderDescriptorFactory.fromProvider(mockProvider(ProtocolType.MQTT));
+
+        assertThat(kinesis.getCapabilities().isAdmin()).isTrue();
+        assertThat(mqtt.getCapabilities().isAdmin()).isFalse();
+    }
+
+    @Test
+    void ac5_kafkaAdminCapabilityUnchanged() {
+        StreamProviderDescriptor kafka =
+                StreamProviderDescriptorFactory.fromProvider(mockProvider(ProtocolType.KAFKA));
+
+        assertThat(kafka.getCapabilities().isAdmin()).isTrue();
+    }
+
+    @Test
+    void ac3_dataPlanePrefixesIncludeKinesisAdminPath() {
+        StreamProviderDescriptor kinesis =
+                StreamProviderDescriptorFactory.fromProvider(mockProvider(ProtocolType.KINESIS));
+
+        assertThat(kinesis.getCapabilities().getDataPlaneApiPrefixes())
+                .contains("/api/v1/connections/{connectionId}/kinesis");
+    }
+
+    @Test
     void openApiStreamIdIsSetForDedicatedAdminStreams() {
         StreamProviderDescriptor kafka =
                 StreamProviderDescriptorFactory.fromProvider(mockProvider(ProtocolType.KAFKA));

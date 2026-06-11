@@ -100,6 +100,7 @@ public final class InspectModels {
         private String state;
         private String protocolType;
         private int memberCount;
+        private Map<String, String> attributes = new HashMap<>();
 
         public String getGroupId() {
             return groupId;
@@ -131,6 +132,20 @@ public final class InspectModels {
 
         public void setMemberCount(int memberCount) {
             this.memberCount = memberCount;
+        }
+
+        public Map<String, String> getAttributes() {
+            return Collections.unmodifiableMap(attributes);
+        }
+
+        public void setAttributes(Map<String, String> attributes) {
+            this.attributes = attributes != null ? new HashMap<>(attributes) : new HashMap<>();
+        }
+
+        public void putAttribute(String key, String value) {
+            if (key != null && value != null) {
+                attributes.put(key, value);
+            }
         }
     }
 
@@ -239,6 +254,7 @@ public final class InspectModels {
         private long offset;
         private long logEndOffset;
         private long lag;
+        private Long oldestUnackedMessageAge;
 
         public String getTopic() {
             return topic;
@@ -278,6 +294,14 @@ public final class InspectModels {
 
         public void setLag(long lag) {
             this.lag = lag;
+        }
+
+        public Long getOldestUnackedMessageAge() {
+            return oldestUnackedMessageAge;
+        }
+
+        public void setOldestUnackedMessageAge(Long oldestUnackedMessageAge) {
+            this.oldestUnackedMessageAge = oldestUnackedMessageAge;
         }
     }
 

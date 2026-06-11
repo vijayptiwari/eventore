@@ -56,7 +56,33 @@ export interface UnifiedMessage {
 }
 
 export class EventoreClient {
-  constructor(private readonly baseUrl: string) {}
+  constructor(
+    private readonly baseUrl: string,
+    private readonly apiToken?: string,
+  ) {}
+
+  private authHeaders(): Record<string, string> {
+    const token = this.apiToken?.trim();
+    if (!token) {
+      return {};
+    }
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  private apiOrigin(): string {
+    return this.baseUrl.replace(/\/api\/v1\/?$/, '').replace(/\/$/, '');
+  }
+
+  private resolveSseUrl(subscriptionId: string, sseUrl?: string): string {
+    if (sseUrl?.trim()) {
+      const trimmed = sseUrl.trim();
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed;
+      }
+      return `${this.apiOrigin()}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
+    }
+    return `${this.apiOrigin()}/api/v1/stream/${subscriptionId}`;
+  }
 
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
     const url = `${this.baseUrl.replace(/\/$/, '')}${path}`;
@@ -64,6 +90,7 @@ export class EventoreClient {
       ...init,
       headers: {
         'Content-Type': 'application/json',
+        ...this.authHeaders(),
         ...(init?.headers ?? {}),
       },
     });
@@ -168,6 +195,21 @@ export class EventoreClient {
     );
   }
 
+  inspectCapabilities(connectionId: string) {
+    return this.request<unknown>(`/connections/${connectionId}/inspect/capabilities`);
+  }
+
+  inspectTopics(connectionId: string, filter?: string) {
+    const q = filter ? `?filter=${encodeURIComponent(filter)}` : '';
+    return this.request<unknown>(`/connections/${connectionId}/inspect/topics${q}`);
+  }
+
+  inspectTopic(connectionId: string, topic: string) {
+    return this.request<unknown>(
+      `/connections/${connectionId}/inspect/topics/${encodeURIComponent(topic)}`,
+    );
+  }
+
   inspectCluster(connectionId: string) {
     return this.request<unknown>(`/connections/${connectionId}/inspect/cluster`);
   }
@@ -214,6 +256,12 @@ export class EventoreClient {
     );
   }
 
+  kinesisListShards(connectionId: string, streamName: string) {
+    return this.request<unknown>(
+      `/connections/${connectionId}/kinesis/streams/${encodeURIComponent(streamName)}/shards`,
+    );
+  }
+
   kafkaListAcls(connectionId: string, resourceType?: string, resourceName?: string) {
     const params = new URLSearchParams();
     if (resourceType) params.set('resourceType', resourceType);
@@ -232,12 +280,11 @@ export class EventoreClient {
   /** Poll SSE stream for a bounded time and collect MESSAGE frames. */
   async consumeMessages(
     subscriptionId: string,
-    options: { maxMessages?: number; timeoutMs?: number } = {},
+    options: { maxMessages?: number; timeoutMs?: number; sseUrl?: string } = {},
   ): Promise<UnifiedMessage[]> {
     const maxMessages = options.maxMessages ?? 20;
     const timeoutMs = options.timeoutMs ?? 10_000;
-    const origin = this.baseUrl.replace(/\/api\/v1\/?$/, '');
-    const sseUrl = `${origin}/api/v1/stream/${subscriptionId}`;
+    const sseUrl = this.resolveSseUrl(subscriptionId, options.sseUrl);
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -246,11 +293,15 @@ export class EventoreClient {
 
     try {
       const res = await fetch(sseUrl, {
-        headers: { Accept: 'text/event-stream' },
+        headers: {
+          Accept: 'text/event-stream',
+          ...this.authHeaders(),
+        },
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {
-        throw new Error(`SSE failed: ${res.status}`);
+        const body = await res.text().catch(() => '');
+        throw new Error(`SSE failed: ${res.status}${body ? ` ${body}` : ''}`);
       }
 
       const reader = res.body.getReader();

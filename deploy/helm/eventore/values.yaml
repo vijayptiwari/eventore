@@ -16,8 +16,16 @@ eventore:
   subscriptions:
     maxConcurrent: 50
     queueCapacity: 500
+  diagnostics:
+    errorSubscriptionThreshold: 5
   dev:
     maxPublishBytes: 1048576
+  # API token auth (production). Prefer apiTokenExistingSecret over inline apiToken.
+  security:
+    apiToken: ""
+    apiTokenExistingSecret: ""
+    apiTokenSecretKey: api-token
+    allowedOrigins: "*"
 
 image:
   backend:
@@ -43,6 +51,10 @@ frontend:
   env:
     apiBaseUrl: /api/v1
     wsUrl: ""
+    # Optional dev convenience — prefer Settings UI + sessionStorage in production.
+    apiToken: ""
+    apiTokenExistingSecret: ""
+    apiTokenSecretKey: api-token
 
 ingress:
   enabled: true

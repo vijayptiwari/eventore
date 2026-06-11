@@ -19,9 +19,13 @@ public class EventoreHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-        return Health.up()
-                .withDetail("deploymentMode", properties.getDeploymentMode())
+        int subscriptionsInError = subscriptionManager.countSubscriptionsInError();
+        int threshold = properties.getDiagnostics().getErrorSubscriptionThreshold();
+        Health.Builder builder = subscriptionsInError >= threshold ? Health.down() : Health.up();
+        return builder.withDetail("deploymentMode", properties.getDeploymentMode())
                 .withDetail("activeSubscriptions", subscriptionManager.activeCount())
+                .withDetail("subscriptionsInError", subscriptionsInError)
+                .withDetail("threshold", threshold)
                 .build();
     }
 }

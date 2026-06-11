@@ -41,9 +41,9 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Testcontainers broker tests (Kafka, RabbitMQ)
+      - name: Testcontainers broker tests (Kafka, RabbitMQ, MQTT, Pulsar)
         working-directory: backend
-        run: mvn -B test -DexcludedTestGroups= -pl eventore-provider-kafka,eventore-provider-rabbitmq -am
+        run: mvn -B test -DexcludedTestGroups= -pl eventore-provider-kafka,eventore-provider-rabbitmq,eventore-provider-mqtt,eventore-provider-pulsar -am
 
   build-frontend:
     runs-on: ubuntu-latest

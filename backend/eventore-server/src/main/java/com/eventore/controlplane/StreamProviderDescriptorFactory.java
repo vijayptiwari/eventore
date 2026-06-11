@@ -25,7 +25,9 @@ public final class StreamProviderDescriptorFactory {
         ProviderCapabilities caps = new ProviderCapabilities();
         caps.setMessaging(true);
         caps.setInspect(provider.inspector().isPresent());
-        caps.setAdmin(provider.protocol() == ProtocolType.KAFKA);
+        caps.setAdmin(
+                provider.protocol() == ProtocolType.KAFKA
+                        || provider.protocol() == ProtocolType.KINESIS);
         caps.setLiveView(true);
         caps.setDataPlaneApiPrefixes(dataPlanePrefixes(provider.protocol()));
         return caps;

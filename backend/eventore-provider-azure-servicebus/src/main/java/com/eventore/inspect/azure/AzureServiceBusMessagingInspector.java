@@ -3,6 +3,7 @@ package com.eventore.inspect.azure;
 import com.eventore.connector.azure.AzureServiceBusMessagingConnector;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.ProtocolType;
+import com.eventore.domain.TopicRef;
 import com.eventore.domain.UnifiedMessage;
 import com.eventore.inspect.domain.InspectModels.ClusterInfo;
 import com.eventore.inspect.domain.InspectModels.ConsumerGroupDetail;
@@ -14,15 +15,41 @@ import com.eventore.inspect.domain.InspectModels.TopicDetail;
 import com.eventore.inspect.spi.MessagingInspector;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AzureServiceBusMessagingInspector implements MessagingInspector {
 
     private final AzureServiceBusMessagingConnector connector;
+    private final Function<ConnectionProfile, List<ConsumerGroupSummary>> subscriptionLister;
+    private final Function<DescribeRequest, ConsumerGroupDetail> subscriptionDescriber;
+    private final Function<BacklogRequest, List<GroupOffset>> backlogReader;
+    private final Function<PeekRequest, List<UnifiedMessage>> messagePeeker;
 
     public AzureServiceBusMessagingInspector(AzureServiceBusMessagingConnector connector) {
+        this(
+                connector,
+                profile -> AzureServiceBusInspectSupport.listSubscriptions(profile, connector.listDestinations(profile)),
+                req -> AzureServiceBusInspectSupport.describeSubscription(
+                        req.profile(), req.groupId(), connector.listDestinations(req.profile())),
+                req -> AzureServiceBusInspectSupport.entityBacklog(
+                        req.profile(), req.entityId(), req.topicFilter(), connector.listDestinations(req.profile())),
+                req -> AzureServiceBusInspectSupport.peekMessages(
+                        req.profile(), req.request(), connector.listDestinations(req.profile())));
+    }
+
+    AzureServiceBusMessagingInspector(
+            AzureServiceBusMessagingConnector connector,
+            Function<ConnectionProfile, List<ConsumerGroupSummary>> subscriptionLister,
+            Function<DescribeRequest, ConsumerGroupDetail> subscriptionDescriber,
+            Function<BacklogRequest, List<GroupOffset>> backlogReader,
+            Function<PeekRequest, List<UnifiedMessage>> messagePeeker) {
         this.connector = connector;
+        this.subscriptionLister = subscriptionLister;
+        this.subscriptionDescriber = subscriptionDescriber;
+        this.backlogReader = backlogReader;
+        this.messagePeeker = messagePeeker;
     }
 
     @Override
@@ -33,7 +60,8 @@ public class AzureServiceBusMessagingInspector implements MessagingInspector {
     @Override
     public ProtocolInspectCapabilities capabilities() {
         ProtocolInspectCapabilities c = new ProtocolInspectCapabilities();
-        c.setFeatures(List.of("cluster", "queues", "topics", "queue-detail"));
+        c.setFeatures(List.of(
+                "cluster", "queues", "topics", "queue-detail", "subscriptions", "message-search", "backlog"));
         return c;
     }
 
@@ -48,18 +76,18 @@ public class AzureServiceBusMessagingInspector implements MessagingInspector {
 
     @Override
     public List<ConsumerGroupSummary> listConsumerGroups(ConnectionProfile profile) {
-        return List.of();
+        return subscriptionLister.apply(profile);
     }
 
     @Override
     public ConsumerGroupDetail describeConsumerGroup(ConnectionProfile profile, String groupId) {
-        throw new UnsupportedOperationException("Service Bus uses subscriptions on topics");
+        return subscriptionDescriber.apply(new DescribeRequest(profile, groupId));
     }
 
     @Override
     public List<TopicDetail> listTopics(ConnectionProfile profile, String nameFilter) {
         List<TopicDetail> list = new ArrayList<>();
-        for (var ref : connector.listDestinations(profile)) {
+        for (TopicRef ref : connector.listDestinations(profile)) {
             if (nameFilter != null
                     && !nameFilter.isBlank()
                     && !ref.getName().toLowerCase().contains(nameFilter.toLowerCase())) {
@@ -68,6 +96,15 @@ public class AzureServiceBusMessagingInspector implements MessagingInspector {
             TopicDetail td = new TopicDetail();
             td.setName(ref.getName());
             td.putConfig("type", ref.getType());
+            if ("queue".equalsIgnoreCase(ref.getType())) {
+                try {
+                    AzureServiceBusInspectSupport.enrichQueueDetail(
+                            profile,
+                            new AzureServiceBusInspectSupport.TopicDetailHolder(ref.getName(), ref.getType(), td));
+                } catch (RuntimeException e) {
+                    td.putConfig("note", "Queue runtime unavailable: " + e.getMessage());
+                }
+            }
             list.add(td);
         }
         return list;
@@ -75,23 +112,30 @@ public class AzureServiceBusMessagingInspector implements MessagingInspector {
 
     @Override
     public TopicDetail describeTopic(ConnectionProfile profile, String topic) {
-        return listTopics(profile, topic).stream()
+        TopicDetail td = listTopics(profile, topic).stream()
                 .filter(t -> t.getName().equals(topic))
                 .findFirst()
                 .orElseGet(() -> {
-                    TopicDetail td = new TopicDetail();
-                    td.setName(topic);
-                    return td;
+                    TopicDetail fallback = new TopicDetail();
+                    fallback.setName(topic);
+                    return fallback;
                 });
+        return td;
     }
 
     @Override
     public List<GroupOffset> consumerLag(ConnectionProfile profile, String groupId, String topicFilter) {
-        return List.of();
+        return backlogReader.apply(new BacklogRequest(profile, groupId, topicFilter));
     }
 
     @Override
     public List<UnifiedMessage> searchMessages(ConnectionProfile profile, MessageSearchRequest request) {
-        throw new UnsupportedOperationException("Use peek via Azure portal or live view");
+        return messagePeeker.apply(new PeekRequest(profile, request));
     }
+
+    record DescribeRequest(ConnectionProfile profile, String groupId) {}
+
+    record BacklogRequest(ConnectionProfile profile, String entityId, String topicFilter) {}
+
+    record PeekRequest(ConnectionProfile profile, MessageSearchRequest request) {}
 }

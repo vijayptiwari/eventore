@@ -21,3 +21,14 @@ ingress:
 
 networkPolicy:
   enabled: false
+
+# Production security (uncomment and create Secret before exposing ingress):
+# eventore:
+#   security:
+#     apiTokenExistingSecret: eventore-api-token
+#     apiTokenSecretKey: api-token
+#     allowedOrigins: "https://eventore.local"
+# frontend:
+#   env:
+#     # Prefer UI Settings → API token; inline token is dev-only.
+#     apiToken: ""

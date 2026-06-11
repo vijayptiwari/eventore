@@ -1,68 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api, canAction, PROTOCOL_DEFAULTS } from '../api/client';
+import ConnectionWizardDialog from '../components/ConnectionWizardDialog';
+import {
+  applyPresetToForm,
+  defaultProtocol,
+  emptyForm,
+  presetKey,
+  PROTOCOL_EXTRA_FIELDS,
+} from '../connections/connectionFormShared';
 import { useAppConfig } from '../hooks/useAppConfig';
 import { useControlPlane } from '../hooks/useControlPlane';
 import type { StreamPlatformPreset } from '../api/platformTypes';
 import type { ConnectionProfile, ProtocolType } from '../api/types';
-
-const defaultProtocol = (protocols: ProtocolType[]): ProtocolType =>
-  protocols[0] ?? 'KAFKA';
-
-const emptyForm = (protocol: ProtocolType): ConnectionProfile => ({
-  name: '',
-  protocol,
-  cloudProvider: 'ON_PREM',
-  streamPlatform: 'GENERIC',
-  brokerUrl: PROTOCOL_DEFAULTS[protocol].brokerUrl,
-  properties: {},
-  credentials: {},
-});
-
-interface ProtocolFieldDescriptor {
-  kind: 'property' | 'credential';
-  key: string;
-  label: string;
-  defaultValue?: string;
-  password?: boolean;
-  /** The KINESIS region doubles as the broker URL. */
-  syncBrokerUrl?: boolean;
-}
-
-const PROTOCOL_EXTRA_FIELDS: Partial<Record<ProtocolType, ProtocolFieldDescriptor[]>> = {
-  MQTT: [{ kind: 'property', key: 'topicFilter', label: 'Topic filter', defaultValue: '#' }],
-  RABBITMQ: [
-    { kind: 'property', key: 'vhost', label: 'Virtual host', defaultValue: '/' },
-    { kind: 'property', key: 'queue', label: 'Default queue', defaultValue: 'eventore.queue' },
-  ],
-  GCP_PUBSUB: [
-    {
-      kind: 'property',
-      key: 'subscription',
-      label: 'Subscription name (for consume)',
-      defaultValue: 'eventore-sub',
-    },
-  ],
-  AZURE_SERVICE_BUS: [
-    {
-      kind: 'property',
-      key: 'entityPath',
-      label: 'Entity path (queue or topic)',
-      defaultValue: 'eventore',
-    },
-    { kind: 'credential', key: 'connectionString', label: 'Connection string', password: true },
-  ],
-  KINESIS: [
-    { kind: 'property', key: 'region', label: 'AWS region', syncBrokerUrl: true },
-    { kind: 'credential', key: 'accessKeyId', label: 'Access key ID' },
-    { kind: 'credential', key: 'secretAccessKey', label: 'Secret access key', password: true },
-  ],
-  JMS: [{ kind: 'property', key: 'queue', label: 'Default queue', defaultValue: 'eventore.queue' }],
-};
-
 export default function ConnectionsPage() {
   const { data: config } = useAppConfig();
   const { connectionProtocols: controlProtocols } = useControlPlane();
+  const [searchParams, setSearchParams] = useSearchParams();
   const supportedProtocols = useMemo(
     () =>
       controlProtocols.length > 0
@@ -84,11 +39,19 @@ export default function ConnectionsPage() {
       platforms?.filter((p) => supportedProtocols.includes(p.protocol)) ?? [],
     [platforms, supportedProtocols],
   );
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [form, setForm] = useState<ConnectionProfile>(() =>
     emptyForm(defaultProtocol(supportedProtocols)),
   );
   const [selectedPresetKey, setSelectedPresetKey] = useState('');
   const canManage = canAction(config?.allowedActions, 'MANAGE_CONNECTIONS');
+
+  useEffect(() => {
+    if (searchParams.get('wizard') === '1') {
+      setWizardOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!supportedProtocols.length) return;
@@ -147,16 +110,8 @@ export default function ConnectionsPage() {
   };
 
   const applyPreset = (preset: StreamPlatformPreset) => {
-    const key = `${preset.platform}-${preset.protocol}-${preset.label}`;
-    setSelectedPresetKey(key);
-    setForm((f) => ({
-      ...f,
-      protocol: preset.protocol,
-      cloudProvider: preset.cloudProvider,
-      streamPlatform: preset.platform,
-      brokerUrl: preset.brokerUrlHint,
-      properties: { ...preset.defaultProperties },
-    }));
+    setSelectedPresetKey(presetKey(preset));
+    setForm((f) => applyPresetToForm(f, preset));
   };
 
   return (
@@ -165,126 +120,107 @@ export default function ConnectionsPage() {
       {canManage && (
         <div className="card">
           <h2>New connection</h2>
-          <div className="form-grid">
-            <div className="form-row">
-              <label>Name</label>
-              <input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <div className="form-row">
-              <label>Stream platform preset</label>
-              <select
-                value={selectedPresetKey}
-                onChange={(e) => {
-                  const preset = platforms?.find(
-                    (p) => `${p.platform}-${p.protocol}-${p.label}` === e.target.value,
-                  );
-                  if (preset) applyPreset(preset);
-                  else setSelectedPresetKey('');
-                }}
-              >
-                <option value="">Custom / manual</option>
-                {visiblePlatforms.map((p) => {
-                  const key = `${p.platform}-${p.protocol}-${p.label}`;
-                  return (
-                    <option key={key} value={key}>
-                      [{p.cloudProvider}] {p.label}
-                    </option>
-                  );
-                })}
-              </select>
-              {selectedPresetKey && (
-                <p className="inspector-meta" style={{ marginTop: '0.35rem' }}>
-                  {visiblePlatforms.find((p) => `${p.platform}-${p.protocol}-${p.label}` === selectedPresetKey)
-                    ?.description}
-                </p>
-              )}
-            </div>
-            <div className="form-row">
-              <label>Protocol</label>
-              <select
-                value={form.protocol}
-                onChange={(e) => onProtocolChange(e.target.value as ProtocolType)}
-              >
-                {supportedProtocols.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-row">
-              <label>Broker URL</label>
-              <input
-                value={form.brokerUrl}
-                onChange={(e) => setForm({ ...form, brokerUrl: e.target.value })}
-                placeholder={PROTOCOL_DEFAULTS[form.protocol].hint}
-              />
-            </div>
-            <div className="form-row">
-              <label>Username</label>
-              <input
-                value={form.credentials?.username ?? ''}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    credentials: { ...form.credentials, username: e.target.value },
-                  })
-                }
-              />
-            </div>
-            <div className="form-row">
-              <label>Password</label>
-              <input
-                type="password"
-                value={form.credentials?.password ?? ''}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    credentials: { ...form.credentials, password: e.target.value },
-                  })
-                }
-              />
-            </div>
-            {(PROTOCOL_EXTRA_FIELDS[form.protocol] ?? []).map((field) => {
-              const current =
-                field.kind === 'property'
-                  ? form.properties?.[field.key]
-                  : form.credentials?.[field.key];
-              const fallback = field.syncBrokerUrl ? form.brokerUrl : (field.defaultValue ?? '');
-              return (
-                <div className="form-row" key={`${form.protocol}-${field.key}`}>
-                  <label>{field.label}</label>
-                  <input
-                    type={field.password ? 'password' : 'text'}
-                    value={current ?? fallback}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        ...(field.kind === 'property'
-                          ? { properties: { ...f.properties, [field.key]: e.target.value } }
-                          : { credentials: { ...f.credentials, [field.key]: e.target.value } }),
-                        ...(field.syncBrokerUrl ? { brokerUrl: e.target.value } : {}),
-                      }))
-                    }
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <button
-            disabled={!form.name || createMutation.isPending}
-            onClick={() => createMutation.mutate(form)}
-          >
-            Save connection
+          <p className="inspector-meta">
+            Use the guided wizard for presets, secret refs, and validate-before-save.
+          </p>
+          <button type="button" onClick={() => setWizardOpen(true)}>
+            Open connection wizard
           </button>
-          {createMutation.isError && (
-            <p className="stream-error">{String(createMutation.error)}</p>
-          )}
+          <details className="wizard-advanced-form">
+            <summary>Advanced: quick form</summary>
+            <div className="form-grid">
+              <div className="form-row">
+                <label>Name</label>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+              </div>
+              <div className="form-row">
+                <label>Stream platform preset</label>
+                <select
+                  value={selectedPresetKey}
+                  onChange={(e) => {
+                    const preset = visiblePlatforms.find((p) => presetKey(p) === e.target.value);
+                    if (preset) applyPreset(preset);
+                    else setSelectedPresetKey('');
+                  }}
+                >
+                  <option value="">Custom / manual</option>
+                  {visiblePlatforms.map((p) => {
+                    const key = presetKey(p);
+                    return (
+                      <option key={key} value={key}>
+                        [{p.cloudProvider}] {p.label}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="form-row">
+                <label>Protocol</label>
+                <select
+                  value={form.protocol}
+                  onChange={(e) => onProtocolChange(e.target.value as ProtocolType)}
+                >
+                  {supportedProtocols.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-row">
+                <label>Broker URL</label>
+                <input
+                  value={form.brokerUrl}
+                  onChange={(e) => setForm({ ...form, brokerUrl: e.target.value })}
+                  placeholder={PROTOCOL_DEFAULTS[form.protocol].hint}
+                />
+              </div>
+              {(PROTOCOL_EXTRA_FIELDS[form.protocol] ?? []).map((field) => {
+                const current =
+                  field.kind === 'property'
+                    ? form.properties?.[field.key]
+                    : form.credentials?.[field.key];
+                const fallback = field.syncBrokerUrl ? form.brokerUrl : (field.defaultValue ?? '');
+                return (
+                  <div className="form-row" key={`${form.protocol}-${field.key}`}>
+                    <label>{field.label}</label>
+                    <input
+                      type={field.password ? 'password' : 'text'}
+                      value={current ?? fallback}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          ...(field.kind === 'property'
+                            ? { properties: { ...f.properties, [field.key]: e.target.value } }
+                            : { credentials: { ...f.credentials, [field.key]: e.target.value } }),
+                          ...(field.syncBrokerUrl ? { brokerUrl: e.target.value } : {}),
+                        }))
+                      }
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              disabled={!form.name || createMutation.isPending}
+              onClick={() => createMutation.mutate(form)}
+            >
+              Save connection
+            </button>
+            {createMutation.isError && (
+              <p className="stream-error">{String(createMutation.error)}</p>
+            )}
+          </details>
         </div>
       )}
+      <ConnectionWizardDialog
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        config={config}
+      />
       <div className="card">
         <h2>Saved connections</h2>
         {isLoading && <p>Loading...</p>}

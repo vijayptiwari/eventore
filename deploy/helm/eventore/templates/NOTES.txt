@@ -21,3 +21,18 @@ Eventore installed.
       -f deploy/helm/eventore/values-stream-kafka.yaml
 
   Image tags must match eventore.streamProviders (see deploy/ci-backend-images.json).
+
+{{- if include "eventore.apiAuthEnabled" . }}
+
+  API token auth is ENABLED.
+    - Set the same token in the UI: Settings (gear) → API token, or use frontend.env.apiToken only for dev.
+    - Verify: curl without token should return 401 on /api/v1/config
+    - MCP: export EVENTORE_API_TOKEN=<token> when using eventore_consume_messages / eventore_quick_probe
+
+{{- else }}
+
+  API token auth is disabled (dev default). For production, set:
+    eventore.security.apiTokenExistingSecret: <secret-name>
+    eventore.security.allowedOrigins: "https://{{ .Values.ingress.host }}"
+
+{{- end }}

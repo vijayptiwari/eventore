@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { api, canAction, PROTOCOL_DEFAULTS } from './client';
+import { clearApiToken, saveApiToken } from '../config/runtime';
+import { api, canAction, InspectNotSupportedError, isApiAuthError, PROTOCOL_DEFAULTS } from './client';
 
 describe('api client helpers', () => {
   it('canAction checks allowed actions', () => {
@@ -22,6 +23,28 @@ describe('api client helpers', () => {
     for (const protocol of protocols) {
       expect(PROTOCOL_DEFAULTS[protocol].brokerUrl).toBeTruthy();
     }
+  });
+});
+
+describe('kinesisListShards (FEAT-3.2)', () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('AC-1: calls GET /connections/{id}/kinesis/streams/{streamName}/shards', async () => {
+    let requestedUrl = '';
+    global.fetch = async (input) => {
+      requestedUrl = String(input);
+      return new Response(JSON.stringify([{ shardId: 's-1' }]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    const shards = await api.kinesisListShards('conn-1', 'my-stream');
+    expect(requestedUrl).toContain('/connections/conn-1/kinesis/streams/my-stream/shards');
+    expect(shards).toEqual([{ shardId: 's-1' }]);
   });
 });
 
@@ -110,6 +133,66 @@ describe('auth header injection', () => {
     expect(authHeaders()).toEqual({
       Authorization: 'Bearer stored-token',
     });
+  });
+
+  it('AC-7: saveApiToken and clearApiToken round-trip affects authHeaders', async () => {
+    window.__EVENTORE_CONFIG__ = {};
+    sessionStorage.clear();
+    const { authHeaders } = await import('./client');
+    expect(authHeaders()).toEqual({});
+
+    saveApiToken('saved-via-settings');
+    expect(authHeaders()).toEqual({ Authorization: 'Bearer saved-via-settings' });
+
+    clearApiToken();
+    expect(authHeaders()).toEqual({});
+  });
+});
+
+describe('isApiAuthError', () => {
+  it('AC-6: returns true for 401 error messages', () => {
+    expect(isApiAuthError(new Error('401 Unauthorized'))).toBe(true);
+    expect(isApiAuthError(new Error('Request failed: unauthorized'))).toBe(true);
+    expect(isApiAuthError(new Error('Invalid API token'))).toBe(true);
+  });
+
+  it('AC-6: returns false for unrelated errors', () => {
+    expect(isApiAuthError(new Error('broker unreachable'))).toBe(false);
+    expect(isApiAuthError('not an error')).toBe(false);
+    expect(isApiAuthError(null)).toBe(false);
+  });
+});
+
+describe('inspect not supported errors (FEAT-3.3)', () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('AC-4: throws InspectNotSupportedError on HTTP 501 with EVT-1501', async () => {
+    global.fetch = async () =>
+      new Response(JSON.stringify({ code: 'EVT-1501', error: 'not supported for MQTT' }), {
+        status: 501,
+      });
+    await expect(api.inspectCluster('c1')).rejects.toBeInstanceOf(InspectNotSupportedError);
+  });
+
+  it('AC-4: preserves backend error message on InspectNotSupportedError', async () => {
+    global.fetch = async () =>
+      new Response(JSON.stringify({ code: 'EVT-1501', error: 'peek not available' }), {
+        status: 501,
+      });
+    await expect(api.inspectSearch('c1', { topic: 't1' })).rejects.toMatchObject({
+      message: 'peek not available',
+      code: 'EVT-1501',
+      status: 501,
+    });
+  });
+
+  it('isApiAuthError detects token failures', () => {
+    expect(isApiAuthError(new Error('Missing or invalid API token'))).toBe(true);
+    expect(isApiAuthError(new Error('broker unreachable'))).toBe(false);
   });
 });
 

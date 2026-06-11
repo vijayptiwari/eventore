@@ -23,8 +23,11 @@ export default function StreamInspectorGroupsTab({
 }: Props) {
   return (
     <div className="card">
-      {protocol !== 'KAFKA' && protocol !== 'PULSAR' && (
-        <p>Consumer groups are specific to Kafka/Pulsar subscriptions.</p>
+      {protocol === 'RABBITMQ' && (
+        <p className="inspector-meta">Queue list from the RabbitMQ management API.</p>
+      )}
+      {protocol !== 'KAFKA' && protocol !== 'PULSAR' && protocol !== 'RABBITMQ' && (
+        <p>Groups and subscriptions vary by protocol — see Overview for supported features.</p>
       )}
       <table>
         <thead>

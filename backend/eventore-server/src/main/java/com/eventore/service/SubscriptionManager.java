@@ -5,8 +5,12 @@ import com.eventore.connector.ConnectorRegistry;
 import com.eventore.connector.spi.MessageHandler;
 import com.eventore.connector.spi.MessagingConnector;
 import com.eventore.connector.spi.SubscribeRequest;
+import com.eventore.diagnostics.SubscriptionDiagnosticDto;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.UnifiedMessage;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -61,11 +65,18 @@ public class SubscriptionManager {
                 int capacity = properties.getSubscriptions().getQueueCapacity();
                 BlockingQueue<StreamEvent> queue = useQueue ? new LinkedBlockingQueue<>(capacity) : null;
                 MessagingConnector connector = connectorRegistry.get(profile.getProtocol());
+                ActiveSubscription active = new ActiveSubscription(
+                        subscriptionId,
+                        profile,
+                        request,
+                        useQueue ? "SSE" : "WS",
+                        queue);
 
                 MessageHandler handler = new MessageHandler() {
                     @Override
                     public void onMessage(UnifiedMessage message) {
                         metricsService.recordMessage(profile.getProtocol());
+                        active.recordMessage();
                         StreamEvent event = StreamEvent.message(subscriptionId, message);
                         if (queue != null) {
                             if (!queue.offer(event)) {
@@ -73,6 +84,7 @@ public class SubscriptionManager {
                                 while (!queue.offer(event)) {
                                     queue.poll();
                                 }
+                                active.markSlowConsumer();
                                 eventConsumer.accept(StreamEvent.slowConsumer(subscriptionId));
                             }
                         }
@@ -81,17 +93,19 @@ public class SubscriptionManager {
 
                     @Override
                     public void onError(String message) {
+                        active.recordError(message);
+                        metricsService.recordSubscriptionError();
                         eventConsumer.accept(StreamEvent.error(subscriptionId, message));
                     }
                 };
 
                 try {
                     AutoCloseable closeable = connector.subscribe(profile, request, handler);
-                    ActiveSubscription active =
-                            new ActiveSubscription(subscriptionId, profile, request, closeable, queue);
+                    active.setCloseable(closeable);
                     subscriptions.put(subscriptionId, active);
                     reserved = false;
                     metricsService.incrementSubscriptions();
+                    metricsService.refreshSubscriptionErrorGauge(countSubscriptionsInError());
                     return subscriptionId;
                 } catch (Exception e) {
                     log.error(
@@ -118,6 +132,7 @@ public class SubscriptionManager {
             }
             subscriptionCount.decrementAndGet();
             metricsService.decrementSubscriptions();
+            metricsService.refreshSubscriptionErrorGauge(countSubscriptionsInError());
         }
     }
 
@@ -142,6 +157,20 @@ public class SubscriptionManager {
         return subscriptions.size();
     }
 
+    public int countSubscriptionsInError() {
+        return (int) subscriptions.values().stream()
+                .filter(s -> s.status() == SubscriptionStatus.ERROR)
+                .count();
+    }
+
+    public List<SubscriptionDiagnosticDto> diagnosticsSnapshot() {
+        List<SubscriptionDiagnosticDto> rows = new ArrayList<>();
+        for (ActiveSubscription active : subscriptions.values()) {
+            rows.add(active.toDiagnostic());
+        }
+        return rows;
+    }
+
     public void closeAllForConnection(String connectionId) {
         synchronized (lockFor(connectionId)) {
             subscriptions.entrySet().removeIf(entry -> {
@@ -155,6 +184,7 @@ public class SubscriptionManager {
             });
         }
         connectionLocks.remove(connectionId);
+        metricsService.refreshSubscriptionErrorGauge(countSubscriptionsInError());
     }
 
     public record StreamEvent(String type, String subscriptionId, UnifiedMessage message, String detail) {
@@ -175,14 +205,93 @@ public class SubscriptionManager {
         }
     }
 
-    private record ActiveSubscription(
-            String id,
-            ConnectionProfile profile,
-            SubscribeRequest request,
-            AutoCloseable closeable,
-            BlockingQueue<StreamEvent> queue) {
+    enum SubscriptionStatus {
+        ACTIVE,
+        ERROR,
+        SLOW_CONSUMER
+    }
+
+    private static final class ActiveSubscription {
+        private final String id;
+        private final ConnectionProfile profile;
+        private final SubscribeRequest request;
+        private final String transport;
+        private final BlockingQueue<StreamEvent> queue;
+        private final Instant startedAt = Instant.now();
+        private final AtomicInteger messageCount = new AtomicInteger();
+        private volatile AutoCloseable closeable;
+        private volatile String lastError;
+        private volatile SubscriptionStatus status = SubscriptionStatus.ACTIVE;
+
+        private ActiveSubscription(
+                String id,
+                ConnectionProfile profile,
+                SubscribeRequest request,
+                String transport,
+                BlockingQueue<StreamEvent> queue) {
+            this.id = id;
+            this.profile = profile;
+            this.request = request;
+            this.transport = transport;
+            this.queue = queue;
+        }
+
+        String id() {
+            return id;
+        }
+
+        ConnectionProfile profile() {
+            return profile;
+        }
+
+        BlockingQueue<StreamEvent> queue() {
+            return queue;
+        }
+
+        SubscriptionStatus status() {
+            return status;
+        }
+
+        void setCloseable(AutoCloseable closeable) {
+            this.closeable = closeable;
+        }
+
+        void recordMessage() {
+            messageCount.incrementAndGet();
+            if (status == SubscriptionStatus.SLOW_CONSUMER) {
+                status = SubscriptionStatus.ACTIVE;
+            }
+        }
+
+        void recordError(String message) {
+            lastError = message;
+            status = SubscriptionStatus.ERROR;
+        }
+
+        void markSlowConsumer() {
+            if (status != SubscriptionStatus.ERROR) {
+                status = SubscriptionStatus.SLOW_CONSUMER;
+            }
+        }
+
+        SubscriptionDiagnosticDto toDiagnostic() {
+            return new SubscriptionDiagnosticDto(
+                    id,
+                    profile.getId(),
+                    profile.getName(),
+                    profile.getProtocol().name(),
+                    request.getDestination(),
+                    transport,
+                    messageCount.get(),
+                    lastError,
+                    startedAt.toString(),
+                    status.name());
+        }
 
         void close() {
+            if (closeable == null) {
+                return;
+            }
             try {
                 closeable.close();
             } catch (Exception e) {

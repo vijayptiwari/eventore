@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto';
 
 const apiBaseUrl =
   process.env.EVENTORE_API_URL ?? 'http://localhost:8080/api/v1';
+const eventoreApiToken = process.env.EVENTORE_API_TOKEN?.trim() || undefined;
 const transport = (process.env.MCP_TRANSPORT ?? 'stdio').toLowerCase();
 const port = parseInt(process.env.MCP_PORT ?? '3100', 10);
 const authToken = process.env.MCP_AUTH_TOKEN;
@@ -29,7 +30,7 @@ function authMiddleware(
 }
 
 async function main(): Promise<void> {
-  const server = createEventoreMcpServer(apiBaseUrl);
+  const server = createEventoreMcpServer(apiBaseUrl, eventoreApiToken);
 
   if (transport === 'http') {
     const app = express();

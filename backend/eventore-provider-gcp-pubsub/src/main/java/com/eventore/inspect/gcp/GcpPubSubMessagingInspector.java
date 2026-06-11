@@ -15,15 +15,35 @@ import com.eventore.inspect.domain.InspectModels.TopicDetail;
 import com.eventore.inspect.spi.MessagingInspector;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GcpPubSubMessagingInspector implements MessagingInspector {
 
     private final GcpPubSubMessagingConnector connector;
+    private final Function<ConnectionProfile, List<ConsumerGroupSummary>> subscriptionLister;
+    private final Function<DescribeRequest, ConsumerGroupDetail> subscriptionDescriber;
+    private final Function<BacklogRequest, List<GroupOffset>> backlogReader;
 
     public GcpPubSubMessagingInspector(GcpPubSubMessagingConnector connector) {
+        this(
+                connector,
+                GcpPubSubInspectSupport::listSubscriptions,
+                req -> GcpPubSubInspectSupport.describeSubscription(req.profile(), req.groupId()),
+                req -> GcpPubSubInspectSupport.subscriptionBacklog(
+                        req.profile(), req.groupId(), req.topicFilter()));
+    }
+
+    GcpPubSubMessagingInspector(
+            GcpPubSubMessagingConnector connector,
+            Function<ConnectionProfile, List<ConsumerGroupSummary>> subscriptionLister,
+            Function<DescribeRequest, ConsumerGroupDetail> subscriptionDescriber,
+            Function<BacklogRequest, List<GroupOffset>> backlogReader) {
         this.connector = connector;
+        this.subscriptionLister = subscriptionLister;
+        this.subscriptionDescriber = subscriptionDescriber;
+        this.backlogReader = backlogReader;
     }
 
     @Override
@@ -34,7 +54,7 @@ public class GcpPubSubMessagingInspector implements MessagingInspector {
     @Override
     public ProtocolInspectCapabilities capabilities() {
         ProtocolInspectCapabilities c = new ProtocolInspectCapabilities();
-        c.setFeatures(List.of("cluster", "topics"));
+        c.setFeatures(List.of("cluster", "topics", "subscriptions", "backlog"));
         return c;
     }
 
@@ -49,15 +69,12 @@ public class GcpPubSubMessagingInspector implements MessagingInspector {
 
     @Override
     public List<ConsumerGroupSummary> listConsumerGroups(ConnectionProfile profile) {
-        return List.of();
+        return subscriptionLister.apply(profile);
     }
 
     @Override
     public ConsumerGroupDetail describeConsumerGroup(ConnectionProfile profile, String groupId) {
-        ConsumerGroupDetail d = new ConsumerGroupDetail();
-        d.setGroupId(groupId);
-        d.setState("subscription");
-        return d;
+        return subscriptionDescriber.apply(new DescribeRequest(profile, groupId));
     }
 
     @Override
@@ -86,11 +103,15 @@ public class GcpPubSubMessagingInspector implements MessagingInspector {
 
     @Override
     public List<GroupOffset> consumerLag(ConnectionProfile profile, String groupId, String topicFilter) {
-        return List.of();
+        return backlogReader.apply(new BacklogRequest(profile, groupId, topicFilter));
     }
 
     @Override
     public List<UnifiedMessage> searchMessages(ConnectionProfile profile, MessageSearchRequest request) {
         throw new UnsupportedOperationException("Use live view or GCP console for message sampling");
     }
+
+    record DescribeRequest(ConnectionProfile profile, String groupId) {}
+
+    record BacklogRequest(ConnectionProfile profile, String groupId, String topicFilter) {}
 }

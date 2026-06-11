@@ -25,6 +25,25 @@ import type {
 
 import type { StreamPlatformPreset } from './platformTypes';
 
+export interface SubscriptionDiagnostic {
+  subscriptionId: string;
+  connectionId: string;
+  connectionName: string;
+  protocol: string;
+  destination: string;
+  transport: string;
+  messageCount: number;
+  lastError: string | null;
+  startedAt: string;
+  status: 'ACTIVE' | 'ERROR' | 'SLOW_CONSUMER';
+}
+
+export interface ValidationRecord {
+  timestamp: string;
+  status: 'OK' | 'FAILED';
+  message: string;
+}
+
 export interface ConnectionProfileResponse {
   id?: string;
   name: string;
@@ -37,6 +56,26 @@ export interface ConnectionProfileResponse {
 }
 
 const REQUEST_TIMEOUT_MS = 30_000;
+
+export class InspectNotSupportedError extends Error {
+  readonly status: number;
+  readonly code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = 'InspectNotSupportedError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+export function isApiAuthError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const msg = error.message.toLowerCase();
+  return msg.includes('api token') || msg.includes('unauthorized') || msg.includes('401');
+}
 
 export function authHeaders(): Record<string, string> {
   const { apiToken } = getRuntimeConfig();
@@ -73,13 +112,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
   if (!res.ok) {
     let msg = '';
+    let code: string | undefined;
     try {
       const text = await res.text();
       msg = text;
-      const j = JSON.parse(text) as { error?: string };
+      const j = JSON.parse(text) as { error?: string; code?: string };
       if (j.error) msg = j.error;
+      code = j.code;
     } catch {
       // non-JSON or unreadable body — keep raw text (or fall back to status text)
+    }
+    if (res.status === 501 || code === 'EVT-1501') {
+      throw new InspectNotSupportedError(msg || res.statusText, res.status, code);
     }
     throw new Error(msg || res.statusText);
   }
@@ -236,6 +280,23 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(body),
     }),
+
+  diagnosticsSubscriptions: () =>
+    request<SubscriptionDiagnostic[]>('/diagnostics/subscriptions'),
+
+  diagnosticsValidations: (connectionId: string) =>
+    request<ValidationRecord[]>(`/diagnostics/connections/${connectionId}/validations`),
+
+  kinesisListShards: (connectionId: string, streamName: string) =>
+    request<
+      Array<{
+        shardId: string;
+        hashKeyRange?: string;
+        sequenceNumberRange?: string;
+      }>
+    >(
+      `${connectionPath(connectionId, '/kinesis/streams/')}${encodeURIComponent(streamName)}/shards`,
+    ),
 };
 
 export function canAction(allowed: string[] | undefined, action: string): boolean {

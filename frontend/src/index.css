@@ -38,6 +38,130 @@ a:hover {
   font-size: 0.875rem;
 }
 
+.banner-auth-error {
+  background: #4a1515;
+  color: #ffb4b4;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.banner-link-btn {
+  background: none;
+  border: none;
+  color: #7cb8ff;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.nav-settings-btn {
+  background: none;
+  border: none;
+  color: #9aa5b1;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0;
+}
+
+.nav-settings-btn:hover {
+  color: #e8eaed;
+  text-decoration: underline;
+}
+
+.api-token-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 1rem 0;
+}
+
+.api-token-field input {
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #2a3441;
+  background: #0f1419;
+  color: #e8eaed;
+}
+
+.api-token-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  border-radius: 6px;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.btn-primary {
+  background: #1a5fb4;
+  border: 1px solid #3584e4;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #1e252e;
+  border: 1px solid #2a3441;
+  color: #e8eaed;
+}
+
+.wizard-dialog {
+  max-width: 36rem;
+}
+
+.wizard-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.8rem;
+  color: #9aa5b1;
+}
+
+.wizard-step.active {
+  color: #7cb8ff;
+}
+
+.wizard-panel {
+  margin-bottom: 1rem;
+}
+
+.wizard-summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  margin: 1rem 0;
+}
+
+.wizard-summary dt {
+  color: #9aa5b1;
+}
+
+.wizard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.wizard-advanced-form {
+  margin-top: 1rem;
+}
+
+.wizard-advanced-form summary {
+  cursor: pointer;
+  color: #9aa5b1;
+  margin-bottom: 0.75rem;
+}
+
 .app-topbar {
   border-bottom: 1px solid #2a3441;
   background: #0f1419;
@@ -99,6 +223,46 @@ a:hover {
   display: grid;
   gap: 1rem;
   grid-template-columns: 1fr;
+}
+
+.diagnostics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.diagnostics-table th,
+.diagnostics-table td {
+  border-bottom: 1px solid var(--border, #2a2a2a);
+  padding: 0.45rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.diagnostics-row-error {
+  background: rgba(220, 53, 69, 0.08);
+}
+
+.subscription-health-card {
+  grid-column: 1 / -1;
+}
+
+.validation-summary {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.status-ok {
+  color: #2e7d32;
+}
+
+.status-failed,
+.status-error {
+  color: #c62828;
+}
+
+.status-slow-consumer {
+  color: #ef6c00;
 }
 
 @media (min-width: 1200px) {

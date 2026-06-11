@@ -18,7 +18,7 @@ Optional **Model Context Protocol (MCP)** adapter for AI agents. Exposes Eventor
 
 The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV / READONLY) is enforced on the backend.
 
-## Tools (24)
+## Tools (28)
 
 ### Control plane
 
@@ -51,10 +51,14 @@ The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV
 
 | Tool | Description |
 |------|-------------|
+| `eventore_inspect_capabilities` | Inspect feature tokens for a connection |
+| `eventore_inspect_topics` | List topics or queues (optional filter) |
+| `eventore_inspect_topic` | Describe one topic or queue |
 | `eventore_inspect_cluster` | Cluster metadata |
 | `eventore_inspect_consumer_groups` | Groups / subscriptions |
 | `eventore_inspect_lag` | Consumer lag |
 | `eventore_inspect_search` | Topic search |
+| `eventore_kinesis_list_shards` | Kinesis shard listing (requires KINESIS in adminProtocols) |
 | `eventore_kafka_publish` | Kafka produce with key/partition |
 | `eventore_kafka_create_topic` | Create topic |
 | `eventore_kafka_delete_topic` | Delete topic |
@@ -85,6 +89,7 @@ The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `EVENTORE_API_URL` | `http://localhost:8080/api/v1` | Backend API base |
+| `EVENTORE_API_TOKEN` | (unset) | Backend API token (`Authorization: Bearer` on REST and SSE consume) |
 | `MCP_TRANSPORT` | `stdio` | `stdio` or `http` |
 | `MCP_PORT` | `3100` | HTTP port |
 | `MCP_AUTH_TOKEN` | (unset) | Bearer on `/mcp` (HTTP only) |

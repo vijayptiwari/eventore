@@ -17,7 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.mockito.ArgumentCaptor;
 
 class RabbitMqMessagingInspectorTest {
 
@@ -120,6 +123,48 @@ class RabbitMqMessagingInspectorTest {
         assertEquals(1, lags.size());
         assertEquals("lag-queue", lags.get(0).getTopic());
         assertEquals(0L, lags.get(0).getLag());
+    }
+
+    @Test
+    void ac4_searchMessagesUsesNonDestructiveGetEndpoint() throws Exception {
+        stubManagementApiResponse(200, "[]");
+        var profile = StreamTestFixtures.profile(ProtocolType.RABBITMQ, "localhost:5672", null, null);
+        MessageSearchRequest request = new MessageSearchRequest();
+        request.setTopic("orders");
+
+        inspector.searchMessages(profile, request);
+
+        ArgumentCaptor<java.net.http.HttpRequest> captor = ArgumentCaptor.forClass(java.net.http.HttpRequest.class);
+        verify(httpClient).send(captor.capture(), any());
+        assertEquals("POST", captor.getValue().method());
+        assertTrue(captor.getValue().uri().toString().endsWith("/orders/get"));
+    }
+
+    @Test
+    void ac2_describeTopicIncludesQueueDepthFields() throws Exception {
+        stubManagementApiResponse(
+                200,
+                "{\"messages\":12,\"messages_ready\":8,\"messages_unacknowledged\":4,\"consumers\":2}");
+        var profile = StreamTestFixtures.profile(ProtocolType.RABBITMQ, "localhost:5672", null, null);
+
+        var detail = inspector.describeTopic(profile, "orders");
+
+        assertEquals("orders", detail.getName());
+        assertEquals("12", detail.getConfig().get("messages"));
+        assertTrue(detail.getConfig().containsKey("messages_ready"));
+        assertTrue(detail.getConfig().containsKey("messages_unacknowledged"));
+    }
+
+    @Test
+    void ac6_clusterInfoNotesManagementPortRequirementWhenApiUnavailable() throws Exception {
+        stubManagementApiUnavailable();
+        var profile = StreamTestFixtures.profile(
+                ProtocolType.RABBITMQ, "localhost:5672", Map.of("managementPort", "15672"), null);
+
+        var info = inspector.clusterInfo(profile);
+
+        assertTrue(info.getAttributes().containsKey("error"));
+        assertTrue(info.getAttributes().containsKey("note"));
     }
 
     @Test

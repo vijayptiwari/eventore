@@ -20,14 +20,21 @@ data:
           "max-concurrent": {{ .Values.eventore.subscriptions.maxConcurrent }},
           "queue-capacity": {{ .Values.eventore.subscriptions.queueCapacity }}
         },
+        "diagnostics": {
+          "error-subscription-threshold": {{ .Values.eventore.diagnostics.errorSubscriptionThreshold }}
+        },
         "dev": {
           "max-publish-bytes": {{ .Values.eventore.dev.maxPublishBytes }},
           "allowed-protocols": {{ .Values.eventore.streamProviders | toJson }}
+        },
+        "security": {
+          "allowed-origins": {{ .Values.eventore.security.allowedOrigins | quote }}
         }
       }
     }
   frontend-config.js: |
     window.__EVENTORE_CONFIG__ = {
       apiBaseUrl: {{ .Values.frontend.env.apiBaseUrl | quote }},
-      wsUrl: {{ default (printf "wss://%s/ws/stream" .Values.ingress.host) .Values.frontend.env.wsUrl | quote }}
+      wsUrl: {{ default (printf "wss://%s/ws/stream" .Values.ingress.host) .Values.frontend.env.wsUrl | quote }}{{ if include "eventore.frontendApiToken" . }},
+      apiToken: {{ .Values.frontend.env.apiToken | quote }}{{ end }}
     };

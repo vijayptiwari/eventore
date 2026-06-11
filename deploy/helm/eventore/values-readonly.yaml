@@ -14,3 +14,9 @@ frontend:
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
+
+# READONLY SRE dashboards often pair with API token auth:
+# eventore:
+#   security:
+#     apiTokenExistingSecret: eventore-api-token
+#     allowedOrigins: "https://eventore.local"

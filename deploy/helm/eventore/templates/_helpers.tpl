@@ -55,3 +55,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- define "eventore.enabledProtocolsCsv" -}}
 {{- join "," .Values.eventore.streamProviders -}}
 {{- end }}
+
+{{- define "eventore.apiAuthEnabled" -}}
+{{- or .Values.eventore.security.apiToken .Values.eventore.security.apiTokenExistingSecret -}}
+{{- end }}
+
+{{- define "eventore.apiAuthSecretName" -}}
+{{- if .Values.eventore.security.apiTokenExistingSecret -}}
+{{- .Values.eventore.security.apiTokenExistingSecret -}}
+{{- else -}}
+{{- include "eventore.fullname" . }}-api-auth
+{{- end -}}
+{{- end }}
+
+{{- define "eventore.frontendApiToken" -}}
+{{- if .Values.frontend.env.apiToken -}}
+{{- .Values.frontend.env.apiToken -}}
+{{- end -}}
+{{- end }}
+
+{{- define "eventore.frontendApiTokenFromSecret" -}}
+{{- .Values.frontend.env.apiTokenExistingSecret -}}
+{{- end }}

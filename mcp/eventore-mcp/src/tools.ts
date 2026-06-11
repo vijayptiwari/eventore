@@ -4,10 +4,24 @@ import { EventoreClient, type ConnectionProfile } from './eventore-client.js';
 import { allGuides, getProtocolGuide, suggestProtocol } from './protocol-guide.js';
 import { ProtocolSchema, type ProtocolType } from './protocol-types.js';
 
+function inspectToolResult(data: unknown) {
+  return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+}
+
+async function inspectToolResultFromError(error: unknown) {
+  const msg = error instanceof Error ? error.message : String(error);
+  if (msg.includes('501') || msg.includes('EVT-1501') || msg.toLowerCase().includes('not implemented')) {
+    return {
+      content: [{ type: 'text' as const, text: `501 Not implemented: ${msg}` }],
+    };
+  }
+  throw error;
+}
+
 export function registerTools(server: McpServer, client: EventoreClient): void {
   server.tool(
     'eventore_get_config',
-    'Core config: deployment mode, allowed actions, supported protocols, loadedModules, and embedded controlPlane UI cascade.',
+    'Core config: deployment mode, allowed actions, supported protocols, loadedModules, and embedded controlPlane UI cascade. Use controlPlane.uiCascade.inspectProtocols to choose eventore_inspect_* tools; adminProtocols gates eventore_kinesis_list_shards.',
     {},
     async () => {
       const config = await client.getConfig();
@@ -155,6 +169,7 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
         const messages = await client.consumeMessages(sub.subscriptionId, {
           maxMessages: args.maxMessages,
           timeoutMs: args.timeoutMs,
+          sseUrl: sub.sseUrl,
         });
         return {
           content: [
@@ -240,6 +255,7 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
             report.samples = await client.consumeMessages(sub.subscriptionId, {
               maxMessages: 10,
               timeoutMs: 8000,
+              sseUrl: sub.sseUrl,
             });
           } finally {
             await client.unsubscribe(connectionId, sub.subscriptionId);
@@ -253,6 +269,71 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
       return {
         content: [{ type: 'text', text: JSON.stringify(report, null, 2) }],
       };
+    },
+  );
+
+  server.tool(
+    'eventore_inspect_capabilities',
+    'Inspect API feature tokens for a connection (use before other inspect tools).',
+    { connectionId: z.string() },
+    async (args) => {
+      try {
+        const data = await client.inspectCapabilities(args.connectionId);
+        return inspectToolResult(data);
+      } catch (error) {
+        return inspectToolResultFromError(error);
+      }
+    },
+  );
+
+  server.tool(
+    'eventore_inspect_topics',
+    'List topics or queues on a connection with optional name filter.',
+    {
+      connectionId: z.string(),
+      filter: z.string().optional(),
+    },
+    async (args) => {
+      try {
+        const data = await client.inspectTopics(args.connectionId, args.filter);
+        return inspectToolResult(data);
+      } catch (error) {
+        return inspectToolResultFromError(error);
+      }
+    },
+  );
+
+  server.tool(
+    'eventore_inspect_topic',
+    'Describe one topic or queue on a connection.',
+    {
+      connectionId: z.string(),
+      topic: z.string(),
+    },
+    async (args) => {
+      try {
+        const data = await client.inspectTopic(args.connectionId, args.topic);
+        return inspectToolResult(data);
+      } catch (error) {
+        return inspectToolResultFromError(error);
+      }
+    },
+  );
+
+  server.tool(
+    'eventore_kinesis_list_shards',
+    'List Kinesis shards for a stream (requires KINESIS in adminProtocols).',
+    {
+      connectionId: z.string(),
+      streamName: z.string(),
+    },
+    async (args) => {
+      try {
+        const data = await client.kinesisListShards(args.connectionId, args.streamName);
+        return inspectToolResult(data);
+      } catch (error) {
+        return inspectToolResultFromError(error);
+      }
     },
   );
 
@@ -369,14 +450,18 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
       maxMessages: z.number().optional(),
     },
     async (args) => {
-      const data = await client.inspectSearch(args.connectionId, {
-        topic: args.topic,
-        payloadContains: args.payloadContains,
-        keyContains: args.keyContains,
-        maxMessages: args.maxMessages ?? 30,
-        startAt: 'latest',
-      });
-      return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+      try {
+        const data = await client.inspectSearch(args.connectionId, {
+          topic: args.topic,
+          payloadContains: args.payloadContains,
+          keyContains: args.keyContains,
+          maxMessages: args.maxMessages ?? 30,
+          startAt: 'latest',
+        });
+        return inspectToolResult(data);
+      } catch (error) {
+        return inspectToolResultFromError(error);
+      }
     },
   );
 }

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { useStreamWorkspace } from '../stream/StreamWorkspaceContext';
 
@@ -11,7 +11,13 @@ export default function BrowsePage() {
     queryKey: ['connections'],
     queryFn: api.listConnections,
   });
+  const [searchParams] = useSearchParams();
   const [selectedId, setSelectedId] = useState<string>('');
+
+  useEffect(() => {
+    const fromQuery = searchParams.get('connectionId');
+    if (fromQuery) setSelectedId(fromQuery);
+  }, [searchParams]);
 
   const connectionId = selectedId || connections?.[0]?.id || '';
 

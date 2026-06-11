@@ -18,6 +18,7 @@ public class EventoreProperties {
     private String enabledProtocols = "";
     private long maxPublishBytes = 10_485_760L;
     private Subscriptions subscriptions = new Subscriptions();
+    private Diagnostics diagnostics = new Diagnostics();
     private Dev dev = new Dev();
     private ControlPlane controlPlane = new ControlPlane();
     private DataPlane dataPlane = new DataPlane();
@@ -100,6 +101,14 @@ public class EventoreProperties {
         this.subscriptions = subscriptions;
     }
 
+    public Diagnostics getDiagnostics() {
+        return diagnostics;
+    }
+
+    public void setDiagnostics(Diagnostics diagnostics) {
+        this.diagnostics = diagnostics;
+    }
+
     public Dev getDev() {
         return dev;
     }
@@ -145,6 +154,18 @@ public class EventoreProperties {
 
         public void setRequireControlPlaneRegistration(boolean requireControlPlaneRegistration) {
             this.requireControlPlaneRegistration = requireControlPlaneRegistration;
+        }
+    }
+
+    public static class Diagnostics {
+        private int errorSubscriptionThreshold = 5;
+
+        public int getErrorSubscriptionThreshold() {
+            return errorSubscriptionThreshold;
+        }
+
+        public void setErrorSubscriptionThreshold(int errorSubscriptionThreshold) {
+            this.errorSubscriptionThreshold = errorSubscriptionThreshold;
         }
     }
 

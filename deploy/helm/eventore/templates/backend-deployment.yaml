@@ -29,6 +29,13 @@ spec:
                 configMapKeyRef:
                   name: {{ include "eventore.fullname" . }}-config
                   key: SPRING_APPLICATION_JSON
+            {{- if include "eventore.apiAuthEnabled" . }}
+            - name: EVENTORE_SECURITY_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "eventore.apiAuthSecretName" . }}
+                  key: {{ .Values.eventore.security.apiTokenSecretKey }}
+            {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "eventore.fullname" . }}-broker
