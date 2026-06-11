@@ -1,25 +1,33 @@
 package com.eventore.service;
 
 import com.eventore.domain.ConnectionProfile;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 /**
- * In-memory store of connection profiles.
- *
- * <p><strong>Security note:</strong> credentials inside {@link ConnectionProfile} are held
- * unencrypted in process memory (or as {@code env:}/{@code file:} secret references). They must
- * never be persisted to disk or any external store without encryption at rest.
+ * Store of connection profiles. Uses in-memory map with optional file persistence
+ * ({@link ConnectionProfilePersistence}) when enabled.
  */
 @Service
 public class ConnectionRegistry {
 
     private final Map<String, ConnectionProfile> profiles = new ConcurrentHashMap<>();
+    private final ConnectionProfilePersistence persistence;
+
+    public ConnectionRegistry(ConnectionProfilePersistence persistence) {
+        this.persistence = persistence;
+    }
+
+    @PostConstruct
+    void loadPersistedProfiles() {
+        profiles.putAll(persistence.load());
+    }
 
     public List<ConnectionProfile> list() {
         return new ArrayList<>(profiles.values());
@@ -35,11 +43,16 @@ public class ConnectionRegistry {
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("connection profile id is required");
         }
+        if (persistence.isEnabled()) {
+            ConnectionProfilePersistence.validatePersistableCredentials(profile);
+        }
         profiles.put(id, profile);
+        persistence.saveAll(profiles);
         return profile;
     }
 
     public void delete(String id) {
         profiles.remove(id);
+        persistence.saveAll(profiles);
     }
 }

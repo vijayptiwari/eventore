@@ -1,0 +1,5 @@
+eventore:
+  security:
+    api-token: integration-test-token
+  control-plane:
+    auto-register-on-startup: false

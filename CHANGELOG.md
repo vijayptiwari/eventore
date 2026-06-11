@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+#### Wave 2 — persistence, HA, security tests, JMS CI, MCP toolkit
+- **Durable connection profiles**: optional JSON file persistence (`eventore.connections.persistence`) with `env:`/`file:` credential validation; Helm volume wiring when enabled.
+- **HA guidance**: `docs/HA.md`, Helm NOTES multi-replica warning, `values-readonly.yaml` backend `replicaCount: 1`.
+- **Security regression tests**: `StreamSseControllerTest` (SSE ownership 403), `ApiTokenSecurityIntegrationTest` (401 without token, diagnostics auth).
+- **JMS integration**: `JmsConnectorIntegrationTest` against Artemis Testcontainers; CI matrix includes `eventore-provider-jms`.
+- **MCP Wave 2**: protocol-specific RabbitMQ/GCP/Azure tools, `eventore_diagnostics_subscriptions`, `eventore://capability-matrix` resource, inspection prompts; `build-mcp` CI job.
+- **Audit expansion**: connection CRUD and provider register/deregister events logged via `AuditService`.
+
 #### Backend tests (per-stream JUnit 5 suite)
 - **83+ unit tests** across `eventore-core` and all 8 stream providers (`Kafka`, `MQTT`, `JMS`, `Pulsar`, `RabbitMQ`, `Kinesis`, `GCP Pub/Sub`, `Azure Service Bus`).
 - Shared `StreamTestFixtures` helper in each module for consistent `ConnectionProfile` construction.

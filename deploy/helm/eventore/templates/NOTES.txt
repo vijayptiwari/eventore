@@ -22,6 +22,14 @@ Eventore installed.
 
   Image tags must match eventore.streamProviders (see deploy/ci-backend-images.json).
 
+{{- if gt (int .Values.backend.replicaCount) 1 }}
+
+  WARNING: backend.replicaCount is {{ .Values.backend.replicaCount }}.
+  Subscriptions and SSE streams are in-memory per pod — multi-replica without sticky sessions
+  will break consume flows. See docs/HA.md. Prefer replicaCount: 1 until shared persistence ships.
+
+{{- end }}
+
 {{- if include "eventore.apiAuthEnabled" . }}
 
   API token auth is ENABLED.

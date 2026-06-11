@@ -109,6 +109,87 @@ export function registerPrompts(server: McpServer, client: EventoreClient): void
   );
 
   server.prompt(
+    'eventore_rabbitmq_inspection',
+    'Playbook: RabbitMQ queue inventory, depth, and message search.',
+    {
+      connectionId: z.string().describe('Saved RabbitMQ connection id'),
+      queue: z.string().optional().describe('Queue name for detail, depth, or search'),
+    },
+    async (args) => {
+      return promptText(
+        [
+          'RabbitMQ inspection sequence (connection must be RABBITMQ and registered):',
+          '',
+          `1. eventore_rabbitmq_list_queues — connectionId=${args.connectionId}`,
+          args.queue
+            ? `2. eventore_rabbitmq_queue_detail — queue=${args.queue}`
+            : '2. (optional) eventore_rabbitmq_queue_detail — pick a queue from step 1',
+          args.queue
+            ? `3. eventore_rabbitmq_queue_depth — queue=${args.queue}`
+            : '3. (optional) eventore_rabbitmq_queue_depth',
+          args.queue
+            ? `4. eventore_inspect_search — topic=${args.queue} (queue name)`
+            : '4. (optional) eventore_inspect_search — queue name as topic',
+          '',
+          'Cross-check static matrix: resource eventore://capability-matrix',
+        ].join('\n'),
+      );
+    },
+  );
+
+  server.prompt(
+    'eventore_gcp_pubsub_inspection',
+    'Playbook: GCP Pub/Sub topics, subscriptions, and backlog.',
+    {
+      connectionId: z.string().describe('Saved GCP_PUBSUB connection id'),
+      subscription: z.string().optional().describe('Subscription id for backlog'),
+    },
+    async (args) => {
+      return promptText(
+        [
+          'GCP Pub/Sub inspection sequence:',
+          '',
+          `1. eventore_gcp_list_topics — connectionId=${args.connectionId}`,
+          '2. eventore_gcp_list_subscriptions — same connectionId',
+          args.subscription
+            ? `3. eventore_gcp_subscription_backlog — subscription=${args.subscription}`
+            : '3. (optional) eventore_gcp_subscription_backlog — pick subscription from step 2',
+          '',
+          'Message search is not supported (501). Use pull consume via eventore_consume_messages for samples.',
+        ].join('\n'),
+      );
+    },
+  );
+
+  server.prompt(
+    'eventore_azure_servicebus_inspection',
+    'Playbook: Azure Service Bus entities, subscriptions, peek, and backlog.',
+    {
+      connectionId: z.string().describe('Saved AZURE_SERVICE_BUS connection id'),
+      entity: z.string().optional().describe('Queue or topic name'),
+      subscription: z.string().optional().describe('Topic subscription name for peek/backlog'),
+    },
+    async (args) => {
+      return promptText(
+        [
+          'Azure Service Bus inspection sequence:',
+          '',
+          `1. eventore_azure_list_entities — connectionId=${args.connectionId}`,
+          '2. eventore_azure_list_subscriptions — topic subscriptions with DLQ counts',
+          args.entity
+            ? `3. eventore_azure_peek_messages — entity=${args.entity}${args.subscription ? `, subscription=${args.subscription}` : ''}`
+            : '3. (optional) eventore_azure_peek_messages — non-destructive peek',
+          args.entity
+            ? `4. eventore_azure_entity_backlog — entityId=${args.entity}`
+            : '4. (optional) eventore_azure_entity_backlog',
+          '',
+          'Peek uses partition=subscription name when entity is a topic.',
+        ].join('\n'),
+      );
+    },
+  );
+
+  server.prompt(
     'eventore_control_plane_ops',
     'Playbook: register or deregister stream providers (ADMIN + ADMIN_BROKER_OPS).',
     {

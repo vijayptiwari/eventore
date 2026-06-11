@@ -4,6 +4,7 @@ import com.eventore.connector.ConnectorRegistry;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.ProtocolType;
 import com.eventore.security.DeploymentModePolicy;
+import com.eventore.service.AuditService;
 import com.eventore.service.ConnectionRegistry;
 import com.eventore.service.MetricsService;
 import com.eventore.service.SubscriptionManager;
@@ -41,6 +42,9 @@ class CoreConnectionsApiDelegateImplTest {
     @Mock
     private SubscriptionManager subscriptionManager;
 
+    @Mock
+    private AuditService auditService;
+
     private CoreConnectionsApiDelegateImpl delegate;
 
     @BeforeEach
@@ -52,7 +56,8 @@ class CoreConnectionsApiDelegateImplTest {
                 connectorRegistry,
                 policy,
                 subscriptionManager,
-                validationHistoryService);
+                validationHistoryService,
+                auditService);
     }
 
     @Test

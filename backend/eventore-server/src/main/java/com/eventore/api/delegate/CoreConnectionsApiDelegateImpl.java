@@ -6,6 +6,7 @@ import com.eventore.connector.ConnectorRegistry;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
+import com.eventore.service.AuditService;
 import com.eventore.service.ConnectionRegistry;
 import com.eventore.service.SubscriptionManager;
 import com.eventore.service.ValidationHistoryService;
@@ -23,18 +24,21 @@ public class CoreConnectionsApiDelegateImpl implements ConnectionsApiDelegate {
     private final DeploymentModePolicy policy;
     private final SubscriptionManager subscriptionManager;
     private final ValidationHistoryService validationHistoryService;
+    private final AuditService auditService;
 
     public CoreConnectionsApiDelegateImpl(
             ConnectionRegistry connectionRegistry,
             ConnectorRegistry connectorRegistry,
             DeploymentModePolicy policy,
             SubscriptionManager subscriptionManager,
-            ValidationHistoryService validationHistoryService) {
+            ValidationHistoryService validationHistoryService,
+            AuditService auditService) {
         this.connectionRegistry = connectionRegistry;
         this.connectorRegistry = connectorRegistry;
         this.policy = policy;
         this.subscriptionManager = subscriptionManager;
         this.validationHistoryService = validationHistoryService;
+        this.auditService = auditService;
     }
 
     @Override
@@ -55,7 +59,9 @@ public class CoreConnectionsApiDelegateImpl implements ConnectionsApiDelegate {
     public ResponseEntity<ConnectionProfileResponse> createConnection(ConnectionProfile connectionProfile) {
         policy.require(Action.MANAGE_CONNECTIONS);
         policy.requireProtocol(connectionProfile.getProtocol());
-        return ResponseEntity.ok(ConnectionProfileResponse.from(connectionRegistry.save(connectionProfile)));
+        ConnectionProfile saved = connectionRegistry.save(connectionProfile);
+        auditService.connectionCreated(saved.getId(), saved.getProtocol(), saved.getName());
+        return ResponseEntity.ok(ConnectionProfileResponse.from(saved));
     }
 
     @Override
@@ -65,7 +71,9 @@ public class CoreConnectionsApiDelegateImpl implements ConnectionsApiDelegate {
         policy.requireProtocol(connectionProfile.getProtocol());
         CoreDelegateSupport.profile(connectionRegistry, connectionId);
         connectionProfile.setId(connectionId);
-        return ResponseEntity.ok(ConnectionProfileResponse.from(connectionRegistry.save(connectionProfile)));
+        ConnectionProfile saved = connectionRegistry.save(connectionProfile);
+        auditService.connectionUpdated(saved.getId(), saved.getProtocol(), saved.getName());
+        return ResponseEntity.ok(ConnectionProfileResponse.from(saved));
     }
 
     @Override
@@ -75,6 +83,7 @@ public class CoreConnectionsApiDelegateImpl implements ConnectionsApiDelegate {
         subscriptionManager.closeAllForConnection(connectionId);
         connectorRegistry.get(profile.getProtocol()).close(connectionId);
         connectionRegistry.delete(connectionId);
+        auditService.connectionDeleted(connectionId, profile.getProtocol());
         return ResponseEntity.noContent().build();
     }
 

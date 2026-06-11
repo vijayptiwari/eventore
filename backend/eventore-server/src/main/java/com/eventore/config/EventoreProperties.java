@@ -17,6 +17,7 @@ public class EventoreProperties {
      */
     private String enabledProtocols = "";
     private long maxPublishBytes = 10_485_760L;
+    private Connections connections = new Connections();
     private Subscriptions subscriptions = new Subscriptions();
     private Diagnostics diagnostics = new Diagnostics();
     private Dev dev = new Dev();
@@ -93,6 +94,14 @@ public class EventoreProperties {
         }
     }
 
+    public Connections getConnections() {
+        return connections;
+    }
+
+    public void setConnections(Connections connections) {
+        this.connections = connections;
+    }
+
     public Subscriptions getSubscriptions() {
         return subscriptions;
     }
@@ -154,6 +163,39 @@ public class EventoreProperties {
 
         public void setRequireControlPlaneRegistration(boolean requireControlPlaneRegistration) {
             this.requireControlPlaneRegistration = requireControlPlaneRegistration;
+        }
+    }
+
+    public static class Connections {
+        private Persistence persistence = new Persistence();
+
+        public Persistence getPersistence() {
+            return persistence;
+        }
+
+        public void setPersistence(Persistence persistence) {
+            this.persistence = persistence;
+        }
+
+        public static class Persistence {
+            private boolean enabled = false;
+            private String filePath = "/data/connections.json";
+
+            public boolean isEnabled() {
+                return enabled;
+            }
+
+            public void setEnabled(boolean enabled) {
+                this.enabled = enabled;
+            }
+
+            public String getFilePath() {
+                return filePath;
+            }
+
+            public void setFilePath(String filePath) {
+                this.filePath = filePath != null ? filePath : "/data/connections.json";
+            }
         }
     }
 

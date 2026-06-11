@@ -230,6 +230,10 @@ export class EventoreClient {
     });
   }
 
+  diagnosticsSubscriptions() {
+    return this.request<unknown>('/diagnostics/subscriptions');
+  }
+
   kafkaPublish(
     connectionId: string,
     body: { destination: string; payload: string; headers?: Record<string, string> },

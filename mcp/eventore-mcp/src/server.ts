@@ -3,6 +3,7 @@ import { EventoreClient } from './eventore-client.js';
 import { registerControlTools } from './control-tools.js';
 import { registerPrompts } from './prompts.js';
 import { registerResources } from './resources.js';
+import { registerProtocolTools } from './protocol-tools.js';
 import { registerTools } from './tools.js';
 
 export function createEventoreMcpServer(apiBaseUrl: string, apiToken?: string): McpServer {
@@ -31,6 +32,7 @@ Set EVENTORE_API_URL (e.g. http://localhost:8080/api/v1). When the backend requi
   );
 
   registerTools(server, client);
+  registerProtocolTools(server, client);
   registerControlTools(server, client);
   registerResources(server, client);
   registerPrompts(server, client);

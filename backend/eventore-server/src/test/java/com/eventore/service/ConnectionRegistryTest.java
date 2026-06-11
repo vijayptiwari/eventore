@@ -1,7 +1,9 @@
 package com.eventore.service;
 
+import com.eventore.config.EventoreProperties;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.ProtocolType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +17,10 @@ class ConnectionRegistryTest {
 
     @BeforeEach
     void setUp() {
-        registry = new ConnectionRegistry();
+        EventoreProperties properties = new EventoreProperties();
+        ConnectionProfilePersistence persistence =
+                new ConnectionProfilePersistence(properties, new ObjectMapper());
+        registry = new ConnectionRegistry(persistence);
     }
 
     @Test

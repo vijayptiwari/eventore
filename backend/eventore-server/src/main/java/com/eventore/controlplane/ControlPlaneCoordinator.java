@@ -3,6 +3,7 @@ package com.eventore.controlplane;
 import com.eventore.dataplane.DataPlaneRegistry;
 import com.eventore.domain.ProtocolType;
 import com.eventore.provider.StreamProvider;
+import com.eventore.service.AuditService;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
@@ -21,13 +22,16 @@ public class ControlPlaneCoordinator {
 
     private final ControlPlaneRegistry controlPlane;
     private final DataPlaneRegistry dataPlane;
+    private final AuditService auditService;
     private final Map<ProtocolType, StreamProvider> availableImplementations = new ConcurrentHashMap<>();
     /** Serializes register/deregister so the last-active-provider guard is atomic. */
     private final Object lifecycleLock = new Object();
 
-    public ControlPlaneCoordinator(ControlPlaneRegistry controlPlane, DataPlaneRegistry dataPlane) {
+    public ControlPlaneCoordinator(
+            ControlPlaneRegistry controlPlane, DataPlaneRegistry dataPlane, AuditService auditService) {
         this.controlPlane = controlPlane;
         this.dataPlane = dataPlane;
+        this.auditService = auditService;
     }
 
     public void indexImplementation(StreamProvider provider) {
@@ -49,6 +53,7 @@ public class ControlPlaneCoordinator {
             StreamProviderDescriptor registered = controlPlane.register(descriptor);
             dataPlane.attach(protocol, implementation);
             log.info("Control plane: registered {} (module={})", protocol, registered.getModuleId());
+            auditService.providerRegistered(protocol);
             return registered;
         }
     }
@@ -65,6 +70,7 @@ public class ControlPlaneCoordinator {
             dataPlane.detach(protocol);
             StreamProviderDescriptor deregistered = controlPlane.deregister(protocol);
             log.info("Control plane: deregistered {}", protocol);
+            auditService.providerDeregistered(protocol);
             return deregistered;
         }
     }

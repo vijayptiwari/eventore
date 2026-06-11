@@ -23,6 +23,12 @@ data:
         "diagnostics": {
           "error-subscription-threshold": {{ .Values.eventore.diagnostics.errorSubscriptionThreshold }}
         },
+        "connections": {
+          "persistence": {
+            "enabled": {{ .Values.eventore.connections.persistence.enabled }},
+            "file-path": {{ .Values.eventore.connections.persistence.filePath | quote }}
+          }
+        },
         "dev": {
           "max-publish-bytes": {{ .Values.eventore.dev.maxPublishBytes }},
           "allowed-protocols": {{ .Values.eventore.streamProviders | toJson }}

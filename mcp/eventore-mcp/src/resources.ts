@@ -1,5 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { MCP_ARCHITECTURE } from './architecture-context.js';
+import { INSPECTOR_CAPABILITY_MATRIX } from './capability-matrix.js';
 import { EventoreClient } from './eventore-client.js';
 import { allGuides } from './protocol-guide.js';
 
@@ -104,6 +105,24 @@ export function registerResources(server: McpServer, client: EventoreClient): vo
           uri: 'eventore://protocol-guides',
           mimeType: 'application/json',
           text: JSON.stringify(allGuides(), null, 2),
+        },
+      ],
+    }),
+  );
+
+  server.resource(
+    'eventore-capability-matrix',
+    'eventore://capability-matrix',
+    {
+      description: 'Inspector parity matrix per protocol (static; cross-check live capabilities per connection)',
+      mimeType: 'application/json',
+    },
+    async () => ({
+      contents: [
+        {
+          uri: 'eventore://capability-matrix',
+          mimeType: 'application/json',
+          text: JSON.stringify(INSPECTOR_CAPABILITY_MATRIX, null, 2),
         },
       ],
     }),

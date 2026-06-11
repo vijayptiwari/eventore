@@ -5,11 +5,15 @@ import com.eventore.connector.ConnectorRegistry;
 import com.eventore.connector.spi.MessagingConnector;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.ProtocolType;
+import com.eventore.config.EventoreProperties;
 import com.eventore.security.DeploymentModePolicy;
+import com.eventore.service.AuditService;
+import com.eventore.service.ConnectionProfilePersistence;
 import com.eventore.service.ConnectionRegistry;
 import com.eventore.service.MetricsService;
 import com.eventore.service.SubscriptionManager;
 import com.eventore.service.ValidationHistoryService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.List;
 import java.util.Optional;
@@ -46,14 +50,23 @@ class DiagnosticsControllerTest {
 
     @BeforeEach
     void setUp() {
-        connectionRegistry = new ConnectionRegistry();
+        EventoreProperties properties = new EventoreProperties();
+        ConnectionProfilePersistence persistence =
+                new ConnectionProfilePersistence(properties, new ObjectMapper());
+        connectionRegistry = new ConnectionRegistry(persistence);
         metricsService = new MetricsService(new SimpleMeterRegistry());
-        subscriptionManager = new SubscriptionManager(connectorRegistry, new com.eventore.config.EventoreProperties(), metricsService);
+        subscriptionManager = new SubscriptionManager(connectorRegistry, properties, metricsService);
         validationHistoryService = new ValidationHistoryService(metricsService);
+        AuditService auditService = new AuditService();
         diagnosticsController =
                 new DiagnosticsController(subscriptionManager, validationHistoryService, connectionRegistry, policy);
         connectionsDelegate = new CoreConnectionsApiDelegateImpl(
-                connectionRegistry, connectorRegistry, policy, subscriptionManager, validationHistoryService);
+                connectionRegistry,
+                connectorRegistry,
+                policy,
+                subscriptionManager,
+                validationHistoryService,
+                auditService);
         doNothing().when(policy).require(any());
     }
 

@@ -6,7 +6,7 @@ eventore:
     maxConcurrent: 25
 
 backend:
-  replicaCount: 2
+  replicaCount: 1
 
 frontend:
   replicaCount: 2
