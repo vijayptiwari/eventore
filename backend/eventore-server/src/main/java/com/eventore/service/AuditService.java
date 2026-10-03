@@ -85,4 +85,20 @@ public class AuditService {
                 topic,
                 maxMessages);
     }
+
+    public void bridgeCreated(String bridgeId, String name, String sourceConn, String targetConn) {
+        AUDIT.info("event=BRIDGE_CREATE bridgeId={} name={} source={} target={}", bridgeId, name, sourceConn, targetConn);
+    }
+
+    public void bridgeDeleted(String bridgeId) {
+        AUDIT.info("event=BRIDGE_DELETE bridgeId={}", bridgeId);
+    }
+
+    public void bridgeStarted(String bridgeId) {
+        AUDIT.info("event=BRIDGE_START bridgeId={}", bridgeId);
+    }
+
+    public void bridgeStopped(String bridgeId) {
+        AUDIT.info("event=BRIDGE_STOP bridgeId={}", bridgeId);
+    }
 }

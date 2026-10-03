@@ -114,6 +114,12 @@
                                 <importMapping>SubscribeRequest=com.eventore.connector.spi.SubscribeRequest</importMapping>
                                 <importMapping>StreamPlatformPreset=com.eventore.platform.StreamPlatformPreset</importMapping>
                                 <importMapping>ProviderInfoDto=com.eventore.api.dto.ProviderInfoDto</importMapping>
+                                <importMapping>ReplicationBridge=com.eventore.domain.bridge.ReplicationBridge</importMapping>
+                                <importMapping>ReplicationBridgeRequest=com.eventore.domain.bridge.ReplicationBridgeRequest</importMapping>
+                                <importMapping>ReplicationBridgeStats=com.eventore.domain.bridge.ReplicationBridgeStats</importMapping>
+                                <importMapping>ReplicationBridgeState=com.eventore.domain.bridge.ReplicationBridgeState</importMapping>
+                                <importMapping>ReplicationTestRequest=com.eventore.domain.bridge.ReplicationTestRequest</importMapping>
+                                <importMapping>ReplicationTestResult=com.eventore.domain.bridge.ReplicationTestResult</importMapping>
                             </importMappings>
                             <typeMappings>
                                 <typeMapping>StatusResponse=Map&lt;String,String&gt;</typeMapping>

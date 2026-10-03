@@ -213,6 +213,100 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bridges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all cross-broker replication bridges */
+        get: operations["listBridges"];
+        put?: never;
+        /** Create a new replication bridge */
+        post: operations["createBridge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bridges/{bridgeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bridgeId: string;
+            };
+            cookie?: never;
+        };
+        /** Get details and live throughput stats of a replication bridge */
+        get: operations["getBridge"];
+        /** Update a replication bridge configuration */
+        put: operations["updateBridge"];
+        post?: never;
+        /** Stop and delete a replication bridge */
+        delete: operations["deleteBridge"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bridges/{bridgeId}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bridgeId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start or resume cross-broker message replication */
+        post: operations["startBridge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bridges/{bridgeId}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bridgeId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop cross-broker message replication */
+        post: operations["stopBridge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bridges/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dry-run test replication transform and filter rules */
+        post: operations["testBridge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/connections/{connectionId}/inspect/capabilities": {
         parameters: {
             query?: never;
@@ -770,6 +864,69 @@ export interface components {
             profileCount: number;
             availableStores: components["schemas"]["ConnectionStoreType"][];
         };
+        /** @enum {string} */
+        ReplicationBridgeState: "RUNNING" | "STOPPED" | "ERROR" | "PAUSED";
+        ReplicationBridgeStats: {
+            /** Format: int64 */
+            totalReplicated: number;
+            /** Format: int64 */
+            bytesReplicated: number;
+            /** Format: int64 */
+            errorsCount: number;
+            lastReplicatedAt?: string;
+            lastError?: string;
+            state: components["schemas"]["ReplicationBridgeState"];
+        };
+        ReplicationBridge: {
+            id: string;
+            name: string;
+            sourceConnectionId: string;
+            sourceDestination: string;
+            targetConnectionId: string;
+            targetDestination: string;
+            headerTransform?: {
+                [key: string]: string;
+            };
+            payloadFilter?: string;
+            loopPrevention: boolean;
+            enabled: boolean;
+            createdAt: string;
+            stats: components["schemas"]["ReplicationBridgeStats"];
+        };
+        ReplicationBridgeRequest: {
+            name: string;
+            sourceConnectionId: string;
+            sourceDestination: string;
+            targetConnectionId: string;
+            targetDestination: string;
+            headerTransform?: {
+                [key: string]: string;
+            };
+            payloadFilter?: string;
+            loopPrevention?: boolean;
+            autoStart?: boolean;
+        };
+        ReplicationTestRequest: {
+            headers?: {
+                [key: string]: string;
+            };
+            payload?: string;
+            headerTransform?: {
+                [key: string]: string;
+            };
+            payloadFilter?: string;
+            loopPrevention?: boolean;
+            bridgeId?: string;
+        };
+        ReplicationTestResult: {
+            passedFilter: boolean;
+            loopDetected: boolean;
+            transformedHeaders?: {
+                [key: string]: string;
+            };
+            transformedPayload?: string;
+            filterReason: string;
+        };
         KafkaPublishResult: {
             topic?: string;
             partition?: number;
@@ -1150,6 +1307,186 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StatusResponse"];
+                };
+            };
+        };
+    };
+    listBridges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplicationBridge"][];
+                };
+            };
+        };
+    };
+    createBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplicationBridgeRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplicationBridge"];
+                };
+            };
+        };
+    };
+    getBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bridgeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplicationBridge"];
+                };
+            };
+        };
+    };
+    updateBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bridgeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplicationBridgeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplicationBridge"];
+                };
+            };
+        };
+    };
+    deleteBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bridgeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    startBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bridgeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplicationBridge"];
+                };
+            };
+        };
+    };
+    stopBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bridgeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplicationBridge"];
+                };
+            };
+        };
+    };
+    testBridge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplicationTestRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplicationTestResult"];
                 };
             };
         };

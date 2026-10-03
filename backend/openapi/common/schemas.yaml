@@ -351,3 +351,140 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConnectionStoreType'
+    ReplicationBridgeState:
+      type: string
+      enum:
+        - RUNNING
+        - STOPPED
+        - ERROR
+        - PAUSED
+    ReplicationBridgeStats:
+      type: object
+      required:
+        - totalReplicated
+        - bytesReplicated
+        - errorsCount
+        - state
+      properties:
+        totalReplicated:
+          type: integer
+          format: int64
+        bytesReplicated:
+          type: integer
+          format: int64
+        errorsCount:
+          type: integer
+          format: int64
+        lastReplicatedAt:
+          type: string
+        lastError:
+          type: string
+        state:
+          $ref: '#/components/schemas/ReplicationBridgeState'
+    ReplicationBridge:
+      type: object
+      required:
+        - id
+        - name
+        - sourceConnectionId
+        - sourceDestination
+        - targetConnectionId
+        - targetDestination
+        - loopPrevention
+        - enabled
+        - createdAt
+        - stats
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        sourceConnectionId:
+          type: string
+        sourceDestination:
+          type: string
+        targetConnectionId:
+          type: string
+        targetDestination:
+          type: string
+        headerTransform:
+          type: object
+          additionalProperties:
+            type: string
+        payloadFilter:
+          type: string
+        loopPrevention:
+          type: boolean
+        enabled:
+          type: boolean
+        createdAt:
+          type: string
+        stats:
+          $ref: '#/components/schemas/ReplicationBridgeStats'
+    ReplicationBridgeRequest:
+      type: object
+      required:
+        - name
+        - sourceConnectionId
+        - sourceDestination
+        - targetConnectionId
+        - targetDestination
+      properties:
+        name:
+          type: string
+        sourceConnectionId:
+          type: string
+        sourceDestination:
+          type: string
+        targetConnectionId:
+          type: string
+        targetDestination:
+          type: string
+        headerTransform:
+          type: object
+          additionalProperties:
+            type: string
+        payloadFilter:
+          type: string
+        loopPrevention:
+          type: boolean
+        autoStart:
+          type: boolean
+    ReplicationTestRequest:
+      type: object
+      properties:
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        payload:
+          type: string
+        headerTransform:
+          type: object
+          additionalProperties:
+            type: string
+        payloadFilter:
+          type: string
+        loopPrevention:
+          type: boolean
+        bridgeId:
+          type: string
+    ReplicationTestResult:
+      type: object
+      required:
+        - passedFilter
+        - loopDetected
+        - filterReason
+      properties:
+        passedFilter:
+          type: boolean
+        loopDetected:
+          type: boolean
+        transformedHeaders:
+          type: object
+          additionalProperties:
+            type: string
+        transformedPayload:
+          type: string
+        filterReason:
+          type: string

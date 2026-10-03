@@ -297,3 +297,90 @@ describe('connection store API (REQ-101)', () => {
     expect(migrated.type).toBe('K8S_CRD');
   });
 });
+
+describe('replication bridge API (REQ-110)', () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('listBridges calls GET /bridges', async () => {
+    let requestedUrl = '';
+    global.fetch = async (input) => {
+      requestedUrl = String(input);
+      return new Response(JSON.stringify([{ id: 'br-1', name: 'Kafka to Rabbit' }]), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    const bridges = await api.listBridges();
+    expect(requestedUrl).toContain('/bridges');
+    expect(bridges).toHaveLength(1);
+    expect(bridges[0].id).toBe('br-1');
+  });
+
+  it('createBridge calls POST /bridges with payload', async () => {
+    let requestedUrl = '';
+    let method = '';
+    let body = '';
+    global.fetch = async (input, init) => {
+      requestedUrl = String(input);
+      method = init?.method ?? 'GET';
+      body = String(init?.body ?? '');
+      return new Response(JSON.stringify({ id: 'br-created', name: 'New Pipeline' }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    const res = await api.createBridge({
+      name: 'New Pipeline',
+      sourceConnectionId: 'c1',
+      sourceDestination: 'orders',
+      targetConnectionId: 'c2',
+      targetDestination: 'orders-out',
+      autoStart: true,
+    });
+    expect(requestedUrl).toContain('/bridges');
+    expect(method).toBe('POST');
+    expect(JSON.parse(body).name).toBe('New Pipeline');
+    expect(res.id).toBe('br-created');
+  });
+
+  it('startBridge and stopBridge call lifecycle endpoints', async () => {
+    const calls: { url: string; method: string }[] = [];
+    global.fetch = async (input, init) => {
+      calls.push({ url: String(input), method: init?.method ?? 'GET' });
+      return new Response(JSON.stringify({ id: 'br-1', enabled: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    await api.startBridge('br-1');
+    await api.stopBridge('br-1');
+    expect(calls[0].url).toContain('/bridges/br-1/start');
+    expect(calls[0].method).toBe('POST');
+    expect(calls[1].url).toContain('/bridges/br-1/stop');
+    expect(calls[1].method).toBe('POST');
+  });
+
+  it('testBridge calls POST /bridges/test', async () => {
+    let requestedUrl = '';
+    let body = '';
+    global.fetch = async (input, init) => {
+      requestedUrl = String(input);
+      body = String(init?.body ?? '');
+      return new Response(JSON.stringify({ passedFilter: true, loopDetected: false, filterReason: 'PASSED' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    };
+    const result = await api.testBridge({
+      payload: '{"orderId": "123"}',
+      payloadFilter: '.*orderId.*',
+    });
+    expect(requestedUrl).toContain('/bridges/test');
+    expect(JSON.parse(body).payloadFilter).toBe('.*orderId.*');
+    expect(result.passedFilter).toBe(true);
+  });
+});

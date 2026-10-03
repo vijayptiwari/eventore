@@ -417,6 +417,38 @@ export const api = {
     }),
   resolveTraceUrl: (traceId: string) =>
     request<{ traceId: string; url?: string }>(`/tracing/url?traceId=${encodeURIComponent(traceId)}`),
+
+  listBridges: () =>
+    request<import('./types').ReplicationBridge[]>('/bridges'),
+  createBridge: (body: import('./types').ReplicationBridgeRequest) =>
+    request<import('./types').ReplicationBridge>('/bridges', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  getBridge: (bridgeId: string) =>
+    request<import('./types').ReplicationBridge>(`/bridges/${encodeURIComponent(bridgeId)}`),
+  updateBridge: (bridgeId: string, body: import('./types').ReplicationBridgeRequest) =>
+    request<import('./types').ReplicationBridge>(`/bridges/${encodeURIComponent(bridgeId)}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  deleteBridge: (bridgeId: string) =>
+    request<void>(`/bridges/${encodeURIComponent(bridgeId)}`, {
+      method: 'DELETE',
+    }),
+  startBridge: (bridgeId: string) =>
+    request<import('./types').ReplicationBridge>(`/bridges/${encodeURIComponent(bridgeId)}/start`, {
+      method: 'POST',
+    }),
+  stopBridge: (bridgeId: string) =>
+    request<import('./types').ReplicationBridge>(`/bridges/${encodeURIComponent(bridgeId)}/stop`, {
+      method: 'POST',
+    }),
+  testBridge: (body: import('./types').ReplicationTestRequest) =>
+    request<import('./types').ReplicationTestResult>('/bridges/test', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 };
 
 export function canAction(allowed: string[] | undefined, action: string): boolean {

@@ -33,8 +33,11 @@ public class ConnectionStoreController {
     }
 
     @PostMapping("/migrate")
-    public ResponseEntity<MigrateStoreResponse> migrate(@RequestBody MigrateStoreRequest request) {
-        if (request == null || request.targetType() == null) {
+    public ResponseEntity<MigrateStoreResponse> migrate(
+            @org.springframework.web.bind.annotation.RequestParam(name = "targetType", required = false) ConnectionStoreType targetTypeParam,
+            @RequestBody(required = false) MigrateStoreRequest request) {
+        ConnectionStoreType targetType = targetTypeParam != null ? targetTypeParam : (request != null ? request.targetType() : null);
+        if (targetType == null) {
             return ResponseEntity.badRequest().body(new MigrateStoreResponse(
                     "ERROR",
                     0,
@@ -51,12 +54,12 @@ public class ConnectionStoreController {
         }
 
         try {
-            int count = delegator.migrateTo(request.targetType());
+            int count = delegator.migrateTo(targetType);
             return ResponseEntity.ok(new MigrateStoreResponse(
                     "SUCCESS",
                     count,
                     delegator.getType(),
-                    "Successfully migrated " + count + " connection profile(s) to " + request.targetType()));
+                    "Successfully migrated " + count + " connection profile(s) to " + targetType));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MigrateStoreResponse(
                     "ERROR",
@@ -64,6 +67,10 @@ public class ConnectionStoreController {
                     delegator.getType(),
                     e.getMessage()));
         }
+    }
+
+    public ResponseEntity<MigrateStoreResponse> migrate(MigrateStoreRequest request) {
+        return migrate(null, request);
     }
 
     public record MigrateStoreRequest(ConnectionStoreType targetType) {}

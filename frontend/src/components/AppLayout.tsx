@@ -53,6 +53,7 @@ export default function AppLayout() {
           <NavLink to="/connections">Connections</NavLink>
           <NavLink to="/browse">Browse</NavLink>
           <NavLink to="/stream">Live Stream</NavLink>
+          <NavLink to="/bridges">Bridges</NavLink>
           <button
             type="button"
             className="nav-settings-btn"

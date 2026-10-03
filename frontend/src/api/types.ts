@@ -95,3 +95,58 @@ export interface StreamFrame {
   message?: UnifiedMessage;
   detail?: string;
 }
+
+export type ReplicationBridgeState = 'RUNNING' | 'STOPPED' | 'ERROR' | 'PAUSED';
+
+export interface ReplicationBridgeStats {
+  totalReplicated: number;
+  bytesReplicated: number;
+  errorsCount: number;
+  lastReplicatedAt?: string;
+  lastError?: string;
+  state: ReplicationBridgeState;
+}
+
+export interface ReplicationBridge {
+  id: string;
+  name: string;
+  sourceConnectionId: string;
+  sourceDestination: string;
+  targetConnectionId: string;
+  targetDestination: string;
+  headerTransform?: Record<string, string>;
+  payloadFilter?: string;
+  loopPrevention: boolean;
+  enabled: boolean;
+  createdAt: string;
+  stats: ReplicationBridgeStats;
+}
+
+export interface ReplicationBridgeRequest {
+  name: string;
+  sourceConnectionId: string;
+  sourceDestination: string;
+  targetConnectionId: string;
+  targetDestination: string;
+  headerTransform?: Record<string, string>;
+  payloadFilter?: string;
+  loopPrevention?: boolean;
+  autoStart?: boolean;
+}
+
+export interface ReplicationTestRequest {
+  headers?: Record<string, string>;
+  payload?: string;
+  headerTransform?: Record<string, string>;
+  payloadFilter?: string;
+  loopPrevention?: boolean;
+  bridgeId?: string;
+}
+
+export interface ReplicationTestResult {
+  passedFilter: boolean;
+  loopDetected: boolean;
+  transformedHeaders?: Record<string, string>;
+  transformedPayload?: string;
+  filterReason: string;
+}

@@ -16,6 +16,7 @@ tags:
   - name: Destinations
   - name: Publish
   - name: Subscribe
+  - name: Bridges
 paths:
   /config:
     get:
@@ -231,3 +232,130 @@ paths:
             application/json:
               schema:
                 $ref: '../common/schemas.yaml#/components/schemas/StatusResponse'
+  /bridges:
+    get:
+      tags: [Bridges]
+      operationId: listBridges
+      summary: List all cross-broker replication bridges
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../common/schemas.yaml#/components/schemas/ReplicationBridge'
+    post:
+      tags: [Bridges]
+      operationId: createBridge
+      summary: Create a new replication bridge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../common/schemas.yaml#/components/schemas/ReplicationBridgeRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/ReplicationBridge'
+  /bridges/{bridgeId}:
+    parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Bridges]
+      operationId: getBridge
+      summary: Get details and live throughput stats of a replication bridge
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/ReplicationBridge'
+    put:
+      tags: [Bridges]
+      operationId: updateBridge
+      summary: Update a replication bridge configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../common/schemas.yaml#/components/schemas/ReplicationBridgeRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/ReplicationBridge'
+    delete:
+      tags: [Bridges]
+      operationId: deleteBridge
+      summary: Stop and delete a replication bridge
+      responses:
+        '204':
+          description: Deleted
+  /bridges/{bridgeId}/start:
+    parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      tags: [Bridges]
+      operationId: startBridge
+      summary: Start or resume cross-broker message replication
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/ReplicationBridge'
+  /bridges/{bridgeId}/stop:
+    parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      tags: [Bridges]
+      operationId: stopBridge
+      summary: Stop cross-broker message replication
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/ReplicationBridge'
+  /bridges/test:
+    post:
+      tags: [Bridges]
+      operationId: testBridge
+      summary: Dry-run test replication transform and filter rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../common/schemas.yaml#/components/schemas/ReplicationTestRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/ReplicationTestResult'

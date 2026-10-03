@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import BrowsePage from './pages/BrowsePage';
 import StreamPage from './pages/StreamPage';
+import BridgesPage from './pages/BridgesPage';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="/connections" element={<ConnectionsPage />} />
           <Route path="/browse" element={<BrowsePage />} />
           <Route path="/stream" element={<StreamPage />} />
+          <Route path="/bridges" element={<BridgesPage />} />
         </Route>
       </Routes>
     </StreamWorkspaceProvider>

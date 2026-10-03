@@ -1306,3 +1306,445 @@ td {
   font-size: 0.825rem;
 }
 
+/* ========================================================
+   REQ-110: Cross-Broker Bridging & Data Replication Engine
+   ======================================================== */
+
+.bridges-page {
+  padding-bottom: 3rem;
+}
+
+.bridges-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bridges-header-title h1 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bridges-header-title p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.bridges-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* KPI Cards */
+.bridge-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.bridge-kpi-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.bridge-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: #374151;
+}
+
+.bridge-kpi-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.bridge-kpi-val {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.1;
+  font-family: monospace;
+}
+
+.bridge-kpi-val.active {
+  color: #4ade80;
+}
+
+.bridge-kpi-val.error {
+  color: #f87171;
+}
+
+.bridge-kpi-val.bytes {
+  color: #38bdf8;
+}
+
+/* Pipeline List */
+.bridge-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.bridge-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bridge-card.running {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.bridge-card.error {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.bridge-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.bridge-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bridge-card-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.bridge-state-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bridge-state-badge.running {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.bridge-state-badge.running::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.bridge-state-badge.stopped {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.bridge-state-badge.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.bridge-state-badge.paused {
+  background: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.35);
+}
+
+/* Visual Route Flow */
+.bridge-route-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0b1120;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.bridge-endpoint-node {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.bridge-endpoint-node.target {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.bridge-node-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.bridge-node-conn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.bridge-protocol-pill {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.bridge-protocol-pill.kafka { background: #3b1808; color: #fb923c; border: 1px solid #7c2d12; }
+.bridge-protocol-pill.rabbitmq { background: #3b1800; color: #fdba74; border: 1px solid #c2410c; }
+.bridge-protocol-pill.mqtt { background: #1e1b4b; color: #a78bfa; border: 1px solid #4338ca; }
+.bridge-protocol-pill.pulsar { background: #082f49; color: #38bdf8; border: 1px solid #0369a1; }
+.bridge-protocol-pill.jms { background: #134e4a; color: #2dd4bf; border: 1px solid #0f766e; }
+.bridge-protocol-pill.kinesis { background: #281903; color: #f59e0b; border: 1px solid #92400e; }
+.bridge-protocol-pill.gcp_pubsub { background: #064e3b; color: #34d399; border: 1px solid #047857; }
+.bridge-protocol-pill.azure_service_bus { background: #0c4a6e; color: #38bdf8; border: 1px solid #0284c7; }
+
+.bridge-node-dest {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #93c5fd;
+  word-break: break-all;
+}
+
+.bridge-flow-arrow {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 1rem;
+}
+
+.bridge-flow-arrow-line {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #38bdf8;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.bridge-flow-arrow-pill {
+  font-size: 0.72rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+/* Metrics Row */
+.bridge-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.bridge-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.bridge-metric-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.bridge-metric-number {
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: #e2e8f0;
+}
+
+.bridge-metric-number.highlight {
+  color: #38bdf8;
+}
+
+.bridge-metric-number.danger {
+  color: #f87171;
+}
+
+/* Bridge Rules Detail */
+.bridge-rules-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.825rem;
+  color: #94a3b8;
+}
+
+.bridge-rule-chip {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+/* Bridge Card Actions */
+.bridge-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Dry-Run Tester Workbench */
+.bridge-tester-box {
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.3);
+}
+
+.bridge-tester-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #1f2937;
+  padding-bottom: 0.75rem;
+}
+
+.bridge-tester-box-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #f1f5f9;
+}
+
+.bridge-tester-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .bridge-tester-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bridge-tester-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.bridge-tester-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #0b1120;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.bridge-tester-verdict {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.bridge-tester-verdict.pass {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.bridge-tester-verdict.fail {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.bridge-tester-code {
+  font-family: monospace;
+  font-size: 0.8rem;
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 0.75rem;
+  color: #cbd5e1;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
