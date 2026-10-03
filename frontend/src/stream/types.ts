@@ -24,6 +24,13 @@ export interface LiveStreamSession extends PersistedStreamSession {
 }
 
 export type LiveViewDurationMinutes = 1 | 2 | 5 | 10;
+export type ReplayMode = 'LATEST' | 'EARLIEST' | 'TIMESTAMP' | 'OFFSET';
+
+export interface ReplayOptions {
+  replayMode?: ReplayMode;
+  replayTimestamp?: string;
+  replayOffset?: number;
+}
 
 export interface LiveViewState {
   active: boolean;
@@ -33,6 +40,9 @@ export interface LiveViewState {
   headerRegex: string;
   bodyRegex: string;
   durationMinutes: LiveViewDurationMinutes;
+  replayMode?: ReplayMode;
+  replayTimestamp?: string;
+  replayOffset?: number;
   expiresAt?: number;
   messages: UnifiedMessage[];
   lastError?: string;

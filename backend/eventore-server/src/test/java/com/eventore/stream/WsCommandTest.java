@@ -48,4 +48,25 @@ class WsCommandTest {
                 assertThrows(IllegalArgumentException.class, () -> WsCommand.validateType(command));
         assertEquals("WebSocket command type is required", ex.getMessage());
     }
+
+    @Test
+    void deserializesReplayFields() throws Exception {
+        String json =
+                """
+                {
+                  "type": "START_LIVE_VIEW",
+                  "clientStreamId": "stream-2",
+                  "connectionId": "conn-1",
+                  "topics": ["orders"],
+                  "replayMode": "TIMESTAMP",
+                  "replayTimestamp": "2026-10-03T18:00:00Z",
+                  "replayOffset": 12345
+                }
+                """;
+        WsCommand command = objectMapper.readValue(json, WsCommand.class);
+        assertEquals("START_LIVE_VIEW", command.getType());
+        assertEquals("TIMESTAMP", command.getReplayMode());
+        assertEquals("2026-10-03T18:00:00Z", command.getReplayTimestamp());
+        assertEquals(12345L, command.getReplayOffset());
+    }
 }

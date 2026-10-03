@@ -40,8 +40,10 @@ import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
+import com.eventore.replay.ReplayTimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -261,7 +263,21 @@ public class KafkaMessagingInspector implements MessagingInspector {
         try (KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props)) {
             List<TopicPartition> partitions = resolvePartitions(profile, request.getTopic(), request.getPartition());
             consumer.assign(partitions);
-            if ("earliest".equalsIgnoreCase(request.getStartAt())) {
+            if (request.getFromTimestamp() != null && !request.getFromTimestamp().isBlank()) {
+                long targetTimeMs = ReplayTimestampParser.parseEpochMillis(request.getFromTimestamp());
+                Map<TopicPartition, Long> query = new HashMap<>();
+                for (TopicPartition tp : partitions) {
+                    query.put(tp, targetTimeMs);
+                }
+                Map<TopicPartition, OffsetAndTimestamp> offsets = consumer.offsetsForTimes(query);
+                for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry : offsets.entrySet()) {
+                    if (entry.getValue() != null) {
+                        consumer.seek(entry.getKey(), entry.getValue().offset());
+                    } else {
+                        consumer.seekToEnd(List.of(entry.getKey()));
+                    }
+                }
+            } else if ("earliest".equalsIgnoreCase(request.getStartAt())) {
                 consumer.seekToBeginning(partitions);
             } else {
                 consumer.seekToEnd(partitions);

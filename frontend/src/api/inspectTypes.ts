@@ -46,6 +46,7 @@ export interface MessageSearchRequest {
   toOffset?: number;
   maxMessages?: number;
   startAt?: string;
+  fromTimestamp?: string;
 }
 
 export interface InspectCapabilities {

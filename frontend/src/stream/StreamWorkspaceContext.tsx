@@ -21,6 +21,7 @@ import type {
   LiveStreamSession,
   LiveViewDurationMinutes,
   LiveViewState,
+  ReplayMode,
   StreamStatus,
 } from './types';
 import { parseWsFrame } from './wsFrameParse';
@@ -52,6 +53,9 @@ interface StreamWorkspaceContextValue {
       headerRegex?: string;
       bodyRegex?: string;
       durationMinutes: LiveViewDurationMinutes;
+      replayMode?: ReplayMode;
+      replayTimestamp?: string;
+      replayOffset?: number;
     },
   ) => void;
   stopLiveView: (sessionId: string) => void;
@@ -427,6 +431,9 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
         headerRegex?: string;
         bodyRegex?: string;
         durationMinutes: LiveViewDurationMinutes;
+        replayMode?: ReplayMode;
+        replayTimestamp?: string;
+        replayOffset?: number;
       },
     ) => {
       const session = sessionsRef.current.find((s) => s.id === sessionId);
@@ -447,6 +454,9 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
             headerRegex: config.headerRegex ?? '',
             bodyRegex: config.bodyRegex ?? '',
             durationMinutes: config.durationMinutes,
+            replayMode: config.replayMode,
+            replayTimestamp: config.replayTimestamp,
+            replayOffset: config.replayOffset,
             messages: [],
             lastError: 'WebSocket not connected',
           },
@@ -462,6 +472,9 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
           headerRegex: config.headerRegex ?? '',
           bodyRegex: config.bodyRegex ?? '',
           durationMinutes: config.durationMinutes,
+          replayMode: config.replayMode,
+          replayTimestamp: config.replayTimestamp,
+          replayOffset: config.replayOffset,
           messages: [],
         },
       }));
@@ -474,6 +487,9 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
           headerRegex: config.headerRegex || undefined,
           bodyRegex: config.bodyRegex || undefined,
           durationMinutes: config.durationMinutes,
+          replayMode: config.replayMode || undefined,
+          replayTimestamp: config.replayTimestamp || undefined,
+          replayOffset: config.replayOffset || undefined,
         }),
       );
     },

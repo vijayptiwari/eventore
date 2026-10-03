@@ -2,8 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client';
 import { useStreamWorkspace } from '../stream/StreamWorkspaceContext';
-import type { LiveStreamSession } from '../stream/types';
-import type { LiveViewDurationMinutes } from '../stream/types';
+import type { LiveStreamSession, LiveViewDurationMinutes, ReplayMode } from '../stream/types';
 import ExportResultActions from './ExportResultActions';
 import MessagePayloadViewer from './MessagePayloadViewer';
 
@@ -22,6 +21,9 @@ export default function LiveViewPanel({ session }: Props) {
   const [headerRegex, setHeaderRegex] = useState('');
   const [bodyRegex, setBodyRegex] = useState('');
   const [durationMinutes, setDurationMinutes] = useState<LiveViewDurationMinutes>(2);
+  const [replayMode, setReplayMode] = useState<ReplayMode>('LATEST');
+  const [replayTimestamp, setReplayTimestamp] = useState('');
+  const [replayOffset, setReplayOffset] = useState('');
   const [remainingSec, setRemainingSec] = useState<number | null>(null);
 
   const { data: topics } = useQuery({
@@ -132,6 +134,82 @@ export default function LiveViewPanel({ session }: Props) {
       </div>
 
       <div className="card">
+        <h3>Starting Point & Time-Travel Replay</h3>
+        <p className="inspector-meta">
+          Control where message consumption begins: real-time latest, beginning of topic, specific timestamp, or partition offset.
+        </p>
+        <div className="inspector-tabs" style={{ marginBottom: '0.75rem' }}>
+          {(['LATEST', 'EARLIEST', 'TIMESTAMP', 'OFFSET'] as ReplayMode[]).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              className={replayMode === mode ? 'inspector-tab active' : 'inspector-tab'}
+              disabled={isActive}
+              onClick={() => setReplayMode(mode)}
+            >
+              {mode === 'LATEST' && 'Latest (Real-time)'}
+              {mode === 'EARLIEST' && 'Earliest (Beginning)'}
+              {mode === 'TIMESTAMP' && 'Timestamp (Time-Travel)'}
+              {mode === 'OFFSET' && 'Specific Offset'}
+            </button>
+          ))}
+        </div>
+
+        {replayMode === 'TIMESTAMP' && (
+          <div className="form-row" style={{ marginTop: '0.5rem' }}>
+            <label>Replay From Timestamp (ISO-8601 or local datetime)</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={replayTimestamp}
+                onChange={(e) => setReplayTimestamp(e.target.value)}
+                placeholder="e.g. 2026-10-03T18:00:00Z"
+                disabled={isActive}
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={isActive}
+                onClick={() => setReplayTimestamp(new Date(Date.now() - 5 * 60_000).toISOString())}
+              >
+                5m ago
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={isActive}
+                onClick={() => setReplayTimestamp(new Date(Date.now() - 60 * 60_000).toISOString())}
+              >
+                1h ago
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={isActive}
+                onClick={() => setReplayTimestamp(new Date(Date.now() - 24 * 60 * 60_000).toISOString())}
+              >
+                1d ago
+              </button>
+            </div>
+          </div>
+        )}
+
+        {replayMode === 'OFFSET' && (
+          <div className="form-row" style={{ marginTop: '0.5rem' }}>
+            <label>Starting Partition Offset</label>
+            <input
+              type="number"
+              value={replayOffset}
+              onChange={(e) => setReplayOffset(e.target.value)}
+              placeholder="e.g. 1000"
+              disabled={isActive}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="card">
         <h3>Duration</h3>
         <div className="inspector-tabs">
           {DURATIONS.map((d) => (
@@ -161,6 +239,9 @@ export default function LiveViewPanel({ session }: Props) {
                 headerRegex,
                 bodyRegex,
                 durationMinutes,
+                replayMode,
+                replayTimestamp: replayMode === 'TIMESTAMP' ? replayTimestamp : undefined,
+                replayOffset: replayMode === 'OFFSET' && replayOffset ? parseInt(replayOffset, 10) : undefined,
               })
             }
           >

@@ -14,6 +14,8 @@ interface Props {
   onSearchPayloadChange: (value: string) => void;
   searchKey: string;
   onSearchKeyChange: (value: string) => void;
+  searchTimestamp?: string;
+  onSearchTimestampChange?: (value: string) => void;
   searchMutation: UseMutationResult<UnifiedMessage[], Error, void, unknown>;
 }
 
@@ -28,6 +30,8 @@ export default function StreamInspectorSearchTab({
   onSearchPayloadChange,
   searchKey,
   onSearchKeyChange,
+  searchTimestamp = '',
+  onSearchTimestampChange,
   searchMutation,
 }: Props) {
   return (
@@ -52,6 +56,14 @@ export default function StreamInspectorSearchTab({
         <div className="form-row">
           <label>Key contains</label>
           <input value={searchKey} onChange={(e) => onSearchKeyChange(e.target.value)} />
+        </div>
+        <div className="form-row">
+          <label>From Timestamp (Time-Travel)</label>
+          <input
+            value={searchTimestamp}
+            onChange={(e) => onSearchTimestampChange?.(e.target.value)}
+            placeholder="e.g. 2026-10-03T18:00:00Z"
+          />
         </div>
       </div>
       {protocol === 'AZURE_SERVICE_BUS' && (

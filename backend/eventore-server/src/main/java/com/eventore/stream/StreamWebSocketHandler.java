@@ -260,6 +260,15 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
         if (command.getOptions() != null) {
             request.setOptions(command.getOptions());
         }
+        if (command.getReplayMode() != null) {
+            request.setReplayMode(command.getReplayMode());
+        }
+        if (command.getReplayTimestamp() != null) {
+            request.setReplayTimestamp(command.getReplayTimestamp());
+        }
+        if (command.getReplayOffset() != null) {
+            request.setReplayOffset(command.getReplayOffset());
+        }
         if (liveView) {
             Map<String, String> options = request.getOptions();
             if (options == null) {

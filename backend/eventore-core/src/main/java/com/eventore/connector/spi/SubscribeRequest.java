@@ -15,6 +15,9 @@ public class SubscribeRequest {
     /** Unique key for this subscription instance (prevents connector resource collisions). */
     private String subscriptionKey;
     private Map<String, String> options = new HashMap<>();
+    private String replayMode;
+    private String replayTimestamp;
+    private Long replayOffset;
 
     public String getDestination() {
         return destination;
@@ -54,5 +57,61 @@ public class SubscribeRequest {
 
     public void setOptions(Map<String, String> options) {
         this.options = options != null ? new HashMap<>(options) : new HashMap<>();
+    }
+
+    public String getReplayMode() {
+        if (replayMode != null) {
+            return replayMode;
+        }
+        return options != null ? options.get("replayMode") : null;
+    }
+
+    public void setReplayMode(String replayMode) {
+        this.replayMode = replayMode;
+        if (replayMode != null) {
+            if (this.options == null) {
+                this.options = new HashMap<>();
+            }
+            this.options.put("replayMode", replayMode);
+        }
+    }
+
+    public String getReplayTimestamp() {
+        if (replayTimestamp != null) {
+            return replayTimestamp;
+        }
+        return options != null ? options.get("replayTimestamp") : null;
+    }
+
+    public void setReplayTimestamp(String replayTimestamp) {
+        this.replayTimestamp = replayTimestamp;
+        if (replayTimestamp != null) {
+            if (this.options == null) {
+                this.options = new HashMap<>();
+            }
+            this.options.put("replayTimestamp", replayTimestamp);
+        }
+    }
+
+    public Long getReplayOffset() {
+        if (replayOffset != null) {
+            return replayOffset;
+        }
+        if (options != null && options.containsKey("replayOffset")) {
+            try {
+                return Long.parseLong(options.get("replayOffset"));
+            } catch (NumberFormatException ignored) {}
+        }
+        return null;
+    }
+
+    public void setReplayOffset(Long replayOffset) {
+        this.replayOffset = replayOffset;
+        if (replayOffset != null) {
+            if (this.options == null) {
+                this.options = new HashMap<>();
+            }
+            this.options.put("replayOffset", String.valueOf(replayOffset));
+        }
     }
 }

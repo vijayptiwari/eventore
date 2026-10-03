@@ -44,6 +44,7 @@ export default function StreamInspector({ session }: Props) {
   const [searchPartition, setSearchPartition] = useState('');
   const [searchPayload, setSearchPayload] = useState('');
   const [searchKey, setSearchKey] = useState('');
+  const [searchTimestamp, setSearchTimestamp] = useState('');
   const [dumpStartAt, setDumpStartAt] = useState<'latest' | 'earliest'>('latest');
   const cid = session.connectionId;
   const protocol = session.protocol;
@@ -121,6 +122,7 @@ export default function StreamInspector({ session }: Props) {
         partition: searchPartition || undefined,
         payloadContains: searchPayload || undefined,
         keyContains: searchKey || undefined,
+        fromTimestamp: searchTimestamp || undefined,
         maxMessages: 50,
         startAt: 'latest',
       }),
@@ -246,6 +248,8 @@ export default function StreamInspector({ session }: Props) {
             onSearchPayloadChange={setSearchPayload}
             searchKey={searchKey}
             onSearchKeyChange={setSearchKey}
+            searchTimestamp={searchTimestamp}
+            onSearchTimestampChange={setSearchTimestamp}
             searchMutation={searchMutation}
           />
         </>

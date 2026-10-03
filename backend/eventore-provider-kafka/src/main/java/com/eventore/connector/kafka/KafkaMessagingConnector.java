@@ -27,17 +27,25 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.ListTopicsResult;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Header;
+import com.eventore.replay.ReplayTimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,7 +142,7 @@ public class KafkaMessagingConnector implements MessagingConnector {
             }
             activeConsumers.remove(key);
         };
-        executor.submit(() -> runSubscription(profile, handler, props, topics, running, consumerRef));
+        executor.submit(() -> runSubscription(profile, handler, props, topics, running, consumerRef, request));
         activeConsumers.put(key, closeable);
         return closeable;
     }
@@ -145,19 +153,85 @@ public class KafkaMessagingConnector implements MessagingConnector {
             Properties props,
             List<String> topics,
             AtomicBoolean running,
-            AtomicReference<KafkaConsumer<String, byte[]>> consumerRef) {
+            AtomicReference<KafkaConsumer<String, byte[]>> consumerRef,
+            SubscribeRequest request) {
         if (!running.get()) {
             return;
         }
         try (KafkaConsumer<String, byte[]> consumer = newConsumer(props)) {
             consumerRef.set(consumer);
-            consumer.subscribe(topics);
+            if (request != null && request.getReplayMode() != null) {
+                ConsumerRebalanceListener rebalanceListener = new ConsumerRebalanceListener() {
+                    @Override
+                    public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+                        // no-op
+                    }
+
+                    @Override
+                    public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
+                        applyReplaySeek(consumer, partitions, request);
+                    }
+                };
+                consumer.subscribe(topics, rebalanceListener);
+            } else {
+                consumer.subscribe(topics);
+            }
             pollLoop(profile, handler, consumer, running);
         } catch (Exception e) {
             if (running.get()) {
                 log.warn("Kafka subscription failed for connection {}", profile.getId(), e);
                 handler.onError(e.getMessage());
             }
+        }
+    }
+
+    void applyReplaySeek(
+            KafkaConsumer<String, byte[]> consumer,
+            Collection<TopicPartition> partitions,
+            SubscribeRequest request) {
+        if (partitions == null || partitions.isEmpty() || request == null) {
+            return;
+        }
+        String mode = request.getReplayMode();
+        if (mode == null) {
+            return;
+        }
+
+        mode = mode.trim().toUpperCase(Locale.ROOT);
+        try {
+            switch (mode) {
+                case "EARLIEST" -> consumer.seekToBeginning(partitions);
+                case "LATEST" -> consumer.seekToEnd(partitions);
+                case "OFFSET" -> {
+                    Long offset = request.getReplayOffset();
+                    if (offset != null) {
+                        for (TopicPartition tp : partitions) {
+                            consumer.seek(tp, Math.max(0, offset));
+                        }
+                    }
+                }
+                case "TIMESTAMP" -> {
+                    String tsStr = request.getReplayTimestamp();
+                    if (tsStr != null && !tsStr.isBlank()) {
+                        long targetTimeMs = ReplayTimestampParser.parseEpochMillis(tsStr);
+                        Map<TopicPartition, Long> query = new HashMap<>();
+                        for (TopicPartition tp : partitions) {
+                            query.put(tp, targetTimeMs);
+                        }
+                        Map<TopicPartition, OffsetAndTimestamp> offsets = consumer.offsetsForTimes(query);
+                        for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry : offsets.entrySet()) {
+                            if (entry.getValue() != null) {
+                                consumer.seek(entry.getKey(), entry.getValue().offset());
+                            } else {
+                                consumer.seekToEnd(List.of(entry.getKey()));
+                            }
+                        }
+                    }
+                }
+                default -> log.debug("Unknown replayMode: {}", mode);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to apply replay seek for mode {}: {}", mode, e.getMessage());
         }
     }
 
@@ -183,7 +257,11 @@ public class KafkaMessagingConnector implements MessagingConnector {
             AtomicBoolean running) {
         try {
             while (running.get()) {
-                for (ConsumerRecord<String, byte[]> record : consumer.poll(Duration.ofMillis(500))) {
+                ConsumerRecords<String, byte[]> records = consumer.poll(Duration.ofMillis(500));
+                if (records == null) {
+                    continue;
+                }
+                for (ConsumerRecord<String, byte[]> record : records) {
                     UnifiedMessage msg = new UnifiedMessage();
                     msg.setConnectionId(profile.getId());
                     msg.setProtocol(ProtocolType.KAFKA);

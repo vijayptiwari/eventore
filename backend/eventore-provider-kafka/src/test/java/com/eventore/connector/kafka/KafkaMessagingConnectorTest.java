@@ -5,6 +5,7 @@ import com.eventore.connector.spi.SubscribeRequest;
 import com.eventore.domain.ProtocolType;
 import com.eventore.testsupport.StreamTestFixtures;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -15,6 +16,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
@@ -240,5 +243,41 @@ class KafkaMessagingConnectorTest {
         String decoded = com.eventore.schema.AvroPayloadDecoder.decode(sent, schemaJson);
         assertTrue(decoded.contains("\"id\": \"u1\""));
         assertTrue(decoded.contains("\"age\": 20"));
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void applyReplaySeekHandlesAllModes() {
+        KafkaMessagingConnector connector = new KafkaMessagingConnector();
+        KafkaConsumer<String, byte[]> consumer = mock(KafkaConsumer.class);
+        TopicPartition tp = new TopicPartition("orders", 0);
+        List<TopicPartition> partitions = List.of(tp);
+
+        // 1. EARLIEST
+        SubscribeRequest reqEarliest = new SubscribeRequest();
+        reqEarliest.setReplayMode("EARLIEST");
+        connector.applyReplaySeek(consumer, partitions, reqEarliest);
+        verify(consumer).seekToBeginning(partitions);
+
+        // 2. LATEST
+        SubscribeRequest reqLatest = new SubscribeRequest();
+        reqLatest.setReplayMode("LATEST");
+        connector.applyReplaySeek(consumer, partitions, reqLatest);
+        verify(consumer).seekToEnd(partitions);
+
+        // 3. OFFSET
+        SubscribeRequest reqOffset = new SubscribeRequest();
+        reqOffset.setReplayMode("OFFSET");
+        reqOffset.setReplayOffset(150L);
+        connector.applyReplaySeek(consumer, partitions, reqOffset);
+        verify(consumer).seek(tp, 150L);
+
+        // 4. TIMESTAMP
+        SubscribeRequest reqTime = new SubscribeRequest();
+        reqTime.setReplayMode("TIMESTAMP");
+        reqTime.setReplayTimestamp("1727978400000");
+        when(consumer.offsetsForTimes(anyMap())).thenReturn(Map.of(tp, new org.apache.kafka.clients.consumer.OffsetAndTimestamp(350L, 1727978400000L)));
+        connector.applyReplaySeek(consumer, partitions, reqTime);
+        verify(consumer).seek(tp, 350L);
     }
 }

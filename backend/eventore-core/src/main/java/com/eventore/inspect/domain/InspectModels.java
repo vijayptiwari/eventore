@@ -421,6 +421,7 @@ public final class InspectModels {
         private Long toOffset;
         private Integer maxMessages = 50;
         private String startAt = "latest";
+        private String fromTimestamp;
 
         public String getTopic() {
             return topic;
@@ -484,6 +485,14 @@ public final class InspectModels {
 
         public void setStartAt(String startAt) {
             this.startAt = startAt;
+        }
+
+        public String getFromTimestamp() {
+            return fromTimestamp;
+        }
+
+        public void setFromTimestamp(String fromTimestamp) {
+            this.fromTimestamp = fromTimestamp;
         }
     }
 

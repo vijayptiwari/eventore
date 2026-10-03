@@ -16,6 +16,9 @@ public class WsCommand {
     private String bodyRegex;
     private Integer durationMinutes;
     private Map<String, String> options;
+    private String replayMode;
+    private String replayTimestamp;
+    private Long replayOffset;
 
     public String getType() {
         return type;
@@ -110,5 +113,29 @@ public class WsCommand {
 
     public void setOptions(Map<String, String> options) {
         this.options = options;
+    }
+
+    public String getReplayMode() {
+        return replayMode;
+    }
+
+    public void setReplayMode(String replayMode) {
+        this.replayMode = replayMode;
+    }
+
+    public String getReplayTimestamp() {
+        return replayTimestamp;
+    }
+
+    public void setReplayTimestamp(String replayTimestamp) {
+        this.replayTimestamp = replayTimestamp;
+    }
+
+    public Long getReplayOffset() {
+        return replayOffset;
+    }
+
+    public void setReplayOffset(Long replayOffset) {
+        this.replayOffset = replayOffset;
     }
 }

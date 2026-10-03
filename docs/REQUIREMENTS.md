@@ -414,6 +414,23 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
   - [x] Batch redrive action with real-time feedback
   - [x] 100% backend unit and frontend UI/API contract test coverage
 
+#### REQ-109: Time-Travel Message Replay & Offset Rewind
+
+- **Type:** Enhancement / Feature
+- **Priority:** P1
+- **Area:** `backend/eventore-core`, `eventore-provider-kafka`, `eventore-server`, `frontend`
+- **As implemented today:** Flexible time-travel message replay and offset rewind across live streams and message searches. Users can specify starting criteria: `LATEST` (real-time stream tailing), `EARLIEST` (beginning of stream), `TIMESTAMP` (ISO-8601 or epoch millis time travel), or `OFFSET` (specific partition offset). `ReplayTimestampParser` in `eventore-core` parses diverse ISO-8601 formats, local datetimes, and epoch timestamps. `KafkaMessagingConnector` employs dynamic partition seek via `ConsumerRebalanceListener` using `KafkaConsumer.offsetsForTimes` for timestamp queries, `seekToBeginning`, `seekToEnd`, or `seek(offset)`. `KafkaMessagingInspector.searchMessages` supports timestamp-based searches via `fromTimestamp`. WebSocket streaming commands (`START_LIVE_VIEW`) propagate `replayMode`, `replayTimestamp`, and `replayOffset`. Frontend `LiveViewPanel` provides an interactive "Starting Point & Time-Travel Replay" card with quick presets ("5m ago", "1h ago", "1d ago"), and `StreamInspectorSearchTab` adds "From Timestamp" search.
+- **Requirement:** Enable developers and operators to rewind streaming consumers to historical checkpoints, replay past events into live view with regex filtering, and search by timestamp without restarting broker infrastructure.
+- **Acceptance criteria:**
+  - [x] `ReplayTimestampParser` utility supporting epoch milliseconds, ISO-8601 instant strings, and ISO local datetimes
+  - [x] `SubscribeRequest` and `InspectModels.MessageSearchRequest` extended with replay fields (`replayMode`, `replayTimestamp`, `replayOffset`, `fromTimestamp`)
+  - [x] `KafkaMessagingConnector` dynamic partition seeking on assigned partitions via `ConsumerRebalanceListener`
+  - [x] `KafkaMessagingInspector` timestamp-indexed message search via `consumer.offsetsForTimes`
+  - [x] WebSocket `START_LIVE_VIEW` command propagation in `WsCommand` and `StreamWebSocketHandler`
+  - [x] Frontend `LiveViewPanel` starting point selector (`Latest`, `Earliest`, `Timestamp`, `Offset`) with quick time presets
+  - [x] Frontend `StreamInspectorSearchTab` timestamp-based search input
+  - [x] Comprehensive unit and contract tests across backend and frontend
+
 ---
 
 ### P3 — Low / deferred
