@@ -3,6 +3,7 @@ package com.eventore.stream;
 import com.eventore.connector.spi.SubscribeRequest;
 import com.eventore.domain.ConnectionProfile;
 import com.eventore.domain.UnifiedMessage;
+import com.eventore.masking.MaskingService;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
 import com.eventore.service.ConnectionRegistry;
@@ -23,6 +24,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.socket.CloseStatus;
@@ -43,6 +45,7 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
     private final SubscriptionManager subscriptionManager;
     private final MetricsService metricsService;
     private final DeploymentModePolicy policy;
+    private final MaskingService maskingService;
     private final ScheduledExecutorService liveViewScheduler =
             Executors.newScheduledThreadPool(2, r -> {
                 Thread t = new Thread(r, "eventore-liveview");
@@ -54,17 +57,29 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
     /** Per-session send locks (removed on close) so one slow session never blocks the others. */
     private final Map<String, Object> sessionSendLocks = new ConcurrentHashMap<>();
 
+    @Autowired
+    public StreamWebSocketHandler(
+            ObjectMapper objectMapper,
+            ConnectionRegistry connectionRegistry,
+            SubscriptionManager subscriptionManager,
+            MetricsService metricsService,
+            DeploymentModePolicy policy,
+            MaskingService maskingService) {
+        this.objectMapper = objectMapper;
+        this.connectionRegistry = connectionRegistry;
+        this.subscriptionManager = subscriptionManager;
+        this.metricsService = metricsService;
+        this.policy = policy;
+        this.maskingService = maskingService != null ? maskingService : new MaskingService(null);
+    }
+
     public StreamWebSocketHandler(
             ObjectMapper objectMapper,
             ConnectionRegistry connectionRegistry,
             SubscriptionManager subscriptionManager,
             MetricsService metricsService,
             DeploymentModePolicy policy) {
-        this.objectMapper = objectMapper;
-        this.connectionRegistry = connectionRegistry;
-        this.subscriptionManager = subscriptionManager;
-        this.metricsService = metricsService;
-        this.policy = policy;
+        this(objectMapper, connectionRegistry, subscriptionManager, metricsService, policy, null);
     }
 
     @Override
@@ -130,13 +145,22 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
         if (previous != null) {
             subscriptionManager.unsubscribe(previous);
         }
+        boolean mask = command.getMaskingEnabled() == null || command.getMaskingEnabled();
         SubscribeRequest request = buildSubscribeRequest(command, clientStreamId, false);
         String subscriptionId = subscriptionManager.subscribe(
                 profile,
                 request,
                 event -> {
                     if (session.isOpen()) {
-                        send(session, toFrame(event, clientStreamId));
+                        StreamEvent eventToSend = event;
+                        if (mask && "MESSAGE".equals(event.type()) && event.message() != null) {
+                            eventToSend = new StreamEvent(
+                                    event.type(),
+                                    event.subscriptionId(),
+                                    maskingService.mask(event.message()),
+                                    event.detail());
+                        }
+                        send(session, toFrame(eventToSend, clientStreamId));
                     }
                 },
                 false);
@@ -185,6 +209,7 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
 
         stopLiveView(session, clientStreamId, false);
 
+        boolean mask = command.getMaskingEnabled() == null || command.getMaskingEnabled();
         String subscriptionId = subscriptionManager.subscribe(
                 profile,
                 request,
@@ -196,7 +221,15 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
                         if (!LiveViewFilter.matches(filter, event.message())) {
                             return;
                         }
-                        send(session, liveViewMessageFrame(event, clientStreamId));
+                        StreamEvent eventToSend = event;
+                        if (mask) {
+                            eventToSend = new StreamEvent(
+                                    event.type(),
+                                    event.subscriptionId(),
+                                    maskingService.mask(event.message()),
+                                    event.detail());
+                        }
+                        send(session, liveViewMessageFrame(eventToSend, clientStreamId));
                     } else {
                         send(session, toFrame(event, clientStreamId));
                     }

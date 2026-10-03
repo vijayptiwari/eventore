@@ -431,6 +431,27 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
   - [x] Frontend `StreamInspectorSearchTab` timestamp-based search input
   - [x] Comprehensive unit and contract tests across backend and frontend
 
+#### REQ-105: Field-Level Data Masking & PII Redaction
+
+- **Type:** Enhancement / Feature (Security & Privacy)
+- **Priority:** P1
+- **Area:** `backend/eventore-core`, `backend/eventore-server`, `frontend`
+- **As implemented today:** Comprehensive, zero-overhead field-level data masking and PII redaction engine. `DataMasker` in `eventore-core` recursively traverses JSON documents (objects, arrays, nested keys) and redacts values whose keys match configurable sensitive patterns (`password`, `secret`, `token`, `apiKey`, `creditCard`, `ssn`, `nationalId`, etc.) with replacement tokens (default: `[REDACTED]`). Configurable value-based regex redaction identifies credit cards (`[CARD_REDACTED]`), US Social Security Numbers (`[SSN_REDACTED]`), and emails (`[EMAIL_REDACTED]`). It also masks sensitive transport headers (`Authorization`, `Cookie`, `X-Api-Key`), decodes/masks/re-encodes Base64 strings, redacts key-value plain-text strings, and flags sanitized payloads with header `x-eventore-masked: true`. If zero redactions are made, the original payload is preserved untouched to avoid re-serialization overhead. Streaming integration in WebSocket (`START_LIVE_VIEW`, `SUBSCRIBE`) and SSE (`/api/v1/stream?mask=true`) masks events dynamically. Inspect search (`searchMessages`) and DLQ inspect (`DlqService`) sanitize messages before delivery. REST endpoints `GET /api/v1/masking/config` and `POST /api/v1/masking/preview` allow operators to inspect configuration and test masking behavior. Frontend provides a "Data Privacy & PII Masking" toggle card in `LiveViewPanel`, a `🛡️ Masked` badge in `MessagePayloadViewer`, and a "Mask sensitive fields & PII" option in `StreamInspectorSearchTab`.
+- **Requirement:** Prevent accidental leakage of passwords, secrets, financial data, and PII into live streams, message inspectors, logs, and UI components while maintaining full stream observability.
+- **Acceptance criteria:**
+  - [x] `MaskingConfig` configurable sensitive field patterns, sensitive header patterns, value regex toggles, and normalization
+  - [x] `DataMasker` recursive Jackson JSON traversal, plain-text key-value masking, Base64 payload masking, and `MaskResult` tracking
+  - [x] Value-based PII redaction for credit cards (`[CARD_REDACTED]`), SSNs (`[SSN_REDACTED]`), and emails (`[EMAIL_REDACTED]`)
+  - [x] Transport header redaction and propagation of `x-eventore-masked: true` metadata flag
+  - [x] `EventoreProperties.Masking` configuration and `MaskingService` Spring bean integration
+  - [x] REST endpoints `GET /api/v1/masking/config` and `POST /api/v1/masking/preview` with unit test suite
+  - [x] WebSocket (`SUBSCRIBE`, `START_LIVE_VIEW`) and SSE (`StreamSseController`) masking integration
+  - [x] Inspect search (`InspectApiDelegateImpl`) and DLQ inspection (`DlqService`) masking integration
+  - [x] Frontend `LiveViewPanel` Data Privacy card with active status pill and session toggle
+  - [x] Frontend `MessagePayloadViewer` badge `🛡️ Masked` on redacted payloads and `x-eventore-masked` headers
+  - [x] Frontend `StreamInspectorSearchTab` mask checkbox and parameter binding
+  - [x] 100% test pass rate across backend and frontend with zero OpenAPI contract drift
+
 ---
 
 ### P3 — Low / deferred

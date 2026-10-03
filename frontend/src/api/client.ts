@@ -390,6 +390,14 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+
+  getMaskingConfig: () =>
+    request<import('./inspectTypes').MaskingConfigResponse>('/masking/config'),
+  previewMasking: (body: import('./inspectTypes').MaskingPreviewRequest) =>
+    request<import('./inspectTypes').MaskingPreviewResponse>('/masking/preview', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 };
 
 export function canAction(allowed: string[] | undefined, action: string): boolean {

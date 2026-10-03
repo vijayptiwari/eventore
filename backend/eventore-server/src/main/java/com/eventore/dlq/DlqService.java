@@ -10,6 +10,7 @@ import com.eventore.inspect.InspectorRegistry;
 import com.eventore.inspect.domain.InspectModels.MessageSearchRequest;
 import com.eventore.inspect.domain.InspectModels.TopicDetail;
 import com.eventore.inspect.spi.MessagingInspector;
+import com.eventore.masking.MaskingService;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
 import com.eventore.service.AuditService;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,6 +37,23 @@ public class DlqService {
     private final InspectorRegistry inspectorRegistry;
     private final DeploymentModePolicy policy;
     private final AuditService auditService;
+    private final MaskingService maskingService;
+
+    @Autowired
+    public DlqService(
+            ConnectionRegistry connectionRegistry,
+            ConnectorRegistry connectorRegistry,
+            InspectorRegistry inspectorRegistry,
+            DeploymentModePolicy policy,
+            AuditService auditService,
+            MaskingService maskingService) {
+        this.connectionRegistry = connectionRegistry;
+        this.connectorRegistry = connectorRegistry;
+        this.inspectorRegistry = inspectorRegistry;
+        this.policy = policy;
+        this.auditService = auditService;
+        this.maskingService = maskingService != null ? maskingService : new MaskingService(null);
+    }
 
     public DlqService(
             ConnectionRegistry connectionRegistry,
@@ -42,11 +61,7 @@ public class DlqService {
             InspectorRegistry inspectorRegistry,
             DeploymentModePolicy policy,
             AuditService auditService) {
-        this.connectionRegistry = connectionRegistry;
-        this.connectorRegistry = connectorRegistry;
-        this.inspectorRegistry = inspectorRegistry;
-        this.policy = policy;
-        this.auditService = auditService;
+        this(connectionRegistry, connectorRegistry, inspectorRegistry, policy, auditService, null);
     }
 
     private ConnectionProfile requireProfile(String connectionId) {
@@ -111,7 +126,7 @@ public class DlqService {
         List<DlqMessageInfo> infos = new ArrayList<>();
         for (UnifiedMessage m : messages) {
             if (m != null) {
-                infos.add(DlqMessageInfo.from(m));
+                infos.add(DlqMessageInfo.from(maskingService.mask(m)));
             }
         }
         return infos;

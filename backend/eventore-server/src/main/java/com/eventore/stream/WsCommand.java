@@ -19,6 +19,7 @@ public class WsCommand {
     private String replayMode;
     private String replayTimestamp;
     private Long replayOffset;
+    private Boolean maskingEnabled;
 
     public String getType() {
         return type;
@@ -137,5 +138,13 @@ public class WsCommand {
 
     public void setReplayOffset(Long replayOffset) {
         this.replayOffset = replayOffset;
+    }
+
+    public Boolean getMaskingEnabled() {
+        return maskingEnabled;
+    }
+
+    public void setMaskingEnabled(Boolean maskingEnabled) {
+        this.maskingEnabled = maskingEnabled;
     }
 }

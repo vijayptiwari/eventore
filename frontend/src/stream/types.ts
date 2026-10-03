@@ -43,6 +43,7 @@ export interface LiveViewState {
   replayMode?: ReplayMode;
   replayTimestamp?: string;
   replayOffset?: number;
+  maskingEnabled?: boolean;
   expiresAt?: number;
   messages: UnifiedMessage[];
   lastError?: string;

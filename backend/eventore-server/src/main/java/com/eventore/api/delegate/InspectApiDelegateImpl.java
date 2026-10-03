@@ -19,6 +19,8 @@ import com.eventore.service.ConnectionRegistry;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.eventore.masking.MaskingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -31,16 +33,28 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
     private final InspectorRegistry inspectorRegistry;
     private final DeploymentModePolicy policy;
     private final AuditService auditService;
+    private final MaskingService maskingService;
+
+    @Autowired
+    public InspectApiDelegateImpl(
+            ConnectionRegistry connectionRegistry,
+            InspectorRegistry inspectorRegistry,
+            DeploymentModePolicy policy,
+            AuditService auditService,
+            MaskingService maskingService) {
+        this.connectionRegistry = connectionRegistry;
+        this.inspectorRegistry = inspectorRegistry;
+        this.policy = policy;
+        this.auditService = auditService;
+        this.maskingService = maskingService != null ? maskingService : new MaskingService(null);
+    }
 
     public InspectApiDelegateImpl(
             ConnectionRegistry connectionRegistry,
             InspectorRegistry inspectorRegistry,
             DeploymentModePolicy policy,
             AuditService auditService) {
-        this.connectionRegistry = connectionRegistry;
-        this.inspectorRegistry = inspectorRegistry;
-        this.policy = policy;
-        this.auditService = auditService;
+        this(connectionRegistry, inspectorRegistry, policy, auditService, null);
     }
 
     @Override
@@ -118,7 +132,9 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
                 profile.getProtocol(),
                 messageSearchRequest != null ? messageSearchRequest.getTopic() : null,
                 maxMessages);
-        return ResponseEntity.ok(inspector(profile).searchMessages(profile, messageSearchRequest));
+        List<UnifiedMessage> results = inspector(profile).searchMessages(profile, messageSearchRequest);
+        Boolean mask = messageSearchRequest != null ? messageSearchRequest.getMask() : Boolean.TRUE;
+        return ResponseEntity.ok(maskingService.mask(results, mask));
     }
 
     private ConnectionProfile profile(String connectionId) {

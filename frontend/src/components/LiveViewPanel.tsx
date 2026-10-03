@@ -24,6 +24,7 @@ export default function LiveViewPanel({ session }: Props) {
   const [replayMode, setReplayMode] = useState<ReplayMode>('LATEST');
   const [replayTimestamp, setReplayTimestamp] = useState('');
   const [replayOffset, setReplayOffset] = useState('');
+  const [maskingEnabled, setMaskingEnabled] = useState(true);
   const [remainingSec, setRemainingSec] = useState<number | null>(null);
 
   const { data: topics } = useQuery({
@@ -210,6 +211,34 @@ export default function LiveViewPanel({ session }: Props) {
       </div>
 
       <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3>Data Privacy &amp; PII Masking</h3>
+          <span
+            className="schema-badge"
+            style={{
+              background: maskingEnabled ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+              color: maskingEnabled ? '#22c55e' : '#ef4444',
+              borderColor: maskingEnabled ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)',
+            }}
+          >
+            {maskingEnabled ? '🛡️ PII Masking: Active' : '⚠️ Masking: Disabled (Raw Payloads)'}
+          </span>
+        </div>
+        <p className="inspector-meta">
+          Automatically redacts sensitive fields (passwords, tokens, API keys, secrets) and PII values (credit cards, SSNs, emails) in streaming frames.
+        </p>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={maskingEnabled}
+            disabled={isActive}
+            onChange={(e) => setMaskingEnabled(e.target.checked)}
+          />
+          <span>Enable real-time data masking and PII redaction for this live view session</span>
+        </label>
+      </div>
+
+      <div className="card">
         <h3>Duration</h3>
         <div className="inspector-tabs">
           {DURATIONS.map((d) => (
@@ -242,6 +271,7 @@ export default function LiveViewPanel({ session }: Props) {
                 replayMode,
                 replayTimestamp: replayMode === 'TIMESTAMP' ? replayTimestamp : undefined,
                 replayOffset: replayMode === 'OFFSET' && replayOffset ? parseInt(replayOffset, 10) : undefined,
+                maskingEnabled,
               })
             }
           >

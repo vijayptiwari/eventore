@@ -422,6 +422,7 @@ public final class InspectModels {
         private Integer maxMessages = 50;
         private String startAt = "latest";
         private String fromTimestamp;
+        private Boolean mask = true;
 
         public String getTopic() {
             return topic;
@@ -493,6 +494,14 @@ public final class InspectModels {
 
         public void setFromTimestamp(String fromTimestamp) {
             this.fromTimestamp = fromTimestamp;
+        }
+
+        public Boolean getMask() {
+            return mask;
+        }
+
+        public void setMask(Boolean mask) {
+            this.mask = mask;
         }
     }
 

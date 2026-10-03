@@ -12,6 +12,13 @@ export default function MessagePayloadViewer({ payload, headers, contentType }: 
 
   const schemaId = headers?.['x-eventore-schema-id'];
   const schemaType = headers?.['x-eventore-schema-type'] || 'AVRO';
+  const isMasked =
+    headers?.['x-eventore-masked'] === 'true' ||
+    (payload &&
+      (payload.includes('[REDACTED]') ||
+        payload.includes('[CARD_REDACTED]') ||
+        payload.includes('[SSN_REDACTED]') ||
+        payload.includes('[EMAIL_REDACTED]')));
 
   const isJson =
     contentType?.includes('json') ||
@@ -37,7 +44,7 @@ export default function MessagePayloadViewer({ payload, headers, contentType }: 
 
   return (
     <div className="message-payload-viewer">
-      {(schemaId || isJson) && (
+      {(schemaId || isJson || isMasked) && (
         <div className="payload-meta-bar">
           {schemaId && (
             <span
@@ -46,6 +53,20 @@ export default function MessagePayloadViewer({ payload, headers, contentType }: 
             >
               <span className="schema-badge-icon">⚡</span>
               Schema #{schemaId} · {schemaType}
+            </span>
+          )}
+          {isMasked && (
+            <span
+              className="schema-badge masked-badge"
+              style={{
+                background: 'rgba(34, 197, 94, 0.15)',
+                color: '#22c55e',
+                borderColor: 'rgba(34, 197, 94, 0.3)',
+              }}
+              title="Sensitive fields or PII data redacted by Eventore DataMasker"
+            >
+              <span className="schema-badge-icon">🛡️</span>
+              Masked
             </span>
           )}
           <div className="payload-controls">

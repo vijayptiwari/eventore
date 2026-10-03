@@ -56,6 +56,7 @@ interface StreamWorkspaceContextValue {
       replayMode?: ReplayMode;
       replayTimestamp?: string;
       replayOffset?: number;
+      maskingEnabled?: boolean;
     },
   ) => void;
   stopLiveView: (sessionId: string) => void;
@@ -434,6 +435,7 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
         replayMode?: ReplayMode;
         replayTimestamp?: string;
         replayOffset?: number;
+        maskingEnabled?: boolean;
       },
     ) => {
       const session = sessionsRef.current.find((s) => s.id === sessionId);
@@ -442,6 +444,7 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
       if (existing?.active) {
         return;
       }
+      const isMasking = config.maskingEnabled !== false;
       const ws = wsRef.current;
       if (!ws || ws.readyState !== WebSocket.OPEN) {
         connectWs();
@@ -457,6 +460,7 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
             replayMode: config.replayMode,
             replayTimestamp: config.replayTimestamp,
             replayOffset: config.replayOffset,
+            maskingEnabled: isMasking,
             messages: [],
             lastError: 'WebSocket not connected',
           },
@@ -475,6 +479,7 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
           replayMode: config.replayMode,
           replayTimestamp: config.replayTimestamp,
           replayOffset: config.replayOffset,
+          maskingEnabled: isMasking,
           messages: [],
         },
       }));
@@ -490,6 +495,7 @@ export function StreamWorkspaceProvider({ children }: { children: ReactNode }) {
           replayMode: config.replayMode || undefined,
           replayTimestamp: config.replayTimestamp || undefined,
           replayOffset: config.replayOffset || undefined,
+          maskingEnabled: isMasking,
         }),
       );
     },

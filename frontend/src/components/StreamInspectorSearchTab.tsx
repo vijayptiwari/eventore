@@ -16,6 +16,8 @@ interface Props {
   onSearchKeyChange: (value: string) => void;
   searchTimestamp?: string;
   onSearchTimestampChange?: (value: string) => void;
+  searchMask?: boolean;
+  onSearchMaskChange?: (value: boolean) => void;
   searchMutation: UseMutationResult<UnifiedMessage[], Error, void, unknown>;
 }
 
@@ -32,6 +34,8 @@ export default function StreamInspectorSearchTab({
   onSearchKeyChange,
   searchTimestamp = '',
   onSearchTimestampChange,
+  searchMask = true,
+  onSearchMaskChange,
   searchMutation,
 }: Props) {
   return (
@@ -65,6 +69,16 @@ export default function StreamInspectorSearchTab({
             placeholder="e.g. 2026-10-03T18:00:00Z"
           />
         </div>
+      </div>
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+          <input
+            type="checkbox"
+            checked={searchMask}
+            onChange={(e) => onSearchMaskChange?.(e.target.checked)}
+          />
+          <span>🛡️ Mask sensitive fields &amp; PII (passwords, tokens, cards, SSN)</span>
+        </label>
       </div>
       {protocol === 'AZURE_SERVICE_BUS' && (
         <p className="inspector-meta">

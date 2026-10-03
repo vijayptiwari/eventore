@@ -1,8 +1,11 @@
 package com.eventore.config;
 
-import com.eventore.security.DeploymentMode;
 import com.eventore.domain.ProtocolType;
+import com.eventore.masking.MaskingConfig;
+import com.eventore.security.DeploymentMode;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -23,6 +26,7 @@ public class EventoreProperties {
     private Dev dev = new Dev();
     private ControlPlane controlPlane = new ControlPlane();
     private DataPlane dataPlane = new DataPlane();
+    private Masking masking = new Masking();
 
     public DeploymentMode getDeploymentMode() {
         return deploymentMode;
@@ -140,6 +144,75 @@ public class EventoreProperties {
 
     public void setDataPlane(DataPlane dataPlane) {
         this.dataPlane = dataPlane;
+    }
+
+    public Masking getMasking() {
+        return masking;
+    }
+
+    public void setMasking(Masking masking) {
+        this.masking = masking;
+    }
+
+    public static class Masking {
+        private boolean enabled = true;
+        private String replacement = MaskingConfig.DEFAULT_REPLACEMENT;
+        private List<String> customFields = new ArrayList<>();
+        private boolean maskValues = true;
+        private boolean maskHeaders = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getReplacement() {
+            return replacement;
+        }
+
+        public void setReplacement(String replacement) {
+            this.replacement = replacement;
+        }
+
+        public List<String> getCustomFields() {
+            return customFields;
+        }
+
+        public void setCustomFields(List<String> customFields) {
+            this.customFields = customFields != null ? new ArrayList<>(customFields) : new ArrayList<>();
+        }
+
+        public boolean isMaskValues() {
+            return maskValues;
+        }
+
+        public void setMaskValues(boolean maskValues) {
+            this.maskValues = maskValues;
+        }
+
+        public boolean isMaskHeaders() {
+            return maskHeaders;
+        }
+
+        public void setMaskHeaders(boolean maskHeaders) {
+            this.maskHeaders = maskHeaders;
+        }
+
+        public MaskingConfig toConfig() {
+            MaskingConfig config = new MaskingConfig();
+            config.setEnabled(enabled);
+            config.setReplacement(replacement);
+            if (customFields != null) {
+                for (String field : customFields) {
+                    config.addSensitiveFieldPattern(field);
+                }
+            }
+            config.setMaskValuesByPattern(maskValues);
+            return config;
+        }
     }
 
     public static class ControlPlane {

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -33,20 +34,34 @@ public class StreamSseController {
     private final SubscriptionManager subscriptionManager;
     private final ObjectMapper objectMapper;
     private final DeploymentModePolicy policy;
+    private final com.eventore.masking.MaskingService maskingService;
     private final ExecutorService pumpExecutor = Executors.newThreadPerTaskExecutor(
             Thread.ofVirtual().name("sse-pump-", 0).factory());
+
+    @Autowired
+    public StreamSseController(
+            SubscriptionManager subscriptionManager,
+            ObjectMapper objectMapper,
+            DeploymentModePolicy policy,
+            com.eventore.masking.MaskingService maskingService) {
+        this.subscriptionManager = subscriptionManager;
+        this.objectMapper = objectMapper;
+        this.policy = policy;
+        this.maskingService = maskingService != null ? maskingService : new com.eventore.masking.MaskingService(null);
+    }
 
     public StreamSseController(
             SubscriptionManager subscriptionManager,
             ObjectMapper objectMapper,
             DeploymentModePolicy policy) {
-        this.subscriptionManager = subscriptionManager;
-        this.objectMapper = objectMapper;
-        this.policy = policy;
+        this(subscriptionManager, objectMapper, policy, null);
     }
 
     @GetMapping(value = "/{subscriptionId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter stream(@PathVariable String subscriptionId, @RequestParam String connectionId) {
+    public SseEmitter stream(
+            @PathVariable String subscriptionId,
+            @RequestParam String connectionId,
+            @RequestParam(value = "mask", required = false, defaultValue = "true") boolean mask) {
         policy.require(Action.SUBSCRIBE);
         if (!subscriptionManager.ownsSubscription(connectionId, subscriptionId)) {
             throw new ResponseStatusException(
@@ -55,7 +70,7 @@ public class StreamSseController {
         BlockingQueue<StreamEvent> queue = subscriptionManager.queue(subscriptionId);
         log.debug("Opening SSE stream for subscription {} on connection {}", subscriptionId, connectionId);
         SseEmitter emitter = new SseEmitter(Duration.ofHours(1).toMillis());
-        Future<?> pump = pumpExecutor.submit(() -> pumpEvents(subscriptionId, queue, emitter));
+        Future<?> pump = pumpExecutor.submit(() -> pumpEvents(subscriptionId, queue, emitter, mask));
         AtomicBoolean cleanedUp = new AtomicBoolean(false);
         Runnable cleanup = () -> {
             if (!cleanedUp.compareAndSet(false, true)) {
@@ -79,7 +94,7 @@ public class StreamSseController {
         return emitter;
     }
 
-    private void pumpEvents(String subscriptionId, BlockingQueue<StreamEvent> queue, SseEmitter emitter) {
+    private void pumpEvents(String subscriptionId, BlockingQueue<StreamEvent> queue, SseEmitter emitter, boolean mask) {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 StreamEvent event = queue.poll(1, java.util.concurrent.TimeUnit.SECONDS);
@@ -87,11 +102,15 @@ public class StreamSseController {
                     emitter.send(SseEmitter.event()
                             .name("HEARTBEAT")
                             .data(objectMapper.writeValueAsString(
-                                    new StreamFrame("HEARTBEAT", subscriptionId, null, null, null))));
+                                     new StreamFrame("HEARTBEAT", subscriptionId, null, null, null))));
                     continue;
                 }
+                com.eventore.domain.UnifiedMessage msg = event.message();
+                if (mask && msg != null) {
+                    msg = maskingService.mask(msg);
+                }
                 StreamFrame frame = new StreamFrame(
-                        event.type(), event.subscriptionId(), null, event.message(), event.detail());
+                        event.type(), event.subscriptionId(), null, msg, event.detail());
                 emitter.send(SseEmitter.event()
                         .name(event.type())
                         .data(objectMapper.writeValueAsString(frame)));

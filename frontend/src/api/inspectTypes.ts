@@ -47,8 +47,28 @@ export interface MessageSearchRequest {
   maxMessages?: number;
   startAt?: string;
   fromTimestamp?: string;
+  mask?: boolean;
 }
 
 export interface InspectCapabilities {
   features: string[];
+}
+
+export interface MaskingConfigResponse {
+  enabled: boolean;
+  replacement: string;
+  sensitiveFieldPatterns: string[];
+  sensitiveHeaderPatterns: string[];
+  maskValuesByPattern: boolean;
+}
+
+export interface MaskingPreviewRequest {
+  payload: string;
+  contentType?: string;
+}
+
+export interface MaskingPreviewResponse {
+  original: string;
+  masked: string;
+  wasMasked: boolean;
 }
