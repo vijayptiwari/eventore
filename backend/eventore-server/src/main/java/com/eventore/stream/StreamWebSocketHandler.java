@@ -6,6 +6,7 @@ import com.eventore.domain.UnifiedMessage;
 import com.eventore.masking.MaskingService;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
+import com.eventore.tracing.TraceContextParser;
 import com.eventore.service.ConnectionRegistry;
 import com.eventore.service.MetricsService;
 import com.eventore.service.SubscriptionManager;
@@ -153,11 +154,16 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
                 event -> {
                     if (session.isOpen()) {
                         StreamEvent eventToSend = event;
-                        if (mask && "MESSAGE".equals(event.type()) && event.message() != null) {
+                        if ("MESSAGE".equals(event.type()) && event.message() != null) {
+                            UnifiedMessage msg = event.message();
+                            if (mask) {
+                                msg = maskingService.mask(msg);
+                            }
+                            TraceContextParser.enrich(msg);
                             eventToSend = new StreamEvent(
                                     event.type(),
                                     event.subscriptionId(),
-                                    maskingService.mask(event.message()),
+                                    msg,
                                     event.detail());
                         }
                         send(session, toFrame(eventToSend, clientStreamId));
@@ -221,14 +227,16 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
                         if (!LiveViewFilter.matches(filter, event.message())) {
                             return;
                         }
-                        StreamEvent eventToSend = event;
+                        UnifiedMessage msg = event.message();
                         if (mask) {
-                            eventToSend = new StreamEvent(
-                                    event.type(),
-                                    event.subscriptionId(),
-                                    maskingService.mask(event.message()),
-                                    event.detail());
+                            msg = maskingService.mask(msg);
                         }
+                        TraceContextParser.enrich(msg);
+                        StreamEvent eventToSend = new StreamEvent(
+                                event.type(),
+                                event.subscriptionId(),
+                                msg,
+                                event.detail());
                         send(session, liveViewMessageFrame(eventToSend, clientStreamId));
                     } else {
                         send(session, toFrame(event, clientStreamId));

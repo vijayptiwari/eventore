@@ -25,6 +25,7 @@ export default function KafkaPublishForm({ connectionId, topic, onTopicChange }:
   const [publishPayload, setPublishPayload] = useState('');
   const [publishHeaders, setPublishHeaders] = useState('correlationId=evt-1\ncontent-type=application/json');
   const [flushProducer, setFlushProducer] = useState(true);
+  const [injectTrace, setInjectTrace] = useState(true);
 
   // Schema-aware state
   const [schemaId, setSchemaId] = useState('');
@@ -185,14 +186,24 @@ export default function KafkaPublishForm({ connectionId, topic, onTopicChange }:
         <label>Record headers (key=value per line)</label>
         <textarea rows={3} value={publishHeaders} onChange={(e) => setPublishHeaders(e.target.value)} />
       </div>
-      <label className="inspector-meta">
-        <input
-          type="checkbox"
-          checked={flushProducer}
-          onChange={(e) => setFlushProducer(e.target.checked)}
-        />{' '}
-        Flush producer after send
-      </label>
+      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', margin: '0.5rem 0' }}>
+        <label className="inspector-meta" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={flushProducer}
+            onChange={(e) => setFlushProducer(e.target.checked)}
+          />
+          Flush producer after send
+        </label>
+        <label className="inspector-meta" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={injectTrace}
+            onChange={(e) => setInjectTrace(e.target.checked)}
+          />
+          🔍 Inject W3C Trace Context (traceparent)
+        </label>
+      </div>
       <button
         type="button"
         disabled={publishMutation.isPending || !topic}

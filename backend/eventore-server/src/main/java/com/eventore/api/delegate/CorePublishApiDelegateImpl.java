@@ -12,6 +12,8 @@ import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
 import com.eventore.service.AuditService;
 import com.eventore.service.ConnectionRegistry;
+import com.eventore.tracing.TracingService;
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,13 +29,23 @@ public class CorePublishApiDelegateImpl implements PublishApiDelegate {
     private final DeploymentModePolicy policy;
     private final AuditService auditService;
     private final SchemaRegistryClient schemaRegistryClient;
+    private final TracingService tracingService;
 
     public CorePublishApiDelegateImpl(
             ConnectionRegistry connectionRegistry,
             ConnectorRegistry connectorRegistry,
             DeploymentModePolicy policy,
             AuditService auditService) {
-        this(connectionRegistry, connectorRegistry, policy, auditService, new DefaultSchemaRegistryClient());
+        this(connectionRegistry, connectorRegistry, policy, auditService, new DefaultSchemaRegistryClient(), null);
+    }
+
+    public CorePublishApiDelegateImpl(
+            ConnectionRegistry connectionRegistry,
+            ConnectorRegistry connectorRegistry,
+            DeploymentModePolicy policy,
+            AuditService auditService,
+            SchemaRegistryClient schemaRegistryClient) {
+        this(connectionRegistry, connectorRegistry, policy, auditService, schemaRegistryClient, null);
     }
 
     @Autowired
@@ -42,12 +54,14 @@ public class CorePublishApiDelegateImpl implements PublishApiDelegate {
             ConnectorRegistry connectorRegistry,
             DeploymentModePolicy policy,
             AuditService auditService,
-            SchemaRegistryClient schemaRegistryClient) {
+            SchemaRegistryClient schemaRegistryClient,
+            TracingService tracingService) {
         this.connectionRegistry = connectionRegistry;
         this.connectorRegistry = connectorRegistry;
         this.policy = policy;
         this.auditService = auditService;
         this.schemaRegistryClient = schemaRegistryClient != null ? schemaRegistryClient : new DefaultSchemaRegistryClient();
+        this.tracingService = tracingService;
     }
 
     @Override
@@ -55,6 +69,15 @@ public class CorePublishApiDelegateImpl implements PublishApiDelegate {
         policy.require(Action.PUBLISH);
         var profile = CoreDelegateSupport.profile(connectionRegistry, connectionId);
         policy.requireProtocol(profile.getProtocol());
+
+        if (tracingService != null && publishRequest != null) {
+            Map<String, String> headers = publishRequest.getHeaders();
+            if (headers == null) {
+                headers = new HashMap<>();
+                publishRequest.setHeaders(headers);
+            }
+            tracingService.injectIfEnabled(headers);
+        }
 
         String registryUrl = profile != null ? profile.property("schemaRegistryUrl") : null;
         if (registryUrl == null && profile != null) {

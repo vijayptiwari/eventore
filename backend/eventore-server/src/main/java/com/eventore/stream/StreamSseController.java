@@ -2,6 +2,7 @@ package com.eventore.stream;
 
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
+import com.eventore.tracing.TraceContextParser;
 import com.eventore.service.SubscriptionManager;
 import com.eventore.service.SubscriptionManager.StreamEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -106,8 +107,11 @@ public class StreamSseController {
                     continue;
                 }
                 com.eventore.domain.UnifiedMessage msg = event.message();
-                if (mask && msg != null) {
-                    msg = maskingService.mask(msg);
+                if (msg != null) {
+                    if (mask) {
+                        msg = maskingService.mask(msg);
+                    }
+                    TraceContextParser.enrich(msg);
                 }
                 StreamFrame frame = new StreamFrame(
                         event.type(), event.subscriptionId(), null, msg, event.detail());

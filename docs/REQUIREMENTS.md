@@ -452,6 +452,25 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
   - [x] Frontend `StreamInspectorSearchTab` mask checkbox and parameter binding
   - [x] 100% test pass rate across backend and frontend with zero OpenAPI contract drift
 
+#### REQ-111: OpenTelemetry Distributed Tracing & W3C TraceContext
+
+- **Type:** Enhancement / Feature (Observability & Telemetry)
+- **Priority:** P1
+- **Area:** `backend/eventore-core`, `backend/eventore-server`, `frontend`
+- **As implemented today:** Full distributed tracing support across all messaging protocols adhering to the W3C Trace Context recommendation (RFC 7230), B3 (Zipkin), AWS X-Ray, Datadog, and Jaeger. `TraceContextParser` in `eventore-core` extracts trace and span IDs, sampling flags, and vendor tracestate from inbound transport headers, and automatically enriches `UnifiedMessage` with `x-eventore-trace-id`, `x-eventore-span-id`, and `x-eventore-trace-format` metadata. On message publishing and DLQ redrives, `TracingService` automatically injects valid W3C `traceparent` headers (`00-{trace_id}-{span_id}-01`) or generates child spans preserving upstream trace context. REST endpoints `GET /api/v1/tracing/config`, `POST /api/v1/tracing/extract`, and `GET /api/v1/tracing/url` provide configuration and external APM deep linking. The frontend `MessagePayloadViewer` renders an interactive `🔍 Trace: {shortId}` badge with tooltip metadata, copy-to-clipboard action, and direct deep links to Jaeger, Zipkin, or Datadog, while `KafkaPublishForm` includes a toggle to inject W3C traceparent headers.
+- **Requirement:** Correlate streaming events with upstream microservices and downstream consumers across distributed architectures without manual trace header parsing.
+- **Acceptance criteria:**
+  - [x] `TraceContext` normalized model for W3C, B3, AWS X-Ray, Datadog, and Jaeger
+  - [x] `TraceContextParser` zero-overhead extraction, validation, and W3C `traceparent` generator
+  - [x] `TracingConfig` configurable APM viewer URL templates (Jaeger, Zipkin, Datadog, Custom)
+  - [x] Automatic message enrichment in WebSocket, SSE, search, and DLQ inspect pipelines
+  - [x] Child span generation and trace context propagation on DLQ message redrives
+  - [x] Trace header auto-injection on outbound publishing via `CorePublishApiDelegateImpl`
+  - [x] REST endpoints `/api/v1/tracing/config`, `/extract`, and `/url` with unit test suite
+  - [x] Frontend `MessagePayloadViewer` interactive trace badge with copy action and APM deep links
+  - [x] Frontend `KafkaPublishForm` trace injection toggle
+  - [x] 100% test pass rate across all backend modules and frontend Vitest suite
+
 ---
 
 ### P3 — Low / deferred

@@ -134,7 +134,9 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
                 maxMessages);
         List<UnifiedMessage> results = inspector(profile).searchMessages(profile, messageSearchRequest);
         Boolean mask = messageSearchRequest != null ? messageSearchRequest.getMask() : Boolean.TRUE;
-        return ResponseEntity.ok(maskingService.mask(results, mask));
+        List<UnifiedMessage> masked = maskingService.mask(results, mask);
+        masked.forEach(com.eventore.tracing.TraceContextParser::enrich);
+        return ResponseEntity.ok(masked);
     }
 
     private ConnectionProfile profile(String connectionId) {

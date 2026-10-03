@@ -9,6 +9,7 @@ interface Props {
 export default function MessagePayloadViewer({ payload, headers, contentType }: Props) {
   const [showRaw, setShowRaw] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [traceCopied, setTraceCopied] = useState(false);
 
   const schemaId = headers?.['x-eventore-schema-id'];
   const schemaType = headers?.['x-eventore-schema-type'] || 'AVRO';
@@ -19,6 +20,26 @@ export default function MessagePayloadViewer({ payload, headers, contentType }: 
         payload.includes('[CARD_REDACTED]') ||
         payload.includes('[SSN_REDACTED]') ||
         payload.includes('[EMAIL_REDACTED]')));
+
+  const traceId =
+    headers?.['x-eventore-trace-id'] ||
+    headers?.['traceparent']?.split('-')[1] ||
+    headers?.['b3']?.split('-')[0] ||
+    headers?.['X-B3-TraceId'] ||
+    headers?.['x-b3-traceid'] ||
+    headers?.['uber-trace-id']?.split(':')[0] ||
+    (headers?.['X-Amzn-Trace-Id']?.includes('Root=') ? headers['X-Amzn-Trace-Id'].split('Root=')[1]?.split(';')[0] : undefined);
+
+  const spanId =
+    headers?.['x-eventore-span-id'] ||
+    headers?.['traceparent']?.split('-')[2] ||
+    headers?.['b3']?.split('-')[1] ||
+    headers?.['X-B3-SpanId'] ||
+    headers?.['x-b3-spanid'];
+
+  const traceFormat =
+    headers?.['x-eventore-trace-format'] ||
+    (headers?.['traceparent'] ? 'W3C' : headers?.['b3'] || headers?.['X-B3-TraceId'] ? 'B3' : headers?.['X-Amzn-Trace-Id'] ? 'X-Ray' : undefined);
 
   const isJson =
     contentType?.includes('json') ||
@@ -44,7 +65,7 @@ export default function MessagePayloadViewer({ payload, headers, contentType }: 
 
   return (
     <div className="message-payload-viewer">
-      {(schemaId || isJson || isMasked) && (
+      {(schemaId || isJson || isMasked || traceId) && (
         <div className="payload-meta-bar">
           {schemaId && (
             <span
@@ -67,6 +88,37 @@ export default function MessagePayloadViewer({ payload, headers, contentType }: 
             >
               <span className="schema-badge-icon">🛡️</span>
               Masked
+            </span>
+          )}
+          {traceId && (
+            <span
+              className="schema-badge trace-badge"
+              style={{
+                background: 'rgba(99, 102, 241, 0.15)',
+                color: '#818cf8',
+                borderColor: 'rgba(99, 102, 241, 0.3)',
+                cursor: 'pointer',
+              }}
+              title={`Distributed Trace (${traceFormat ?? 'Trace'}): ${traceId}${spanId ? ` · Span: ${spanId}` : ''}\nClick to copy Trace ID or open in APM`}
+              onClick={() => {
+                void navigator.clipboard.writeText(traceId);
+                setTraceCopied(true);
+                setTimeout(() => setTraceCopied(false), 2000);
+              }}
+            >
+              <span className="schema-badge-icon">🔍</span>
+              Trace: {traceId.length > 8 ? traceId.slice(0, 8) : traceId}
+              {traceCopied && <span style={{ marginLeft: 4, fontSize: '0.7rem' }}>✓</span>}
+              <a
+                href={`http://localhost:16686/trace/${traceId}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ marginLeft: 4, color: 'inherit', textDecoration: 'none' }}
+                title="Open in Jaeger / APM"
+                onClick={(e) => e.stopPropagation()}
+              >
+                ↗
+              </a>
             </span>
           )}
           <div className="payload-controls">

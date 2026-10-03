@@ -3,6 +3,7 @@ package com.eventore.config;
 import com.eventore.domain.ProtocolType;
 import com.eventore.masking.MaskingConfig;
 import com.eventore.security.DeploymentMode;
+import com.eventore.tracing.TracingConfig;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -27,6 +28,7 @@ public class EventoreProperties {
     private ControlPlane controlPlane = new ControlPlane();
     private DataPlane dataPlane = new DataPlane();
     private Masking masking = new Masking();
+    private Tracing tracing = new Tracing();
 
     public DeploymentMode getDeploymentMode() {
         return deploymentMode;
@@ -152,6 +154,14 @@ public class EventoreProperties {
 
     public void setMasking(Masking masking) {
         this.masking = masking;
+    }
+
+    public Tracing getTracing() {
+        return tracing;
+    }
+
+    public void setTracing(Tracing tracing) {
+        this.tracing = tracing;
     }
 
     public static class Masking {
@@ -326,6 +336,56 @@ public class EventoreProperties {
                 throw new IllegalArgumentException("dev.maxPublishBytes must be at least 1");
             }
             this.maxPublishBytes = maxPublishBytes;
+        }
+    }
+
+    public static class Tracing {
+        private boolean enabled = true;
+        private String viewerType = "JAEGER";
+        private String urlTemplate = TracingConfig.DEFAULT_JAEGER_URL;
+        private boolean injectOnPublish = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getViewerType() {
+            return viewerType;
+        }
+
+        public void setViewerType(String viewerType) {
+            this.viewerType = viewerType;
+        }
+
+        public String getUrlTemplate() {
+            return urlTemplate;
+        }
+
+        public void setUrlTemplate(String urlTemplate) {
+            this.urlTemplate = urlTemplate;
+        }
+
+        public boolean isInjectOnPublish() {
+            return injectOnPublish;
+        }
+
+        public void setInjectOnPublish(boolean injectOnPublish) {
+            this.injectOnPublish = injectOnPublish;
+        }
+
+        public TracingConfig toTracingConfig() {
+            TracingConfig cfg = new TracingConfig();
+            cfg.setEnabled(this.enabled);
+            cfg.setViewerType(this.viewerType);
+            if (this.urlTemplate != null && !this.urlTemplate.isBlank()) {
+                cfg.setUrlTemplate(this.urlTemplate);
+            }
+            cfg.setInjectOnPublish(this.injectOnPublish);
+            return cfg;
         }
     }
 }

@@ -15,6 +15,7 @@ import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
 import com.eventore.service.AuditService;
 import com.eventore.service.ConnectionRegistry;
+import com.eventore.tracing.TraceContextParser;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -126,7 +127,9 @@ public class DlqService {
         List<DlqMessageInfo> infos = new ArrayList<>();
         for (UnifiedMessage m : messages) {
             if (m != null) {
-                infos.add(DlqMessageInfo.from(maskingService.mask(m)));
+                UnifiedMessage masked = maskingService.mask(m);
+                TraceContextParser.enrich(masked);
+                infos.add(DlqMessageInfo.from(masked));
             }
         }
         return infos;
@@ -172,6 +175,9 @@ public class DlqService {
                         ? new HashMap<>(request.editedHeaders()) : new HashMap<>();
                 headers.put("x-eventore-redriven-from", request.sourceTopic());
                 headers.put("x-eventore-redrive-timestamp", Instant.now().toString());
+                TraceContextParser.parse(headers).ifPresent(parent -> {
+                    headers.put("traceparent", TraceContextParser.generateChildTraceparent(parent));
+                });
                 pubReq.setHeaders(headers);
 
                 int bytes = PayloadCodec.toBytes(pubReq.getPayload(), pubReq.getContentType()).length;
@@ -221,6 +227,9 @@ public class DlqService {
                 Map<String, String> headers = new HashMap<>(msg.getHeaders());
                 headers.put("x-eventore-redriven-from", request.sourceTopic());
                 headers.put("x-eventore-redrive-timestamp", Instant.now().toString());
+                TraceContextParser.parse(headers).ifPresent(parent -> {
+                    headers.put("traceparent", TraceContextParser.generateChildTraceparent(parent));
+                });
                 pubReq.setHeaders(headers);
 
                 int bytes = PayloadCodec.toBytes(pubReq.getPayload(), pubReq.getContentType()).length;

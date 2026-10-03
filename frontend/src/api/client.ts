@@ -398,6 +398,16 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+
+  getTracingConfig: () =>
+    request<import('./inspectTypes').TracingConfigResponse>('/tracing/config'),
+  extractTraceContext: (headers: Record<string, string>) =>
+    request<import('./inspectTypes').TraceContext>('/tracing/extract', {
+      method: 'POST',
+      body: JSON.stringify(headers),
+    }),
+  resolveTraceUrl: (traceId: string) =>
+    request<{ traceId: string; url?: string }>(`/tracing/url?traceId=${encodeURIComponent(traceId)}`),
 };
 
 export function canAction(allowed: string[] | undefined, action: string): boolean {

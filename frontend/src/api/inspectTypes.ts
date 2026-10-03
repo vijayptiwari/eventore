@@ -72,3 +72,23 @@ export interface MaskingPreviewResponse {
   masked: string;
   wasMasked: boolean;
 }
+
+export type TraceFormat = 'W3C' | 'B3' | 'AWS_XRAY' | 'DATADOG' | 'JAEGER' | 'CUSTOM';
+
+export interface TraceContext {
+  traceId: string;
+  spanId?: string;
+  parentSpanId?: string;
+  sampled: boolean;
+  format: TraceFormat;
+  rawHeader?: string;
+  tracestate?: string;
+}
+
+export interface TracingConfigResponse {
+  enabled: boolean;
+  viewerType: 'JAEGER' | 'ZIPKIN' | 'DATADOG' | 'CUSTOM' | 'NONE';
+  urlTemplate: string;
+  injectOnPublish: boolean;
+}
+
