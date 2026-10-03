@@ -2,6 +2,8 @@ import { getRuntimeConfig } from '../config/runtime';
 import type {
   AppConfig,
   ConnectionProfile,
+  ConnectionStoreInfo,
+  ConnectionStoreType,
   ControlPlaneView,
   ProtocolType,
   TopicRef,
@@ -107,6 +109,8 @@ export interface DlqRedriveResult {
   timestamp: string;
 }
 
+export type { ConnectionStoreInfo, ConnectionStoreType };
+
 const REQUEST_TIMEOUT_MS = 30_000;
 
 export class InspectNotSupportedError extends Error {
@@ -194,6 +198,11 @@ export const api = {
   getControlPlane: () => request<ControlPlaneView>('/control/plane'),
   listPlatforms: () => request<StreamPlatformPreset[]>('/platforms'),
   listConnections: () => request<ConnectionProfileResponse[]>('/connections'),
+  getConnectionStoreInfo: () => request<ConnectionStoreInfo>('/connections/store'),
+  migrateConnectionStore: (targetType: ConnectionStoreType) =>
+    request<ConnectionStoreInfo>(`/connections/store/migrate?targetType=${encodeURIComponent(targetType)}`, {
+      method: 'POST',
+    }),
   createConnection: (body: ConnectionProfile) =>
     request<ConnectionProfileResponse>('/connections', {
       method: 'POST',

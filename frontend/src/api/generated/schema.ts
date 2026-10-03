@@ -70,6 +70,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/connections/store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get active connection persistence store metadata and capabilities */
+        get: operations["getConnectionStoreInfo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connections/store/migrate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Migrate connection profiles from active store to target store */
+        post: operations["migrateConnectionStore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/connections/{connectionId}": {
         parameters: {
             query?: never;
@@ -726,6 +760,16 @@ export interface components {
             members?: Record<string, never>[];
             offsets?: components["schemas"]["GroupOffset"][];
         };
+        /** @enum {string} */
+        ConnectionStoreType: "FILE" | "JDBC" | "K8S_CRD" | "IN_MEMORY";
+        ConnectionStoreInfo: {
+            type: components["schemas"]["ConnectionStoreType"];
+            description: string;
+            supportsOptimisticLocking: boolean;
+            readOnly: boolean;
+            profileCount: number;
+            availableStores: components["schemas"]["ConnectionStoreType"][];
+        };
         KafkaPublishResult: {
             topic?: string;
             partition?: number;
@@ -877,6 +921,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConnectionProfileResponse"];
+                };
+            };
+        };
+    };
+    getConnectionStoreInfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionStoreInfo"];
+                };
+            };
+        };
+    };
+    migrateConnectionStore: {
+        parameters: {
+            query: {
+                targetType: components["schemas"]["ConnectionStoreType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Migration completed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionStoreInfo"];
                 };
             };
         };

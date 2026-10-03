@@ -262,7 +262,11 @@ public class EventoreProperties {
 
         public static class Persistence {
             private boolean enabled = false;
+            private com.eventore.domain.ConnectionStoreType type = com.eventore.domain.ConnectionStoreType.FILE;
             private String filePath = "/data/connections.json";
+            private String tableName = "eventore_connection_profiles";
+            private boolean optimisticLocking = true;
+            private String crdDirectory = "/data/crds";
 
             public boolean isEnabled() {
                 return enabled;
@@ -272,12 +276,44 @@ public class EventoreProperties {
                 this.enabled = enabled;
             }
 
+            public com.eventore.domain.ConnectionStoreType getType() {
+                return type;
+            }
+
+            public void setType(com.eventore.domain.ConnectionStoreType type) {
+                this.type = type != null ? type : com.eventore.domain.ConnectionStoreType.FILE;
+            }
+
             public String getFilePath() {
                 return filePath;
             }
 
             public void setFilePath(String filePath) {
                 this.filePath = filePath != null ? filePath : "/data/connections.json";
+            }
+
+            public String getTableName() {
+                return tableName;
+            }
+
+            public void setTableName(String tableName) {
+                this.tableName = tableName != null && !tableName.isBlank() ? tableName : "eventore_connection_profiles";
+            }
+
+            public boolean isOptimisticLocking() {
+                return optimisticLocking;
+            }
+
+            public void setOptimisticLocking(boolean optimisticLocking) {
+                this.optimisticLocking = optimisticLocking;
+            }
+
+            public String getCrdDirectory() {
+                return crdDirectory;
+            }
+
+            public void setCrdDirectory(String crdDirectory) {
+                this.crdDirectory = crdDirectory != null ? crdDirectory : "/data/crds";
             }
         }
     }

@@ -1249,3 +1249,60 @@ td {
   border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
+/* Connection Store Persistence Banner */
+.connection-store-banner {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 0.85rem 1.15rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.connection-store-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.connection-store-badge {
+  font-size: 0.9rem;
+  color: #f3f4f6;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.connection-store-badge strong {
+  color: #38bdf8;
+  font-family: monospace;
+  font-size: 0.95rem;
+}
+
+.connection-store-desc {
+  margin: 0;
+  font-size: 0.825rem;
+  color: #94a3b8;
+}
+
+.connection-store-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.connection-store-actions select {
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.825rem;
+}
+

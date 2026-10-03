@@ -13,7 +13,7 @@ import {
 import { useAppConfig } from '../hooks/useAppConfig';
 import { useControlPlane } from '../hooks/useControlPlane';
 import type { StreamPlatformPreset } from '../api/platformTypes';
-import type { ConnectionProfile, ProtocolType } from '../api/types';
+import type { ConnectionProfile, ConnectionStoreType, ProtocolType } from '../api/types';
 export default function ConnectionsPage() {
   const { data: config } = useAppConfig();
   const { connectionProtocols: controlProtocols } = useControlPlane();
@@ -75,6 +75,24 @@ export default function ConnectionsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['connections'] }),
   });
 
+  const { data: storeInfo } = useQuery({
+    queryKey: ['connectionStore'],
+    queryFn: api.getConnectionStoreInfo,
+  });
+  const [migrationTarget, setMigrationTarget] = useState<ConnectionStoreType | ''>('');
+  const [migrationSuccess, setMigrationSuccess] = useState<string | null>(null);
+
+  const migrateMutation = useMutation({
+    mutationFn: (target: ConnectionStoreType) => api.migrateConnectionStore(target),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['connectionStore'] });
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      setMigrationSuccess(`Successfully migrated ${data.profileCount} profiles to ${data.type}`);
+      setMigrationTarget('');
+      setTimeout(() => setMigrationSuccess(null), 5000);
+    },
+  });
+
   type RowValidationState =
     | { status: 'pending' }
     | { status: 'success'; result: string }
@@ -128,6 +146,62 @@ export default function ConnectionsPage() {
   return (
     <div>
       <h1>Connections</h1>
+
+      <div className="connection-store-banner" data-testid="connection-store-banner">
+        <div className="connection-store-header">
+          <span className="connection-store-badge">
+            💾 Storage: <strong>{storeInfo?.type ?? 'FILE'}</strong>
+          </span>
+          {storeInfo?.supportsOptimisticLocking && (
+            <span className="tag tag-ok">Optimistic Locking Enabled</span>
+          )}
+          {storeInfo?.readOnly && (
+            <span className="tag tag-warn">Read-Only</span>
+          )}
+          <span className="inspector-meta">
+            ({storeInfo?.profileCount ?? connections?.length ?? 0} profiles stored)
+          </span>
+        </div>
+        {storeInfo?.description && (
+          <p className="connection-store-desc">{storeInfo.description}</p>
+        )}
+        {canManage && storeInfo && storeInfo.availableStores && storeInfo.availableStores.length > 1 && (
+          <div className="connection-store-actions">
+            <span className="inspector-meta">Live store migration:</span>
+            <select
+              aria-label="Migration target store"
+              value={migrationTarget}
+              onChange={(e) => setMigrationTarget(e.target.value as ConnectionStoreType)}
+              disabled={migrateMutation.isPending}
+            >
+              <option value="">Select target store...</option>
+              {storeInfo.availableStores
+                .filter((s) => s !== storeInfo.type)
+                .map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+            </select>
+            <button
+              className="btn-secondary"
+              disabled={!migrationTarget || migrateMutation.isPending}
+              onClick={() => {
+                if (migrationTarget && window.confirm(`Migrate all connection profiles to ${migrationTarget}?`)) {
+                  migrateMutation.mutate(migrationTarget);
+                }
+              }}
+            >
+              {migrateMutation.isPending ? 'Migrating…' : 'Migrate'}
+            </button>
+            {migrationSuccess && <span className="tag tag-ok">{migrationSuccess}</span>}
+            {migrateMutation.isError && (
+              <span className="stream-error">{String(migrateMutation.error)}</span>
+            )}
+          </div>
+        )}
+      </div>
+
       {canManage && (
         <div className="card">
           <h2>New connection</h2>

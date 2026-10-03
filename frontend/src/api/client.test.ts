@@ -236,3 +236,64 @@ describe('request error handling', () => {
     await assertion;
   });
 });
+
+describe('connection store API (REQ-101)', () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it('getConnectionStoreInfo calls GET /connections/store', async () => {
+    let requestedUrl = '';
+    let method = '';
+    global.fetch = async (input, init) => {
+      requestedUrl = String(input);
+      method = init?.method ?? 'GET';
+      return new Response(
+        JSON.stringify({
+          type: 'JDBC',
+          description: 'Relational JDBC connection store (PostgreSQL) with distributed optimistic locking',
+          supportsOptimisticLocking: true,
+          readOnly: false,
+          profileCount: 5,
+          availableStores: ['FILE', 'JDBC', 'K8S_CRD', 'IN_MEMORY'],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
+    };
+
+    const info = await api.getConnectionStoreInfo();
+    expect(requestedUrl).toContain('/connections/store');
+    expect(method).toBe('GET');
+    expect(info.type).toBe('JDBC');
+    expect(info.supportsOptimisticLocking).toBe(true);
+    expect(info.profileCount).toBe(5);
+    expect(info.availableStores).toContain('K8S_CRD');
+  });
+
+  it('migrateConnectionStore calls POST /connections/store/migrate with targetType query param', async () => {
+    let requestedUrl = '';
+    let method = '';
+    global.fetch = async (input, init) => {
+      requestedUrl = String(input);
+      method = init?.method ?? 'GET';
+      return new Response(
+        JSON.stringify({
+          type: 'K8S_CRD',
+          description: 'Kubernetes Custom Resource Definition connection store',
+          supportsOptimisticLocking: false,
+          readOnly: false,
+          profileCount: 5,
+          availableStores: ['FILE', 'JDBC', 'K8S_CRD', 'IN_MEMORY'],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
+    };
+
+    const migrated = await api.migrateConnectionStore('K8S_CRD');
+    expect(requestedUrl).toContain('/connections/store/migrate?targetType=K8S_CRD');
+    expect(method).toBe('POST');
+    expect(migrated.type).toBe('K8S_CRD');
+  });
+});

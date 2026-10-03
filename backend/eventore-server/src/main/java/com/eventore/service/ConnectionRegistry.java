@@ -1,6 +1,8 @@
 package com.eventore.service;
 
 import com.eventore.domain.ConnectionProfile;
+import com.eventore.service.store.ConnectionProfileStore;
+import com.eventore.service.store.ConnectionStoreInfo;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,22 +13,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 /**
- * Store of connection profiles. Uses in-memory map with optional file persistence
- * ({@link ConnectionProfilePersistence}) when enabled.
+ * Store of connection profiles. Uses in-memory map with pluggable persistent store
+ * ({@link ConnectionProfileStore}) across File, JDBC, or Kubernetes CRD tiers (REQ-101).
  */
 @Service
 public class ConnectionRegistry {
 
     private final Map<String, ConnectionProfile> profiles = new ConcurrentHashMap<>();
-    private final ConnectionProfilePersistence persistence;
+    private final ConnectionProfileStore persistence;
 
-    public ConnectionRegistry(ConnectionProfilePersistence persistence) {
-        this.persistence = persistence;
+    public ConnectionRegistry(ConnectionProfileStore persistence) {
+        this.persistence = Objects.requireNonNull(persistence, "persistence store must not be null");
     }
 
     @PostConstruct
     void loadPersistedProfiles() {
-        profiles.putAll(persistence.load());
+        profiles.putAll(persistence.loadAll());
     }
 
     public List<ConnectionProfile> list() {
@@ -44,15 +46,23 @@ public class ConnectionRegistry {
             throw new IllegalArgumentException("connection profile id is required");
         }
         if (persistence.isEnabled()) {
-            ConnectionProfilePersistence.validatePersistableCredentials(profile);
+            ConnectionProfileStore.validatePersistableCredentials(profile);
         }
         profiles.put(id, profile);
-        persistence.saveAll(profiles);
+        persistence.save(profile);
         return profile;
     }
 
     public void delete(String id) {
         profiles.remove(id);
-        persistence.saveAll(profiles);
+        persistence.delete(id);
+    }
+
+    public ConnectionProfileStore getStore() {
+        return persistence;
+    }
+
+    public ConnectionStoreInfo getStoreInfo() {
+        return persistence.getInfo();
     }
 }

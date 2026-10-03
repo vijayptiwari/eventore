@@ -320,3 +320,34 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GroupOffset'
+    ConnectionStoreType:
+      type: string
+      enum:
+        - FILE
+        - JDBC
+        - K8S_CRD
+        - IN_MEMORY
+    ConnectionStoreInfo:
+      type: object
+      required:
+        - type
+        - description
+        - supportsOptimisticLocking
+        - readOnly
+        - profileCount
+        - availableStores
+      properties:
+        type:
+          $ref: '#/components/schemas/ConnectionStoreType'
+        description:
+          type: string
+        supportsOptimisticLocking:
+          type: boolean
+        readOnly:
+          type: boolean
+        profileCount:
+          type: integer
+        availableStores:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectionStoreType'

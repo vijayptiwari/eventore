@@ -2,6 +2,9 @@ package com.eventore.service;
 
 import com.eventore.config.EventoreProperties;
 import com.eventore.domain.ConnectionProfile;
+import com.eventore.domain.ConnectionStoreType;
+import com.eventore.service.store.ConnectionProfileStore;
+import com.eventore.service.store.ConnectionStoreInfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -19,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 /** Optional JSON file persistence for connection profiles (secret-ref credentials only). */
 @Component
-public class ConnectionProfilePersistence {
+public class ConnectionProfilePersistence implements ConnectionProfileStore {
 
     private static final Logger log = LoggerFactory.getLogger(ConnectionProfilePersistence.class);
     private static final TypeReference<List<ConnectionProfile>> PROFILE_LIST =
@@ -33,6 +36,12 @@ public class ConnectionProfilePersistence {
         this.objectMapper = objectMapper;
     }
 
+    @Override
+    public ConnectionStoreType getType() {
+        return ConnectionStoreType.FILE;
+    }
+
+    @Override
     public boolean isEnabled() {
         return properties.getConnections().getPersistence().isEnabled();
     }
@@ -61,6 +70,23 @@ public class ConnectionProfilePersistence {
         }
     }
 
+    @Override
+    public Map<String, ConnectionProfile> loadAll() {
+        return load();
+    }
+
+    @Override
+    public void save(ConnectionProfile profile) {
+        if (profile == null) {
+            return;
+        }
+        validatePersistableCredentials(profile);
+        Map<String, ConnectionProfile> map = loadAll();
+        map.put(profile.getId(), profile);
+        saveAll(map);
+    }
+
+    @Override
     public void saveAll(Map<String, ConnectionProfile> profiles) {
         if (!isEnabled()) {
             return;
@@ -69,6 +95,9 @@ public class ConnectionProfilePersistence {
         try {
             Files.createDirectories(path.getParent());
             List<ConnectionProfile> list = new ArrayList<>(profiles.values());
+            for (ConnectionProfile p : list) {
+                validatePersistableCredentials(p);
+            }
             byte[] json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(list);
             Path temp = path.resolveSibling(path.getFileName() + ".tmp");
             Files.write(temp, json);
@@ -83,25 +112,40 @@ public class ConnectionProfilePersistence {
         }
     }
 
-    public static void validatePersistableCredentials(ConnectionProfile profile) {
-        if (profile.getCredentials() == null || profile.getCredentials().isEmpty()) {
+    @Override
+    public void delete(String id) {
+        if (id == null) {
             return;
         }
-        for (Map.Entry<String, String> entry : profile.getCredentials().entrySet()) {
-            String value = entry.getValue();
-            if (value == null || value.isBlank()) {
-                continue;
-            }
-            if (!value.startsWith("env:") && !value.startsWith("file:")) {
-                throw new IllegalArgumentException(
-                        "Plaintext credential '"
-                                + entry.getKey()
-                                + "' cannot be persisted; use env: or file: secret references");
-            }
+        Map<String, ConnectionProfile> map = loadAll();
+        if (map.remove(id) != null) {
+            saveAll(map);
         }
+    }
+
+    @Override
+    public ConnectionStoreInfo getInfo() {
+        Path path = resolvePath();
+        int count = 0;
+        try {
+            count = loadAll().size();
+        } catch (Exception ignored) {
+        }
+        return new ConnectionStoreInfo(
+                getType(),
+                isEnabled(),
+                count,
+                false,
+                path.toAbsolutePath().toString(),
+                Map.of("filePath", path.toString(), "format", "JSON"));
+    }
+
+    public static void validatePersistableCredentials(ConnectionProfile profile) {
+        ConnectionProfileStore.validatePersistableCredentials(profile);
     }
 
     private Path resolvePath() {
         return Path.of(properties.getConnections().getPersistence().getFilePath());
     }
 }
+

@@ -85,6 +85,36 @@ paths:
             application/json:
               schema:
                 $ref: '../common/schemas.yaml#/components/schemas/ConnectionProfileResponse'
+  /connections/store:
+    get:
+      tags: [Connections]
+      operationId: getConnectionStoreInfo
+      summary: Get active connection persistence store metadata and capabilities
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/ConnectionStoreInfo'
+  /connections/store/migrate:
+    post:
+      tags: [Connections]
+      operationId: migrateConnectionStore
+      summary: Migrate connection profiles from active store to target store
+      parameters:
+        - name: targetType
+          in: query
+          required: true
+          schema:
+            $ref: '../common/schemas.yaml#/components/schemas/ConnectionStoreType'
+      responses:
+        '200':
+          description: Migration completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '../common/schemas.yaml#/components/schemas/ConnectionStoreInfo'
   /connections/{connectionId}:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'

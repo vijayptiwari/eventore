@@ -59,6 +59,17 @@ export interface ConnectionProfile {
   credentials?: Record<string, string>;
 }
 
+export type ConnectionStoreType = 'FILE' | 'JDBC' | 'K8S_CRD' | 'IN_MEMORY';
+
+export interface ConnectionStoreInfo {
+  type: ConnectionStoreType;
+  description: string;
+  supportsOptimisticLocking: boolean;
+  readOnly: boolean;
+  profileCount: number;
+  availableStores: ConnectionStoreType[];
+}
+
 export interface TopicRef {
   name: string;
   type: string;

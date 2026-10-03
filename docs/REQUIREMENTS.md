@@ -23,6 +23,17 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 
 ---
 
+## Post–Wave 3 Completed
+
+| REQ | Title | Evidence |
+|-----|-------|----------|
+| REQ-101 | Externalized Connection Store (JDBC / CRD / File / Migration) | `ConnectionProfileStore` SPI, `JdbcConnectionProfileStore` (optimistic locking), `K8sCrdConnectionProfileStore` (Kubernetes CRD), `DelegatingConnectionProfileStore`, REST `/connections/store/migrate`, UI storage banner & live migration controls |
+| REQ-105 | Field-Level Data Masking & PII Redaction | Jackson recursive `DataMasker`, regex + JSONPath masking, `/masking/config`, `/masking/preview`, LiveView toggle & inspector search masking |
+| REQ-111 | OpenTelemetry Distributed Tracing & W3C TraceContext | `TraceContext` normalized model, W3C traceparent extraction & injection on publish/redrive, deep links to Jaeger/Zipkin/Datadog, `MessagePayloadViewer` trace badge |
+| REQ-112 | Visual Topology & Consumer Lag Heatmap | `StreamInspectorLagTab` severity heatmap, KPI cards, skew alert banner, `StreamInspectorOverviewTab` broker topology visualizer, `StreamInspectorTopicsTab` partition distribution matrix |
+
+---
+
 ## Wave 3 Completed (Do Not Re-Plan)
 
 | REQ | Title | Evidence |
