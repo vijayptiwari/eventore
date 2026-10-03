@@ -36,7 +36,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '../common/schemas.yaml#/components/schemas/ClusterInfo'
   /connections/{connectionId}/inspect/brokers:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
@@ -64,7 +64,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '../common/schemas.yaml#/components/schemas/TopicRef'
+                  $ref: '../common/schemas.yaml#/components/schemas/ConsumerGroupSummary'
   /connections/{connectionId}/inspect/consumer-groups/{groupId}:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
@@ -82,7 +82,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '../common/schemas.yaml#/components/schemas/ConsumerGroupDetail'
   /connections/{connectionId}/inspect/topics:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
@@ -101,7 +101,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '../common/schemas.yaml#/components/schemas/TopicRef'
+                  $ref: '../common/schemas.yaml#/components/schemas/TopicDetail'
   /connections/{connectionId}/inspect/topics/{topic}:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
@@ -119,7 +119,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                $ref: '../common/schemas.yaml#/components/schemas/TopicDetail'
   /connections/{connectionId}/inspect/lag:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'
@@ -143,7 +143,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  $ref: '../common/schemas.yaml#/components/schemas/GroupOffset'
   /connections/{connectionId}/inspect/search:
     parameters:
       - $ref: '../common/schemas.yaml#/components/parameters/connectionId'

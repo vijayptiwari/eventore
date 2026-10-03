@@ -28,3 +28,5 @@ coverage/
 !gradle-wrapper.jar
 frontend/src/api/generated/
 backend/openapi/eventore-api-bundled.yaml
+test-results/
+.cursor/

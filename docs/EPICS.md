@@ -515,7 +515,7 @@ None remain blocking after assumptions above. Revisit if product chooses Kafka-o
 **Acceptance criteria:**
 
 - [ ] **AC-1:** Step 4 (Done) shows connection name, protocol, validate status; primary CTA **Open in Browse** navigates to `/browse?connectionId={id}`.
-- [ ] **AC-2:** When `deploymentMode` is `DEV` or `ADMIN` and protocol supports publish, optional **Send test message** button calls `api.publish` with small payload; disabled in READONLY/PUBLISHED modes.
+- [ ] **AC-2:** When `deploymentMode` is `DEV` or `ADMIN` and protocol supports publish, optional **Send test message** button calls `api.publish` with small payload; disabled in READONLY mode.
 - [ ] **AC-3:** Test publish failure shows non-blocking warning; connection remains saved.
 - [ ] **AC-4:** Wizard completion invalidates `['connections']` query cache.
 

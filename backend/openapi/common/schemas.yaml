@@ -238,3 +238,85 @@ components:
         message:
           type: string
           nullable: true
+    ConsumerGroupSummary:
+      type: object
+      properties:
+        groupId:
+          type: string
+        state:
+          type: string
+        protocolType:
+          type: string
+        memberCount:
+          type: integer
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+    GroupOffset:
+      type: object
+      properties:
+        topic:
+          type: string
+        partition:
+          type: integer
+        offset:
+          type: integer
+          format: int64
+        logEndOffset:
+          type: integer
+          format: int64
+        lag:
+          type: integer
+          format: int64
+        oldestUnackedMessageAge:
+          type: integer
+          format: int64
+          nullable: true
+    ClusterInfo:
+      type: object
+      properties:
+        clusterId:
+          type: string
+        brokers:
+          type: array
+          items:
+            type: object
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+    TopicDetail:
+      type: object
+      properties:
+        name:
+          type: string
+        partitionCount:
+          type: integer
+        replicationFactor:
+          type: integer
+        partitions:
+          type: array
+          items:
+            type: object
+        config:
+          type: object
+          additionalProperties:
+            type: string
+    ConsumerGroupDetail:
+      type: object
+      properties:
+        groupId:
+          type: string
+        state:
+          type: string
+        partitionAssignor:
+          type: string
+        members:
+          type: array
+          items:
+            type: object
+        offsets:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupOffset'

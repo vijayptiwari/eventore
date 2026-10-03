@@ -4,8 +4,11 @@ import ExportResultActions from './ExportResultActions';
 
 interface Props {
   connectionId: string;
+  protocol?: string;
   searchTopic: string;
   onSearchTopicChange: (value: string) => void;
+  searchPartition: string;
+  onSearchPartitionChange: (value: string) => void;
   searchPayload: string;
   onSearchPayloadChange: (value: string) => void;
   searchKey: string;
@@ -15,8 +18,11 @@ interface Props {
 
 export default function StreamInspectorSearchTab({
   connectionId,
+  protocol,
   searchTopic,
   onSearchTopicChange,
+  searchPartition,
+  onSearchPartitionChange,
   searchPayload,
   onSearchPayloadChange,
   searchKey,
@@ -27,8 +33,16 @@ export default function StreamInspectorSearchTab({
     <div className="card">
       <div className="form-grid">
         <div className="form-row">
-          <label>Topic</label>
-          <input value={searchTopic} onChange={(e) => onSearchTopicChange(e.target.value)} />
+          <label>Topic / Queue</label>
+          <input value={searchTopic} onChange={(e) => onSearchTopicChange(e.target.value)} placeholder="Destination name" />
+        </div>
+        <div className="form-row">
+          <label>{protocol === 'AZURE_SERVICE_BUS' ? 'Subscription (for topics)' : 'Partition (optional)'}</label>
+          <input
+            value={searchPartition}
+            onChange={(e) => onSearchPartitionChange(e.target.value)}
+            placeholder={protocol === 'AZURE_SERVICE_BUS' ? 'Subscription name (leave blank for queues)' : 'e.g. 0'}
+          />
         </div>
         <div className="form-row">
           <label>Payload contains</label>
@@ -39,6 +53,11 @@ export default function StreamInspectorSearchTab({
           <input value={searchKey} onChange={(e) => onSearchKeyChange(e.target.value)} />
         </div>
       </div>
+      {protocol === 'AZURE_SERVICE_BUS' && (
+        <p className="inspector-meta">
+          Azure Service Bus uses non-destructive message peek. For topics, specify the subscription name in the Subscription field.
+        </p>
+      )}
       <button
         type="button"
         disabled={searchMutation.isPending || !searchTopic}
@@ -55,6 +74,7 @@ export default function StreamInspectorSearchTab({
         meta={{
           connectionId,
           topic: searchTopic,
+          partition: searchPartition || undefined,
           payloadContains: searchPayload || undefined,
           keyContains: searchKey || undefined,
           maxMessages: 50,

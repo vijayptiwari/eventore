@@ -2,17 +2,20 @@ package com.eventore.api.delegate;
 
 import com.eventore.api.generated.inspect.InspectApiDelegate;
 import com.eventore.domain.ConnectionProfile;
-import com.eventore.domain.TopicRef;
 import com.eventore.domain.UnifiedMessage;
 import com.eventore.inspect.InspectorRegistry;
+import com.eventore.inspect.domain.InspectModels.ClusterInfo;
+import com.eventore.inspect.domain.InspectModels.ConsumerGroupDetail;
+import com.eventore.inspect.domain.InspectModels.ConsumerGroupSummary;
+import com.eventore.inspect.domain.InspectModels.GroupOffset;
 import com.eventore.inspect.domain.InspectModels.MessageSearchRequest;
 import com.eventore.inspect.domain.InspectModels.ProtocolInspectCapabilities;
+import com.eventore.inspect.domain.InspectModels.TopicDetail;
 import com.eventore.inspect.spi.MessagingInspector;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
 import com.eventore.service.AuditService;
 import com.eventore.service.ConnectionRegistry;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +50,7 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Object> inspectCluster(String connectionId) {
+    public ResponseEntity<ClusterInfo> inspectCluster(String connectionId) {
         policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = profile(connectionId);
         return ResponseEntity.ok(inspector(profile).clusterInfo(profile));
@@ -65,43 +68,41 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public ResponseEntity<List<TopicRef>> listConsumerGroups(String connectionId) {
+    public ResponseEntity<List<ConsumerGroupSummary>> listConsumerGroups(String connectionId) {
         policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = profile(connectionId);
-        return ResponseEntity.ok((List) inspector(profile).listConsumerGroups(profile));
+        return ResponseEntity.ok(inspector(profile).listConsumerGroups(profile));
     }
 
     @Override
-    public ResponseEntity<Object> describeConsumerGroup(String connectionId, String groupId) {
+    public ResponseEntity<ConsumerGroupDetail> describeConsumerGroup(String connectionId, String groupId) {
         policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = profile(connectionId);
         return ResponseEntity.ok(inspector(profile).describeConsumerGroup(profile, groupId));
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public ResponseEntity<List<TopicRef>> listInspectTopics(String connectionId, String filter) {
+    public ResponseEntity<List<TopicDetail>> listInspectTopics(String connectionId, String filter) {
         policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = profile(connectionId);
-        return ResponseEntity.ok((List) inspector(profile).listTopics(profile, filter));
+        return ResponseEntity.ok(inspector(profile).listTopics(profile, filter));
     }
 
     @Override
-    public ResponseEntity<Object> describeInspectTopic(String connectionId, String topic) {
+    public ResponseEntity<TopicDetail> describeInspectTopic(String connectionId, String topic) {
         policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = profile(connectionId);
         return ResponseEntity.ok(inspector(profile).describeTopic(profile, topic));
     }
 
     @Override
-    public ResponseEntity<List<Object>> inspectLag(String connectionId, String groupId, String topic) {
+    public ResponseEntity<List<GroupOffset>> inspectLag(String connectionId, String groupId, String topic) {
         policy.require(Action.BROWSE_DESTINATIONS);
         if (groupId == null || groupId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "groupId is required for lag");
         }
         ConnectionProfile profile = profile(connectionId);
-        return ResponseEntity.ok(toObjectList(inspector(profile).consumerLag(profile, groupId, topic)));
+        return ResponseEntity.ok(inspector(profile).consumerLag(profile, groupId, topic));
     }
 
     @Override
@@ -124,11 +125,6 @@ public class InspectApiDelegateImpl implements InspectApiDelegate {
         return connectionRegistry
                 .find(connectionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<Object> toObjectList(List<?> source) {
-        return (List<Object>) (List<?>) source;
     }
 
     private MessagingInspector inspector(ConnectionProfile profile) {

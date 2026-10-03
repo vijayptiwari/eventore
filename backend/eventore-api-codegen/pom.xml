@@ -150,6 +150,11 @@
                                 <importMapping>TopicRef=com.eventore.domain.TopicRef</importMapping>
                                 <importMapping>ProtocolType=com.eventore.domain.ProtocolType</importMapping>
                                 <importMapping>ProtocolInspectCapabilities=com.eventore.inspect.domain.InspectModels.ProtocolInspectCapabilities</importMapping>
+                                <importMapping>ConsumerGroupSummary=com.eventore.inspect.domain.InspectModels.ConsumerGroupSummary</importMapping>
+                                <importMapping>ConsumerGroupDetail=com.eventore.inspect.domain.InspectModels.ConsumerGroupDetail</importMapping>
+                                <importMapping>TopicDetail=com.eventore.inspect.domain.InspectModels.TopicDetail</importMapping>
+                                <importMapping>GroupOffset=com.eventore.inspect.domain.InspectModels.GroupOffset</importMapping>
+                                <importMapping>ClusterInfo=com.eventore.inspect.domain.InspectModels.ClusterInfo</importMapping>
                             </importMappings>
                         </configuration>
                     </execution>

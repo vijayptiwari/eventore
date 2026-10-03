@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+#### Wave 4 Preparation & Consistency Normalization (Phase 1)
+- **Typed Inspect OpenAPI contract**: `backend/openapi/common/schemas.yaml` and `inspect-api.yaml` now define typed schemas for `ConsumerGroupSummary`, `ClusterInfo`, `TopicDetail`, `ConsumerGroupDetail`, and `GroupOffset`; `eventore-api-codegen` maps these to `InspectModels` domain types.
+- **Strongly-typed Inspect Delegate**: `InspectApiDelegateImpl` return types now match OpenAPI contract models; all unchecked `(List)` casts and warnings eliminated.
+- **Azure Service Bus & Partition Search**: `StreamInspectorSearchTab` and `StreamInspector` now support `partition` / subscription input for topic message peek with protocol-specific helper text.
+- **Deployment Mode Cleanup (REQ-68)**: Eliminated deprecated `PUBLISHED` deployment mode reference in `docs/EPICS.md`.
+
 #### Wave 2 — persistence, HA, security tests, JMS CI, MCP toolkit
 - **Durable connection profiles**: optional JSON file persistence (`eventore.connections.persistence`) with `env:`/`file:` credential validation; Helm volume wiring when enabled.
 - **HA guidance**: `docs/HA.md`, Helm NOTES multi-replica warning, `values-readonly.yaml` backend `replicaCount: 1`.

@@ -40,6 +40,7 @@ export default function StreamInspector({ session }: Props) {
   const [lagTopic, setLagTopic] = useState(session.destination);
   const [searchTopic, setSearchTopic] = useState(session.destination);
   const [selectedGroup, setSelectedGroup] = useState('');
+  const [searchPartition, setSearchPartition] = useState('');
   const [searchPayload, setSearchPayload] = useState('');
   const [searchKey, setSearchKey] = useState('');
   const [dumpStartAt, setDumpStartAt] = useState<'latest' | 'earliest'>('latest');
@@ -115,6 +116,7 @@ export default function StreamInspector({ session }: Props) {
     mutationFn: () =>
       api.inspectSearch(cid, {
         topic: searchTopic,
+        partition: searchPartition || undefined,
         payloadContains: searchPayload || undefined,
         keyContains: searchKey || undefined,
         maxMessages: 50,
@@ -232,8 +234,11 @@ export default function StreamInspector({ session }: Props) {
           )}
           <StreamInspectorSearchTab
             connectionId={cid}
+            protocol={protocol}
             searchTopic={searchTopic}
             onSearchTopicChange={setSearchTopic}
+            searchPartition={searchPartition}
+            onSearchPartitionChange={setSearchPartition}
             searchPayload={searchPayload}
             onSearchPayloadChange={setSearchPayload}
             searchKey={searchKey}
