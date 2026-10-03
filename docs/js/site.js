@@ -39,9 +39,20 @@
 
   var navItems = [
     { href: asset('index.html'), label: 'Home', active: isHomeActive },
-    { href: asset('about.html'), label: 'About', active: isAboutActive },
     { href: asset('guide/index.html'), label: 'Documentation', active: inGuideSection },
+    { href: asset('guide/replication-bridging.html'), label: 'Replication' },
+    { href: asset('guide/stream-platforms.html'), label: 'Protocols' },
+    { href: asset('about.html'), label: 'About', active: isAboutActive },
     { href: GITHUB, label: 'GitHub', external: true },
+  ];
+
+  var capabilityLinks = [
+    { href: 'replication-bridging.html', label: 'Cross-broker replication' },
+    { href: 'data-masking.html', label: 'PII data masking' },
+    { href: 'tracing.html', label: 'Distributed tracing' },
+    { href: 'topology-lag.html', label: 'Lag heatmap & topology' },
+    { href: 'dlq.html', label: 'DLQ & message redrive' },
+    { href: 'connection-stores.html', label: 'Externalized stores' },
   ];
 
   var guideCoreLinks = [
@@ -79,6 +90,12 @@
     });
   }
 
+  function isCapabilityGuide(file) {
+    return capabilityLinks.some(function (c) {
+      return c.href === file;
+    });
+  }
+
   function linkAttrs(external) {
     return external ? ' target="_blank" rel="noopener noreferrer"' : '';
   }
@@ -102,7 +119,11 @@
   function injectGuidePager() {
     var file = currentGuideFile();
     if (!file || file === 'index.html') return;
-    var links = isStreamGuide(file) ? streamGuideLinks : guideCoreLinks;
+    var links = isCapabilityGuide(file)
+      ? capabilityLinks
+      : isStreamGuide(file)
+      ? streamGuideLinks
+      : guideCoreLinks;
     var idx = links.findIndex(function (l) {
       return l.href === file;
     });
@@ -135,7 +156,7 @@
   }
 
   function injectStreamToc(file) {
-    if (!isStreamGuide(file)) return;
+    if (!isStreamGuide(file) && !isCapabilityGuide(file)) return;
     var main = document.querySelector('.guide-layout main');
     if (!main || main.querySelector('.stream-onpage-nav')) return;
     var sections = main.querySelectorAll('h2[id]');
@@ -180,7 +201,7 @@
       asset('index.html') +
       '" aria-label="Eventore home">' +
       '<img src="' +
-      asset('assets/logo.svg') +
+      asset('assets/logo-light.svg') +
       '" alt="Eventore" width="200" height="36" decoding="async"/>' +
       '</a>' +
       '<nav class="site-nav" aria-label="Primary">' +
@@ -191,7 +212,9 @@
   var sidebar = document.getElementById('guide-sidebar-nav');
   if (sidebar && inGuideSection()) {
     sidebar.innerHTML =
-      '<p class="guide-sidebar-title">Streams</p><ul class="guide-sidebar-streams">' +
+      '<p class="guide-sidebar-title">Capabilities</p><ul class="guide-sidebar-capabilities">' +
+      renderSidebarLinks(capabilityLinks) +
+      '</ul><p class="guide-sidebar-title">Streams</p><ul class="guide-sidebar-streams">' +
       renderSidebarLinks(streamGuideLinks) +
       '</ul><p class="guide-sidebar-title">Platform</p><ul>' +
       renderSidebarLinks(guideCoreLinks) +
@@ -200,6 +223,17 @@
 
   var footer = document.getElementById('site-footer');
   if (footer) {
+    var capList = capabilityLinks
+      .map(function (l) {
+        return (
+          '<li><a href="' +
+          guideHref(l.href) +
+          '">' +
+          l.label +
+          '</a></li>'
+        );
+      })
+      .join('');
     var docList = footerDocLinks
       .map(function (l) {
         return (
@@ -223,9 +257,10 @@
       })
       .join('');
     var resourceList = [
-      { href: GITHUB, label: 'GitHub', external: true },
+      { href: GITHUB, label: 'GitHub repository', external: true },
       { href: GITHUB + '/tree/main/deploy/helm', label: 'Helm charts', external: true },
-      { href: guideHref('deployment.html'), label: 'Deploy' },
+      { href: guideHref('deployment.html'), label: 'Deployment options' },
+      { href: guideHref('mcp.html'), label: 'MCP AI agents' },
     ]
       .map(function (l) {
         return (
@@ -251,13 +286,16 @@
       asset('assets/logo-light.svg') +
       '" alt="Eventore" width="160" height="32" decoding="async"/>' +
       '</a>' +
-      '<p class="site-footer-tagline">One console for Kafka, MQTT, RabbitMQ, Pulsar, JMS, Kinesis, Pub/Sub, and Service Bus.</p>' +
+      '<p class="site-footer-tagline">Unified multi-protocol streaming and messaging console for Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, and Azure Service Bus.</p>' +
       '</div>' +
-      '<div class="site-footer-col"><h4>Platform</h4><ul>' +
-      docList +
+      '<div class="site-footer-col"><h4>Capabilities</h4><ul>' +
+      capList +
       '</ul></div>' +
-      '<div class="site-footer-col site-footer-col--streams"><h4>Stream guides</h4><ul>' +
+      '<div class="site-footer-col"><h4>Stream Guides</h4><ul>' +
       streamList +
+      '</ul></div>' +
+      '<div class="site-footer-col"><h4>Platform &amp; Ops</h4><ul>' +
+      docList +
       '</ul></div>' +
       '<div class="site-footer-col"><h4>Resources</h4><ul>' +
       resourceList +
@@ -266,7 +304,7 @@
       '<div class="site-footer-bottom">' +
       '<span>© ' +
       year +
-      ' Eventore</span>' +
+      ' Eventore. Open source Apache-2.0.</span>' +
       '<span><a href="' +
       guideHref('index.html') +
       '">Documentation</a> · <a href="' +

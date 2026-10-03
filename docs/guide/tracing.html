@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>OpenTelemetry Distributed Tracing — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="End-to-end distributed tracing across messaging brokers with W3C TraceContext, traceparent extraction, OpenTelemetry spans, and deep links to Jaeger, Zipkin, and Datadog."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="opentelemetry kafka tracing, w3c tracecontext streaming, distributed tracing messaging, jaeger kafka, zipkin event tracing, traceparent header"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/tracing.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="OpenTelemetry Distributed Tracing — Eventore"/>
+  <meta property="og:description" content="End-to-end distributed tracing across messaging brokers with W3C TraceContext, traceparent extraction, OpenTelemetry spans, and deep links to Jaeger, Zipkin, and Datadog."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/tracing.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="OpenTelemetry Distributed Tracing — Eventore"/>
+  <meta name="twitter:description" content="End-to-end distributed tracing across messaging brokers with W3C TraceContext, traceparent extraction, OpenTelemetry spans, and deep links to Jaeger, Zipkin, and Datadog."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/tracing.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"OpenTelemetry Distributed Tracing","item":"https://vijayptiwari.github.io/eventore/guide/tracing.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/tracing.html#article","headline":"OpenTelemetry Distributed Tracing — Eventore","description":"End-to-end distributed tracing across messaging brokers with W3C TraceContext, traceparent extraction, OpenTelemetry spans, and deep links to Jaeger, Zipkin, and Datadog.","url":"https://vijayptiwari.github.io/eventore/guide/tracing.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/tracing.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
+    <main>
+      <h1 class="page-title">OpenTelemetry Distributed Tracing</h1>
+      <p class="page-subtitle">End-to-end request correlation across asynchronous messaging architectures using W3C TraceContext standards and OpenTelemetry instrumentation.</p>
+
+      <div class="callout callout-info">
+        <strong>Observability Capability (REQ-111):</strong> Eventore inspects, extracts, propagates, and visualizes W3C <code>traceparent</code> headers across all supported brokers, enabling instantaneous jump-to-trace navigation in Jaeger, Zipkin, Datadog, and Dynatrace.
+      </div>
+
+      <h2 id="why-tracing">The Challenge of Asynchronous Tracing</h2>
+      <p>
+        In HTTP REST microservices, distributed tracing propagates cleanly via headers. In asynchronous message architectures (Kafka, RabbitMQ, MQTT, Kinesis), producers and consumers are decoupled in time and space.
+      </p>
+      <p>
+        When an incident occurs — such as an order dropping or processing latency spiking — identifying the upstream root cause across multiple topics and queues can require hours of manual log parsing. Eventore bridges this gap by automatically detecting and decoding distributed trace contexts in every record.
+      </p>
+
+      <h2 id="w3c-standard">W3C TraceContext Specification</h2>
+      <p>Eventore natively parses the official W3C <code>traceparent</code> binary or string header:</p>
+      <pre><code>version - trace_id                         - parent_id        - trace_flags
+00      - 4bf92f3577b34da6a3ce929d0e0e4736 - 00f067aa0ba902b7 - 01</code></pre>
+
+      <p>
+        When Eventore's message inspector or live stream intercepts a record containing <code>traceparent</code> (or legacy <code>X-B3-TraceId</code>), it highlights the Trace ID with a direct clickable icon that opens your centralized observability platform.
+      </p>
+
+      <h2 id="trace-propagation">Bridge Span Propagation</h2>
+      <p>
+        When using Eventore's <a href="replication-bridging.html">Replication Bridge Engine</a>, Eventore acts as an active distributed tracing participant:
+      </p>
+      <ul>
+        <li>Extracts parent span context from incoming source message headers.</li>
+        <li>Spans a new internal child trace with attributes: <code>messaging.system</code>, <code>messaging.source.topic</code>, <code>messaging.target.topic</code>, and <code>eventore.bridge.id</code>.</li>
+        <li>Injects the renewed <code>traceparent</code> header into the target broker message so downstream consumer traces maintain unbroken lineage.</li>
+      </ul>
+
+      <h2 id="configuring-exporters">Configuring Observability Links</h2>
+      <p>Configure your organization's APM base URL in <code>application.yml</code> or environment variables:</p>
+      <pre><code>eventore:
+  tracing:
+    enabled: true
+    apm-provider: jaeger # Options: jaeger, zipkin, datadog, custom
+    apm-url-template: "https://jaeger.internal.corp/trace/{traceId}"
+    # Example for Datadog:
+    # apm-url-template: "https://app.datadoghq.com/apm/trace/{traceId}"
+    inject-bridge-spans: true</code></pre>
+
+      <h2 id="ui-integration">UI Tracing Features</h2>
+      <ul>
+        <li><strong>One-Click APM Jump:</strong> Every inspected message with trace headers shows an interactive badge linking directly to the full distributed flame graph.</li>
+        <li><strong>Trace ID Filter:</strong> Search topics or live streams by specific Trace ID to isolate all records involved in a particular transaction flow.</li>
+        <li><strong>Span Duration Markers:</strong> Inspect message delivery and hop transit latencies directly in the Eventore console.</li>
+      </ul>
+
+      <div class="btn-group">
+        <a class="btn btn-primary" href="topology-lag.html">Cluster topology &amp; lag heatmap &rarr;</a>
+        <a class="btn btn-outline" href="replication-bridging.html">Replication bridges</a>
+      </div>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

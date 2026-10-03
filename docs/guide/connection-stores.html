@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Externalized Connection Stores — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Scale Eventore horizontally with externalized connection stores: PostgreSQL JDBC with optimistic locking, Kubernetes CRDs, encrypted file stores, and live migration."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="eventore high availability, kafka connection store, kubernetes crd messaging, postgresql connection store, externalized config, multi-replica eventore"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/connection-stores.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="Externalized Connection Stores — Eventore"/>
+  <meta property="og:description" content="Scale Eventore horizontally with externalized connection stores: PostgreSQL JDBC with optimistic locking, Kubernetes CRDs, encrypted file stores, and live migration."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/connection-stores.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Externalized Connection Stores — Eventore"/>
+  <meta name="twitter:description" content="Scale Eventore horizontally with externalized connection stores: PostgreSQL JDBC with optimistic locking, Kubernetes CRDs, encrypted file stores, and live migration."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/connection-stores.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Externalized Connection Stores","item":"https://vijayptiwari.github.io/eventore/guide/connection-stores.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/connection-stores.html#article","headline":"Externalized Connection Stores — Eventore","description":"Scale Eventore horizontally with externalized connection stores: PostgreSQL JDBC with optimistic locking, Kubernetes CRDs, encrypted file stores, and live migration.","url":"https://vijayptiwari.github.io/eventore/guide/connection-stores.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/connection-stores.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
+    <main>
+      <h1 class="page-title">Externalized Connection Stores</h1>
+      <p class="page-subtitle">Decouple broker configurations from application containers with enterprise storage backends: PostgreSQL JDBC, Kubernetes Custom Resource Definitions, and encrypted file stores.</p>
+
+      <div class="callout callout-info">
+        <strong>High Availability &amp; Multi-Replica (REQ-101):</strong> By externalizing connection definitions, multiple Eventore pods run completely stateless behind an ingress or load balancer without configuration drift or manual file synchronization.
+      </div>
+
+      <h2 id="storage-backends">Supported Storage Backends</h2>
+      <p>Eventore provides pluggable implementations of <code>ConnectionStore</code>:</p>
+      <ul>
+        <li><strong>PostgreSQL JDBC Store:</strong> Enterprise-grade database storage using Flyway migrations, connection pooling (HikariCP), and optimistic concurrency control (<code>version</code> column) to prevent concurrent write collisions across instances.</li>
+        <li><strong>Kubernetes CRD Store:</strong> GitOps-native configuration where brokers are declared as <code>EventoreConnection</code> custom resources managed by ArgoCD, Flux, or Helm.</li>
+        <li><strong>File Store (Encrypted):</strong> Default local or persistent volume JSON/YAML store with AES-256 GCM credential encryption at rest.</li>
+      </ul>
+
+      <h2 id="configuring-jdbc">Configuring PostgreSQL JDBC Store</h2>
+      <p>In your <code>application.yml</code> or Helm values, select the <code>jdbc</code> store type:</p>
+      <pre><code>eventore:
+  connection-store:
+    type: jdbc
+    jdbc:
+      url: jdbc:postgresql://postgres.eventore.svc.cluster.local:5432/eventoredb
+      username: ${DB_USER}
+      password: ${DB_PASSWORD}
+      pool-size: 10
+      auto-migrate: true</code></pre>
+
+      <h2 id="kubernetes-crds">Kubernetes Custom Resource (CRD) Pattern</h2>
+      <p>Deploy broker connections declaratively alongside your microservices:</p>
+      <pre><code>apiVersion: eventore.io/v1alpha1
+kind: EventoreConnection
+metadata:
+  name: prod-kafka-cluster
+  namespace: eventore
+spec:
+  protocol: KAFKA
+  brokerUrl: "b-1.prod.kafka.us-east-1.amazonaws.com:9096"
+  security:
+    protocol: SASL_SSL
+    saslMechanism: AWS_MSK_IAM
+  tags:
+    environment: "production"
+    team: "data-platform"</code></pre>
+
+      <h2 id="live-migration">Live Store Migration</h2>
+      <p>
+        Upgrading from a single-node file store to clustered PostgreSQL JDBC can be performed without downtime using Eventore's live migration endpoint:
+      </p>
+      <pre><code>POST /api/v1/admin/connection-store/migrate
+Content-Type: application/json
+
+{
+  "sourceType": "file",
+  "targetType": "jdbc",
+  "dryRun": false
+}</code></pre>
+
+      <div class="btn-group">
+        <a class="btn btn-primary" href="deployment.html">Review deployment guide</a>
+        <a class="btn btn-outline" href="replication-bridging.html">Explore replication bridges &rarr;</a>
+      </div>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

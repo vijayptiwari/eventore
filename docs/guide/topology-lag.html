@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Partition Lag Heatmap &amp; Cluster Topology — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Diagnose consumer bottlenecks and partition skews instantly with Eventore's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="kafka consumer lag ui, partition lag heatmap, kafka cluster topology, kafka consumer group skew, under-replicated partitions, kafka broker health"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/topology-lag.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="Partition Lag Heatmap &amp; Cluster Topology — Eventore"/>
+  <meta property="og:description" content="Diagnose consumer bottlenecks and partition skews instantly with Eventore's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/topology-lag.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Partition Lag Heatmap &amp; Cluster Topology — Eventore"/>
+  <meta name="twitter:description" content="Diagnose consumer bottlenecks and partition skews instantly with Eventore's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Partition Lag Heatmap & Cluster Topology","item":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html#article","headline":"Partition Lag Heatmap & Cluster Topology — Eventore","description":"Diagnose consumer bottlenecks and partition skews instantly with Eventore's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics.","url":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
+    <main>
+      <h1 class="page-title">Partition Lag Heatmap &amp; Cluster Topology</h1>
+      <p class="page-subtitle">Real-time visual partition health, consumer group lag skew detection, and interactive broker topology maps for enterprise streaming clusters.</p>
+
+      <div class="callout callout-info">
+        <strong>Monitoring Innovation (REQ-112):</strong> Instead of scrolling through text tables of hundreds of partition offsets, Eventore's visual lag heatmap provides an instant high-density matrix that flags struggling consumer instances in seconds.
+      </div>
+
+      <h2 id="the-problem">The Problem with Traditional Lag Tables</h2>
+      <p>
+        In high-scale Kafka and streaming deployments, topics frequently have dozens or hundreds of partitions consumed by horizontally scaled application instances. Traditional UIs display lag as long paginated lists of numbers:
+      </p>
+      <pre><code>Partition 0: Lag 12  | Partition 1: Lag 15  | Partition 2: Lag 42,910 | Partition 3: Lag 8</code></pre>
+      <p>
+        In a 128-partition topic, spotting that <strong>Partition 2</strong> is stalled due to a single poisoned poison-pill message or thread deadlock is like finding a needle in a haystack.
+      </p>
+
+      <h2 id="lag-heatmap">The Partition Lag Heatmap</h2>
+      <p>
+        Eventore's <code>LagHeatmapView</code> groups partitions into compact visual severity tiles color-coded by lag thresholds:
+      </p>
+      <ul>
+        <li><span class="badge badge-success">Nominal (&lt; 100 msgs)</span>: Emerald green tiles indicating healthy consumers keeping up with real-time producer velocity.</li>
+        <li><span class="badge badge-warn">Moderate (100 - 1,000 msgs)</span>: Amber tiles signaling elevated processing times or minor traffic bursts.</li>
+        <li><span class="badge badge-danger">Critical (&gt; 1,000 msgs)</span>: Glowing crimson tiles highlighting immediate consumer stalls, backpressure, or deadlocks.</li>
+      </ul>
+
+      <h2 id="skew-detection">Automated Partition Skew Detection</h2>
+      <p>
+        Eventore automatically analyzes the standard deviation and max-to-median ratio across all partitions assigned to a consumer group. If a subset of partitions has significantly higher lag than others, Eventore raises an automatic <strong>Skew Warning</strong>:
+      </p>
+      <div class="callout callout-warn">
+        <strong>Lag Skew Alert Detected:</strong> Partition 7 lag (38,410) is <strong>94x</strong> higher than median partition lag (408). Check consumer worker <code>order-service-pod-2</code> for thread stalls or poison pill processing errors.
+      </div>
+
+      <h2 id="broker-topology">Cluster Broker Topology Map</h2>
+      <p>
+        The topology viewer displays an interactive map of your messaging cluster:
+      </p>
+      <ul>
+        <li><strong>Broker Nodes:</strong> Node ID, host/port, controller / leader status, and rack awareness.</li>
+        <li><strong>Partition Distribution:</strong> Visual audit of leader partitions vs follower replicas across physical brokers to detect hotspotting.</li>
+        <li><strong>Under-Replicated Partitions (URP):</strong> Instant visual alerts when replicas fall out of the In-Sync Replicas (ISR) set, preventing data loss before broker failures.</li>
+      </ul>
+
+      <h2 id="rest-apis">Topology &amp; Heatmap REST APIs</h2>
+      <pre><code>GET /api/v1/connections/{id}/kafka/topics/{topic}/lag-heatmap
+GET /api/v1/connections/{id}/kafka/cluster/topology
+GET /api/v1/connections/{id}/kafka/consumer-groups/{group}/skew</code></pre>
+
+      <div class="btn-group">
+        <a class="btn btn-primary" href="dlq.html">Dead-Letter Queue inspector &rarr;</a>
+        <a class="btn btn-outline" href="kafka.html">Kafka stream guide</a>
+      </div>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

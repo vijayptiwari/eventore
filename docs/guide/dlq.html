@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with Eventore's DLQ Redrive Engine."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="kafka dlq redrive, dead letter queue ui, rabbitmq dead letter exchange, message redrive engine, poison pill message remediation, kafka dlq inspector"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/dlq.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive — Eventore"/>
+  <meta property="og:description" content="Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with Eventore's DLQ Redrive Engine."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/dlq.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive — Eventore"/>
+  <meta name="twitter:description" content="Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with Eventore's DLQ Redrive Engine."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/dlq.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Dead-Letter Queue (DLQ) Inspector & Message Redrive","item":"https://vijayptiwari.github.io/eventore/guide/dlq.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/dlq.html#article","headline":"Dead-Letter Queue (DLQ) Inspector & Message Redrive — Eventore","description":"Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with Eventore's DLQ Redrive Engine.","url":"https://vijayptiwari.github.io/eventore/guide/dlq.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/dlq.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
+    <main>
+      <h1 class="page-title">Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive</h1>
+      <p class="page-subtitle">Isolate poisoned messages, analyze exception stacktraces, repair malformed JSON payloads in-place, and safely redrive records back to production queues.</p>
+
+      <div class="callout callout-info">
+        <strong>Incident Remediation (REQ-108):</strong> Eventore eliminates custom redrive scripts and manual database updates by providing an interactive DLQ management suite with single-message replay, bulk redrive, and audit tracking.
+      </div>
+
+      <h2 id="why-dlq-management">The Operational Nightmare of DLQs</h2>
+      <p>
+        When consumer microservices encounter unparseable payloads, schema mismatches, or transient third-party API failures, resilient systems route those records to a Dead-Letter Queue (e.g. <code>orders.dlq</code>, <code>payments-deadletter</code>).
+      </p>
+      <p>
+        Historically, operators had to write one-off Python or Bash scripts to fetch messages from the DLQ, edit the JSON payload to fix a missing attribute, and re-produce to the original topic. This workflow is error-prone and risks corrupting partition order or leaking unmasked PII.
+      </p>
+
+      <h2 id="dlq-features">Eventore DLQ Suite Capabilities</h2>
+      <ul>
+        <li><strong>Automatic DLQ Detection:</strong> Auto-discovers dead-letter topics and queues matching standard naming conventions (<code>*.dlq</code>, <code>*.deadletter</code>, <code>*-retry-exhausted</code>) or custom configured regex.</li>
+        <li><strong>Exception Header Inspection:</strong> Decodes and displays error stacktraces typically stored in headers (e.g., <code>x-exception-message</code>, <code>x-death</code>, <code>x-exception-stacktrace</code>, or Spring Kafka <code>kafka_dlt-exception-message</code>).</li>
+        <li><strong>In-Place Payload &amp; Header Editor:</strong> Syntax-highlighted JSON editor allows operators to fix typos or missing fields directly in the browser with JSON schema validation.</li>
+        <li><strong>Dry-Run Redrive:</strong> Simulates destination publishing and schema validation before committing the redrive transaction.</li>
+        <li><strong>Target Destination Selection:</strong> Redrive back to the original source topic, a designated staging retry topic, or a newly configured target broker.</li>
+        <li><strong>Bulk Replay:</strong> Replay hundreds of messages simultaneously with rate-limiting throttling (e.g. 50 msgs/sec) to prevent overwhelming downstream microservices.</li>
+        <li><strong>Audit Logging:</strong> Every redrive action records who initiated the replay, timestamp, original vs edited payload diff, and target receipt confirmation.</li>
+      </ul>
+
+      <h2 id="redrive-api">Redrive REST API</h2>
+      <p>Redrive operations can also be triggered via CI/CD or operational automation:</p>
+      <pre><code>POST /api/v1/connections/{id}/dlq/redrive
+Content-Type: application/json
+
+{
+  "dlqTopic": "orders.v1.dlq",
+  "targetTopic": "orders.v1",
+  "messageIds": ["offset-49281", "offset-49282"],
+  "payloadOverrides": {
+    "offset-49281": "{\"orderId\":\"ORD-101\",\"amount\":42.50,\"currency\":\"USD\"}"
+  },
+  "injectHeader": {
+    "X-Redrive-Origin": "Eventore-DLQ-Engine",
+    "X-Redrive-Operator": "sre-oncall"
+  },
+  "rateLimitPerSecond": 100
+}</code></pre>
+
+      <div class="btn-group">
+        <a class="btn btn-primary" href="connection-stores.html">Externalized connection stores &rarr;</a>
+        <a class="btn btn-outline" href="streaming.html">Live streaming workspace</a>
+      </div>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

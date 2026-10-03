@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Field-Level Data Masking &amp; PII Redaction — Eventore</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Secure streaming data with Eventore's real-time PII redaction and field-level masking engine. Recursive Jackson DataMasker, regex rules, and JSONPath redaction."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <meta name="keywords" content="pii data masking streaming, kafka data redaction, field level masking, regex pii redaction, jsonpath masking, gdpr event streaming compliance"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/data-masking.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Eventore"/>
+  <meta property="og:title" content="Field-Level Data Masking &amp; PII Redaction — Eventore"/>
+  <meta property="og:description" content="Secure streaming data with Eventore's real-time PII redaction and field-level masking engine. Recursive Jackson DataMasker, regex rules, and JSONPath redaction."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/data-masking.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Field-Level Data Masking &amp; PII Redaction — Eventore"/>
+  <meta name="twitter:description" content="Secure streaming data with Eventore's real-time PII redaction and field-level masking engine. Recursive Jackson DataMasker, regex rules, and JSONPath redaction."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/data-masking.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Field-Level Data Masking & PII Redaction","item":"https://vijayptiwari.github.io/eventore/guide/data-masking.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/data-masking.html#article","headline":"Field-Level Data Masking & PII Redaction — Eventore","description":"Secure streaming data with Eventore's real-time PII redaction and field-level masking engine. Recursive Jackson DataMasker, regex rules, and JSONPath redaction.","url":"https://vijayptiwari.github.io/eventore/guide/data-masking.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/data-masking.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
+    <main>
+      <h1 class="page-title">Field-Level Data Masking &amp; PII Redaction</h1>
+      <p class="page-subtitle">Real-time recursive JSON and regex data masking to protect sensitive customer data, credentials, and PII across live streams and message inspection.</p>
+
+      <div class="callout callout-info">
+        <strong>Privacy &amp; Compliance (REQ-105):</strong> Eventore inspects and masks streaming payloads in memory before rendering in the browser UI, recording to audit logs, or streaming via WebSocket. This ensures complete GDPR, HIPAA, and PCI-DSS compliance.
+      </div>
+
+      <h2 id="how-it-works">How Data Masking Works</h2>
+      <p>
+        Eventore incorporates a dedicated, zero-copy <code>DataMasker</code> service powered by Jackson AST recursive tree walking. When messages arrive from any broker (Kafka, RabbitMQ, MQTT, etc.), the payload is evaluated against active masking rules:
+      </p>
+      <ul>
+        <li><strong>Field Name Matches:</strong> Matches target JSON property names (e.g. <code>password</code>, <code>ssn</code>, <code>creditCard</code>, <code>apiKey</code>) case-insensitively across nested objects and arrays.</li>
+        <li><strong>JSONPath Selectors:</strong> Pinpoints deeply nested paths such as <code>$.customer.payment.card_number</code> or <code>$.billing.accounts[*].secret</code>.</li>
+        <li><strong>Regex Value Scanners:</strong> Scans string values and plain-text payloads for patterns such as credit card numbers (Luhn-compliant), email addresses, Social Security Numbers, and JWT tokens.</li>
+      </ul>
+
+      <h2 id="masking-strategies">Masking Strategies</h2>
+      <p>Eventore supports three configurable transformation strategies:</p>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Strategy</th>
+              <th>Sample Input</th>
+              <th>Masked Output</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>REDACT</code></td>
+              <td><code>"secretToken": "xyz-12345"</code></td>
+              <td><code>"secretToken": "******"</code></td>
+              <td>Replaces the entire value with a fixed-length mask.</td>
+            </tr>
+            <tr>
+              <td><code>PARTIAL</code></td>
+              <td><code>"cardNumber": "4111222233334444"</code></td>
+              <td><code>"cardNumber": "4111********4444"</code></td>
+              <td>Preserves leading and trailing characters for debugging while concealing the middle.</td>
+            </tr>
+            <tr>
+              <td><code>HASH_SHA256</code></td>
+              <td><code>"userId": "user_9841"</code></td>
+              <td><code>"userId": "a7b3c8...e1"</code></td>
+              <td>Produces a deterministic salted SHA-256 hash to allow tracking events across partitions without revealing the identifier.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="configuration">Configuring Masking Rules</h2>
+      <p>Rules can be specified globally in <code>application.yml</code> or configured per connection profile:</p>
+      <pre><code>eventore:
+  masking:
+    enabled: true
+    default-strategy: REDACT
+    rules:
+      - name: "Credit Card Redaction"
+        strategy: PARTIAL
+        preserve-prefix: 4
+        preserve-suffix: 4
+        pattern: "^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})$"
+      - name: "Credential Fields"
+        strategy: REDACT
+        fields:
+          - "password"
+          - "apiKey"
+          - "client_secret"
+          - "token"
+          - "authorization"
+      - name: "Social Security Numbers"
+        strategy: REDACT
+        pattern: "^\\d{3}-\\d{2}-\\d{4}$"</code></pre>
+
+      <h2 id="live-streaming-impact">Live Streaming &amp; Inspection Safety</h2>
+      <p>
+        When operators view live messages in the <a href="streaming.html">Live Streaming Workspace</a> or execute point-in-time topic inspection, the data plane applies masking before transmitting frames over WebSocket. Operators without elevated security permissions never receive raw unmasked secrets on their client workstations.
+      </p>
+
+      <div class="btn-group">
+        <a class="btn btn-primary" href="streaming.html">Explore live streaming</a>
+        <a class="btn btn-outline" href="tracing.html">OpenTelemetry tracing &rarr;</a>
+      </div>
+    </main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

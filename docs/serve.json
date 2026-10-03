@@ -272,6 +272,96 @@
       "source": "/azure-service-bus",
       "destination": "/guide/azure-service-bus.html",
       "type": 301
+    },
+    {
+      "source": "/guide/replication-bridging",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/replication-bridging/",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/replication-bridging",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/data-masking",
+      "destination": "/guide/data-masking.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/data-masking/",
+      "destination": "/guide/data-masking.html",
+      "type": 301
+    },
+    {
+      "source": "/data-masking",
+      "destination": "/guide/data-masking.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/tracing",
+      "destination": "/guide/tracing.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/tracing/",
+      "destination": "/guide/tracing.html",
+      "type": 301
+    },
+    {
+      "source": "/tracing",
+      "destination": "/guide/tracing.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/topology-lag",
+      "destination": "/guide/topology-lag.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/topology-lag/",
+      "destination": "/guide/topology-lag.html",
+      "type": 301
+    },
+    {
+      "source": "/topology-lag",
+      "destination": "/guide/topology-lag.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/dlq",
+      "destination": "/guide/dlq.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/dlq/",
+      "destination": "/guide/dlq.html",
+      "type": 301
+    },
+    {
+      "source": "/dlq",
+      "destination": "/guide/dlq.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/connection-stores",
+      "destination": "/guide/connection-stores.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/connection-stores/",
+      "destination": "/guide/connection-stores.html",
+      "type": 301
+    },
+    {
+      "source": "/connection-stores",
+      "destination": "/guide/connection-stores.html",
+      "type": 301
     }
   ]
 }

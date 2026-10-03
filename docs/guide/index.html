@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Product guide — Eventore</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Eventore documentation hub: per-stream guides for Kafka, MQTT, Pulsar, and cloud protocols, plus deployment and configuration."/>
+  <meta name="description" content="Eventore documentation hub: comprehensive guides for 8 messaging protocols (Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, Service Bus) plus enterprise replication, data masking, tracing, lag heatmap, and DLQ redrive."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="eventore documentation, messaging console guide, kafka deployment"/>
+  <meta name="keywords" content="eventore documentation, messaging console guide, kafka deployment, data replication engine, pii masking guide, kafka consumer lag"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/index.html"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Product guide — Eventore"/>
-  <meta property="og:description" content="Eventore documentation hub: per-stream guides for Kafka, MQTT, Pulsar, and cloud protocols, plus deployment and configuration."/>
+  <meta property="og:title" content="Product Guide &amp; Documentation Hub — Eventore"/>
+  <meta property="og:description" content="Eventore documentation hub: comprehensive guides for 8 messaging protocols (Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, Service Bus) plus enterprise replication, data masking, tracing, lag heatmap, and DLQ redrive."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/index.html"/>
   <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — multi-stream messaging console"/>
+  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Product guide — Eventore"/>
-  <meta name="twitter:description" content="Eventore documentation hub: per-stream guides for Kafka, MQTT, Pulsar, and cloud protocols, plus deployment and configuration."/>
+  <meta name="twitter:title" content="Product Guide &amp; Documentation Hub — Eventore"/>
+  <meta name="twitter:description" content="Eventore documentation hub: comprehensive guides for 8 messaging protocols (Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, Service Bus) plus enterprise replication, data masking, tracing, lag heatmap, and DLQ redrive."/>
   <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
   <!-- /eventore-seo -->
@@ -61,11 +61,46 @@
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
     <main>
-      <h1 class="page-title">Documentation</h1>
-      <p class="page-subtitle">Pick your messaging protocol first, then platform setup and deployment.</p>
+      <h1 class="page-title">Documentation Hub</h1>
+      <p class="page-subtitle">Comprehensive guides for all 8 supported messaging protocols, advanced streaming capabilities, deployment options, and enterprise configuration.</p>
 
-      <h2 class="guide-section-title" id="streams">Stream guides</h2>
-      <p class="guide-section-lead">Each guide covers connection, browse, live view, and admin for that protocol.</p>
+      <h2 class="guide-section-title" id="capabilities">Enterprise Capabilities</h2>
+      <p class="guide-section-lead">Advanced features designed for reliability, compliance, observability, and incident remediation.</p>
+      <div class="toc-grid toc-grid--6">
+        <a class="toc-card" href="./replication-bridging.html">
+          <span class="badge badge-accent">REQ-110</span>
+          <h3>Cross-Broker Replication</h3>
+          <p>Multi-source to multi-target streaming bridge, loop prevention, and dry-run tester.</p>
+        </a>
+        <a class="toc-card" href="./data-masking.html">
+          <span class="badge badge-accent">REQ-105</span>
+          <h3>PII Data Masking</h3>
+          <p>Real-time Jackson AST redaction, regex patterns, and JSONPath masking.</p>
+        </a>
+        <a class="toc-card" href="./tracing.html">
+          <span class="badge badge-accent">REQ-111</span>
+          <h3>Distributed Tracing</h3>
+          <p>W3C TraceContext, child span propagation, and Jaeger/Datadog deep links.</p>
+        </a>
+        <a class="toc-card" href="./topology-lag.html">
+          <span class="badge badge-accent">REQ-112</span>
+          <h3>Lag Heatmap &amp; Topology</h3>
+          <p>High-density partition tiles, consumer skew detection, and broker health.</p>
+        </a>
+        <a class="toc-card" href="./dlq.html">
+          <span class="badge badge-accent">REQ-108</span>
+          <h3>DLQ Inspector &amp; Redrive</h3>
+          <p>Poison message triage, in-place JSON edit, and rate-limited replay.</p>
+        </a>
+        <a class="toc-card" href="./connection-stores.html">
+          <span class="badge badge-accent">REQ-101</span>
+          <h3>Externalized Stores</h3>
+          <p>PostgreSQL JDBC store with optimistic locking, Kubernetes CRDs, and live migration.</p>
+        </a>
+      </div>
+
+      <h2 class="guide-section-title" id="streams">Stream Guides (8 Protocols)</h2>
+      <p class="guide-section-lead">Each guide covers connection setup, browse, live view, and administration for that wire protocol.</p>
       <div class="toc-grid toc-grid--8">
         <a class="toc-card" href="./kafka.html"><h3>Kafka</h3><p>Topics, lag, search, ACLs, produce.</p></a>
         <a class="toc-card" href="./pulsar.html"><h3>Pulsar</h3><p>Namespaces, subscriptions, backlog.</p></a>
@@ -77,7 +112,7 @@
         <a class="toc-card" href="./azure-service-bus.html"><h3>Azure Service Bus</h3><p>Queues, topics, Entra ID.</p></a>
       </div>
 
-      <h2 class="guide-section-title">Platform</h2>
+      <h2 class="guide-section-title" id="platform">Platform Architecture &amp; Operations</h2>
       <div class="toc-grid toc-grid--6">
         <a class="toc-card" href="./getting-started.html"><h3>Getting started</h3><p>Install and first connection in five minutes.</p></a>
         <a class="toc-card" href="./architecture.html"><h3>Architecture</h3><p>Control plane, data plane, providers.</p></a>
@@ -87,8 +122,9 @@
         <a class="toc-card" href="./stream-platforms.html"><h3>All platforms</h3><p>Compare protocols and cloud presets.</p></a>
         <a class="toc-card" href="./streaming.html"><h3>Live streaming</h3><p>WebSocket workspace, filters, export.</p></a>
         <a class="toc-card" href="./deployment.html"><h3>Deployment</h3><p>Images, Helm, Kubernetes.</p></a>
+        <a class="toc-card" href="./mcp.html"><h3>MCP for AI agents</h3><p>Model Context Protocol integration for Cursor &amp; Claude.</p></a>
+        <a class="toc-card" href="./local-development.html"><h3>Local development</h3><p>Monorepo setup, Maven profiles, React UI build.</p></a>
       </div>
-      <p class="guide-more-links"><a href="./mcp.html">MCP for AI agents</a> · <a href="./stream-platforms.html">Compare all protocols</a> · <a href="../about.html">About &amp; contribute</a> (outside this product guide)</p>
 
       <div class="callout callout-info">
         <strong>Tip:</strong> Examples use <code>http://localhost:8080</code> for the API. Replace with your ingress host in production.

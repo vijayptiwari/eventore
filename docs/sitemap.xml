@@ -26,6 +26,36 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/replication-bridging.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/data-masking.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/tracing.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/topology-lag.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/dlq.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vijayptiwari.github.io/eventore/guide/connection-stores.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://vijayptiwari.github.io/eventore/guide/mcp.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

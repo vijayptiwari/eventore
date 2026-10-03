@@ -3,26 +3,26 @@
     {
       "file": "index.html",
       "path": "index.html",
-      "title": "Eventore — Multi-stream messaging console",
-      "description": "Unified open-source console for Kafka, MQTT, RabbitMQ, Pulsar, JMS, Kinesis, GCP Pub/Sub, and Azure Service Bus. Live streaming, inspection, Helm on Kubernetes.",
-      "keywords": "kafka console, mqtt broker ui, multi-protocol messaging, event streaming, kubernetes helm, rabbitmq admin, pulsar tools",
+      "title": "Eventore — Unified Multi-Protocol Messaging & Streaming Console",
+      "description": "Open-source console for Apache Kafka, RabbitMQ, Pulsar, MQTT, JMS, AWS Kinesis, GCP Pub/Sub, and Azure Service Bus. Features cross-broker replication, PII data masking, OpenTelemetry tracing, DLQ redrive, partition lag heatmap, and MCP AI agent tools.",
+      "keywords": "kafka ui alternative, multi-protocol messaging console, kafka rabbitmq bridge, cross-broker data replication, pii data masking streaming, opentelemetry kafka tracing, kafka dlq redrive, partition lag heatmap, akhq alternative, conduktor alternative, open source kafka gui, model context protocol kafka",
       "ogType": "website",
       "jsonLd": "home"
     },
     {
       "file": "guide/index.html",
       "path": "guide/index.html",
-      "title": "Product guide — Eventore",
-      "description": "Eventore documentation hub: per-stream guides for Kafka, MQTT, Pulsar, and cloud protocols, plus deployment and configuration.",
-      "keywords": "eventore documentation, messaging console guide, kafka deployment",
+      "title": "Product Guide & Documentation Hub — Eventore",
+      "description": "Eventore documentation hub: comprehensive guides for 8 messaging protocols (Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, Service Bus) plus enterprise replication, data masking, tracing, lag heatmap, and DLQ redrive.",
+      "keywords": "eventore documentation, messaging console guide, kafka deployment, data replication engine, pii masking guide, kafka consumer lag",
       "ogType": "website"
     },
     {
       "file": "guide/getting-started.html",
       "path": "guide/getting-started.html",
-      "title": "Getting started — Eventore",
+      "title": "Getting Started — Eventore",
       "description": "Install Eventore locally or on Kubernetes, create your first broker connection, and start a live message stream in about five minutes.",
-      "keywords": "eventore install, kafka quick start, messaging console tutorial",
+      "keywords": "eventore install, kafka quick start, messaging console tutorial, helm eventore",
       "ogType": "article"
     },
     {
@@ -30,23 +30,71 @@
       "path": "guide/architecture.html",
       "title": "Architecture — Eventore",
       "description": "How Eventore splits control plane and data plane, modular Spring Boot providers, React UI, WebSocket streaming, and OpenAPI APIs.",
-      "keywords": "eventore architecture, control plane data plane, spring boot streaming",
+      "keywords": "eventore architecture, control plane data plane, spring boot streaming, modular event architecture",
       "ogType": "article"
     },
     {
       "file": "guide/control-data-plane.html",
       "path": "guide/control-data-plane.html",
-      "title": "Control & data plane — Eventore",
+      "title": "Control & Data Plane — Eventore",
       "description": "Learn how Eventore registers stream providers on the control plane while the data plane handles broker connections, publish, and inspect.",
       "keywords": "control plane, stream provider registration, eventore data plane",
       "ogType": "article"
     },
     {
+      "file": "guide/replication-bridging.html",
+      "path": "guide/replication-bridging.html",
+      "title": "Cross-Broker Replication & Bridging — Eventore",
+      "description": "Replicate and transform streaming data between Kafka, RabbitMQ, Pulsar, MQTT, Kinesis, GCP Pub/Sub, and Azure Service Bus with loop prevention, regex filtering, and dry-run testing.",
+      "keywords": "kafka rabbitmq bridge, cross-broker data replication, event streaming bridge, message transformation, loop prevention, data replication engine",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/data-masking.html",
+      "path": "guide/data-masking.html",
+      "title": "Field-Level Data Masking & PII Redaction — Eventore",
+      "description": "Secure streaming data with Eventore's real-time PII redaction and field-level masking engine. Recursive Jackson DataMasker, regex rules, and JSONPath redaction.",
+      "keywords": "pii data masking streaming, kafka data redaction, field level masking, regex pii redaction, jsonpath masking, gdpr event streaming compliance",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/tracing.html",
+      "path": "guide/tracing.html",
+      "title": "OpenTelemetry Distributed Tracing — Eventore",
+      "description": "End-to-end distributed tracing across messaging brokers with W3C TraceContext, traceparent extraction, OpenTelemetry spans, and deep links to Jaeger, Zipkin, and Datadog.",
+      "keywords": "opentelemetry kafka tracing, w3c tracecontext streaming, distributed tracing messaging, jaeger kafka, zipkin event tracing, traceparent header",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/topology-lag.html",
+      "path": "guide/topology-lag.html",
+      "title": "Partition Lag Heatmap & Cluster Topology — Eventore",
+      "description": "Diagnose consumer bottlenecks and partition skews instantly with Eventore's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics.",
+      "keywords": "kafka consumer lag ui, partition lag heatmap, kafka cluster topology, kafka consumer group skew, under-replicated partitions, kafka broker health",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/dlq.html",
+      "path": "guide/dlq.html",
+      "title": "Dead-Letter Queue (DLQ) Inspector & Message Redrive — Eventore",
+      "description": "Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with Eventore's DLQ Redrive Engine.",
+      "keywords": "kafka dlq redrive, dead letter queue ui, rabbitmq dead letter exchange, message redrive engine, poison pill message remediation, kafka dlq inspector",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/connection-stores.html",
+      "path": "guide/connection-stores.html",
+      "title": "Externalized Connection Stores — Eventore",
+      "description": "Scale Eventore horizontally with externalized connection stores: PostgreSQL JDBC with optimistic locking, Kubernetes CRDs, encrypted file stores, and live migration.",
+      "keywords": "eventore high availability, kafka connection store, kubernetes crd messaging, postgresql connection store, externalized config, multi-replica eventore",
+      "ogType": "article"
+    },
+    {
       "file": "guide/mcp.html",
       "path": "guide/mcp.html",
-      "title": "MCP for AI agents — Eventore",
+      "title": "MCP for AI Agents — Eventore",
       "description": "Use the optional Eventore MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents.",
-      "keywords": "model context protocol, mcp kafka, ai agent messaging, eventore mcp",
+      "keywords": "model context protocol, mcp kafka, ai agent messaging, eventore mcp, mcp streaming server",
       "ogType": "article"
     },
     {
@@ -68,25 +116,25 @@
     {
       "file": "guide/stream-platforms.html",
       "path": "guide/stream-platforms.html",
-      "title": "All stream platforms — Eventore",
+      "title": "All Stream Platforms — Eventore",
       "description": "Compare Eventore wire protocols and cloud presets, with links to each per-stream product guide.",
-      "keywords": "kafka mqtt rabbitmq pulsar, aws kinesis console, azure service bus ui",
+      "keywords": "kafka mqtt rabbitmq pulsar, aws kinesis console, azure service bus ui, multi-broker comparison",
       "ogType": "article"
     },
     {
       "file": "guide/kafka.html",
       "path": "guide/kafka.html",
-      "title": "Kafka — Eventore",
+      "title": "Kafka & Cloud Kafka — Eventore",
       "description": "Kafka and Kafka-compatible clouds in Eventore: connect, inspect consumer lag, live-stream, administer topics, ACLs, and produce with headers.",
-      "keywords": "kafka console, msk event hubs, kafka topic admin, consumer lag ui",
+      "keywords": "kafka console, msk event hubs, kafka topic admin, consumer lag ui, kafka web ui",
       "ogType": "article"
     },
     {
       "file": "guide/pulsar.html",
       "path": "guide/pulsar.html",
-      "title": "Pulsar — Eventore",
+      "title": "Apache Pulsar — Eventore",
       "description": "Apache Pulsar in Eventore: tenants, namespaces, subscriptions, backlog inspection, and live streaming.",
-      "keywords": "pulsar console, pulsar topic browser",
+      "keywords": "pulsar console, pulsar topic browser, pulsar admin ui",
       "ogType": "article"
     },
     {
@@ -94,39 +142,39 @@
       "path": "guide/rabbitmq.html",
       "title": "RabbitMQ — Eventore",
       "description": "RabbitMQ queues, exchanges, bindings, and management API integration in Eventore.",
-      "keywords": "rabbitmq admin ui, queue inspection",
+      "keywords": "rabbitmq admin ui, queue inspection, rabbitmq management console",
       "ogType": "article"
     },
     {
       "file": "guide/mqtt.html",
       "path": "guide/mqtt.html",
-      "title": "MQTT — Eventore",
+      "title": "MQTT & IoT Brokers — Eventore",
       "description": "MQTT brokers, AWS IoT Core, and Azure IoT Hub in Eventore: topics, filters, and live view.",
-      "keywords": "mqtt broker ui, aws iot core console",
+      "keywords": "mqtt broker ui, aws iot core console, azure iot hub viewer",
       "ogType": "article"
     },
     {
       "file": "guide/jms.html",
       "path": "guide/jms.html",
-      "title": "JMS — Eventore",
+      "title": "JMS & Enterprise Queues — Eventore",
       "description": "JMS destinations on Artemis and Amazon MQ in Eventore: connect, browse, and live-stream.",
-      "keywords": "jms console, amazon mq ui",
+      "keywords": "jms console, amazon mq ui, artemis activemq console",
       "ogType": "article"
     },
     {
       "file": "guide/kinesis.html",
       "path": "guide/kinesis.html",
-      "title": "AWS Kinesis — Eventore",
+      "title": "AWS Kinesis Data Streams — Eventore",
       "description": "AWS Kinesis Data Streams in Eventore: shards, iterators, IAM auth, and live records.",
-      "keywords": "kinesis console, kinesis stream viewer",
+      "keywords": "kinesis console, kinesis stream viewer, aws kinesis records ui",
       "ogType": "article"
     },
     {
       "file": "guide/gcp-pubsub.html",
       "path": "guide/gcp-pubsub.html",
-      "title": "GCP Pub/Sub — Eventore",
+      "title": "Google Cloud Pub/Sub — Eventore",
       "description": "Google Cloud Pub/Sub topics and subscriptions in Eventore with service account auth and message peek.",
-      "keywords": "gcp pubsub console, pubsub message viewer",
+      "keywords": "gcp pubsub console, pubsub message viewer, google pubsub ui",
       "ogType": "article"
     },
     {
@@ -134,23 +182,23 @@
       "path": "guide/azure-service-bus.html",
       "title": "Azure Service Bus — Eventore",
       "description": "Azure Service Bus queues and topics in Eventore: connection strings, Entra ID, peek, and live view.",
-      "keywords": "azure service bus ui, service bus message peek",
+      "keywords": "azure service bus ui, service bus message peek, azure messaging console",
       "ogType": "article"
     },
     {
       "file": "guide/streaming.html",
       "path": "guide/streaming.html",
-      "title": "Streaming & live view — Eventore",
+      "title": "Streaming & Live View — Eventore",
       "description": "Multi-topic WebSocket live view in Eventore with regex filters, timed capture windows, and JSON, CSV, or NDJSON export.",
-      "keywords": "kafka live stream ui, websocket message viewer, event stream export",
+      "keywords": "kafka live stream ui, websocket message viewer, event stream export, multi-topic live tail",
       "ogType": "article"
     },
     {
       "file": "guide/deployment.html",
       "path": "guide/deployment.html",
-      "title": "Deployment — Eventore",
+      "title": "Deployment Guide — Eventore",
       "description": "Deploy Eventore with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod.",
-      "keywords": "eventore helm chart, ghcr kubernetes, kafka kinesis slim image",
+      "keywords": "eventore helm chart, ghcr kubernetes, kafka kinesis slim image, docker messaging console",
       "ogType": "article"
     },
     {
@@ -158,13 +206,13 @@
       "path": "about.html",
       "title": "About — Eventore",
       "description": "About Eventore, creator Vijay Prakash Tiwari, and how to contribute to the open-source multi-stream messaging console.",
-      "keywords": "eventore about, contribute open source, messaging console",
+      "keywords": "eventore about, contribute open source, messaging console, vijay prakash tiwari",
       "ogType": "website"
     },
     {
       "file": "guide/local-development.html",
       "path": "guide/local-development.html",
-      "title": "Local development — Eventore",
+      "title": "Local Development — Eventore",
       "description": "Eventore local development: monorepo layout, Java and React setup, Maven provider profiles, OpenAPI codegen, and docs preview.",
       "keywords": "eventore development, spring boot kafka console, openapi codegen",
       "ogType": "article"
