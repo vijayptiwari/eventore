@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+#### Wave 4 Phase 2 — OpenAPI drift check in CI (REQ-62)
+- **Robust OpenAPI Bundler**: Rewrote `frontend/scripts/bundle-openapi.mjs` using `js-yaml` to cleanly merge multi-stream paths, parameters, and embedded component schemas without broken relative refs.
+- **Frontend Contract Drift CI Gate**: Added `check-openapi-drift.mjs` and `npm run check:openapi` to enforce zero drift between backend OpenAPI contracts and frontend TypeScript types in CI (`build-frontend` job).
+- **Generated Schema in Version Control**: Tracked `frontend/src/api/generated/schema.ts` in git to support instant type imports and deterministic CI checks.
+
 #### Wave 4 Preparation & Consistency Normalization (Phase 1)
 - **Typed Inspect OpenAPI contract**: `backend/openapi/common/schemas.yaml` and `inspect-api.yaml` now define typed schemas for `ConsumerGroupSummary`, `ClusterInfo`, `TopicDetail`, `ConsumerGroupDetail`, and `GroupOffset`; `eventore-api-codegen` maps these to `InspectModels` domain types.
 - **Strongly-typed Inspect Delegate**: `InspectApiDelegateImpl` return types now match OpenAPI contract models; all unchecked `(List)` casts and warnings eliminated.

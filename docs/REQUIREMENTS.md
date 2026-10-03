@@ -339,7 +339,7 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** `generate:api` exists; diagnostics types hand-written.
 - **Requirement:** CI compares generated types or runs codegen diff against committed artifacts after REQ-51.
 - **Acceptance criteria:**
-  - [ ] PR fails on undetected OpenAPI drift
+  - [x] PR fails on undetected OpenAPI drift (`check-openapi-drift.mjs` wired in `build-frontend` CI job)
 - **Dependencies / notes:** REQ-51
 
 #### REQ-63: MQTT/JMS/Pulsar dedicated MCP tools

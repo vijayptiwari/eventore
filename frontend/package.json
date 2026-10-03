@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "bundle:openapi": "node scripts/bundle-openapi.mjs",
-    "generate:api": "npm run bundle:openapi && openapi-typescript ../backend/openapi/eventore-api-bundled.yaml -o src/api/generated/schema.ts"
+    "generate:api": "npm run bundle:openapi && openapi-typescript ../backend/openapi/eventore-api-bundled.yaml -o src/api/generated/schema.ts",
+    "check:openapi": "node scripts/check-openapi-drift.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.2",

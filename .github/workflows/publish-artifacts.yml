@@ -73,6 +73,7 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
+          npm run check:openapi
           npm test
           npm run build
 
