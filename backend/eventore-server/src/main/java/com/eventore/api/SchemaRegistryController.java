@@ -69,4 +69,39 @@ public class SchemaRegistryController {
             return ResponseEntity.ok(meta);
         }
     }
+
+    public record SchemaTemplateResponse(int schemaId, String schemaType, String template) {}
+
+    @GetMapping("/{id}/template")
+    public ResponseEntity<SchemaTemplateResponse> getSchemaTemplate(
+            @PathVariable("id") int id,
+            @RequestParam(value = "registryUrl", required = false) String registryUrl) {
+        return schemaRegistryClient.getSchemaById(registryUrl, id)
+                .map(meta -> {
+                    String template = "AVRO".equalsIgnoreCase(meta.schemaType())
+                            ? com.eventore.schema.AvroPayloadDecoder.generateTemplateJson(meta.schemaContent())
+                            : "{}";
+                    return ResponseEntity.ok(new SchemaTemplateResponse(id, meta.schemaType(), template));
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    public record ValidatePayloadRequest(String payload) {}
+
+    @PostMapping("/{id}/validate")
+    public ResponseEntity<com.eventore.schema.SchemaValidationResult> validatePayload(
+            @PathVariable("id") int id,
+            @RequestParam(value = "registryUrl", required = false) String registryUrl,
+            @RequestBody ValidatePayloadRequest body) {
+        return schemaRegistryClient.getSchemaById(registryUrl, id)
+                .map(meta -> {
+                    String payloadText = body != null ? body.payload() : "";
+                    com.eventore.schema.SchemaValidationResult result = "AVRO".equalsIgnoreCase(meta.schemaType())
+                            ? com.eventore.schema.AvroPayloadDecoder.validateJson(payloadText, meta.schemaContent())
+                            : com.eventore.schema.SchemaValidationResult.success();
+                    return ResponseEntity.ok(result);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }
+

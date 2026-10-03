@@ -77,4 +77,39 @@ class AvroPayloadDecoderTest {
         assertThatThrownBy(() -> AvroPayloadDecoder.extractSchemaId(invalid))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void validateJsonAcceptsValidPayload() {
+        String validJson = "{\"id\":\"usr-1\",\"username\":\"charlie\",\"age\":28}";
+        SchemaValidationResult result = AvroPayloadDecoder.validateJson(validJson, USER_SCHEMA_JSON);
+        assertThat(result.valid()).isTrue();
+        assertThat(result.errors()).isEmpty();
+    }
+
+    @Test
+    void validateJsonRejectsMissingFields() {
+        String missingFields = "{\"id\":\"usr-1\"}";
+        SchemaValidationResult result = AvroPayloadDecoder.validateJson(missingFields, USER_SCHEMA_JSON);
+        assertThat(result.valid()).isFalse();
+        assertThat(result.errors()).isNotEmpty();
+    }
+
+    @Test
+    void validateJsonRejectsWrongTypes() {
+        String wrongType = "{\"id\":\"usr-1\",\"username\":\"dave\",\"age\":\"not-a-number\"}";
+        SchemaValidationResult result = AvroPayloadDecoder.validateJson(wrongType, USER_SCHEMA_JSON);
+        assertThat(result.valid()).isFalse();
+        assertThat(result.errors()).isNotEmpty();
+    }
+
+    @Test
+    void generateTemplateJsonProducesValidPayload() {
+        String template = AvroPayloadDecoder.generateTemplateJson(USER_SCHEMA_JSON);
+        assertThat(template).contains("\"id\"");
+        assertThat(template).contains("\"username\"");
+        assertThat(template).contains("\"age\"");
+
+        SchemaValidationResult result = AvroPayloadDecoder.validateJson(template, USER_SCHEMA_JSON);
+        assertThat(result.valid()).isTrue();
+    }
 }

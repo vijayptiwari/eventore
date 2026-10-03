@@ -101,6 +101,84 @@ public final class AvroPayloadDecoder {
     }
 
     /**
+     * Validates a JSON payload against an Avro schema definition.
+     */
+    public static SchemaValidationResult validateJson(String jsonPayload, String schemaContent) {
+        if (jsonPayload == null || jsonPayload.isBlank()) {
+            return SchemaValidationResult.failure("Payload cannot be empty");
+        }
+        if (schemaContent == null || schemaContent.isBlank()) {
+            return SchemaValidationResult.failure("Schema definition cannot be empty");
+        }
+        try {
+            Schema schema = parseSchema(schemaContent);
+            org.apache.avro.io.JsonDecoder jsonDecoder = DecoderFactory.get().jsonDecoder(schema, jsonPayload);
+            GenericDatumReader<GenericRecord> reader = new GenericDatumReader<>(schema);
+            reader.read(null, jsonDecoder);
+            return SchemaValidationResult.success();
+        } catch (org.apache.avro.AvroTypeException e) {
+            return SchemaValidationResult.failure("Schema type error: " + e.getMessage());
+        } catch (org.apache.avro.SchemaParseException e) {
+            return SchemaValidationResult.failure("Invalid schema definition: " + e.getMessage());
+        } catch (Exception e) {
+            return SchemaValidationResult.failure("Validation failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Generates a starter JSON template based on schema field definitions.
+     */
+    public static String generateTemplateJson(String schemaContent) {
+        if (schemaContent == null || schemaContent.isBlank()) {
+            return "{}";
+        }
+        Schema schema = parseSchema(schemaContent);
+        if (schema.getType() != Schema.Type.RECORD) {
+            return "{}";
+        }
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        com.fasterxml.jackson.databind.node.ObjectNode node = mapper.createObjectNode();
+        for (Schema.Field field : schema.getFields()) {
+            populateFieldDefault(node, field.name(), field.schema());
+        }
+        try {
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    private static void populateFieldDefault(
+            com.fasterxml.jackson.databind.node.ObjectNode node, String fieldName, Schema fieldSchema) {
+        Schema effectiveSchema = fieldSchema;
+        if (effectiveSchema.getType() == Schema.Type.UNION) {
+            for (Schema member : effectiveSchema.getTypes()) {
+                if (member.getType() != Schema.Type.NULL) {
+                    effectiveSchema = member;
+                    break;
+                }
+            }
+        }
+        switch (effectiveSchema.getType()) {
+            case STRING -> node.put(fieldName, "example_" + fieldName);
+            case INT -> node.put(fieldName, 100);
+            case LONG -> node.put(fieldName, 1000L);
+            case FLOAT -> node.put(fieldName, 10.5f);
+            case DOUBLE -> node.put(fieldName, 99.99);
+            case BOOLEAN -> node.put(fieldName, true);
+            case ARRAY -> node.putArray(fieldName);
+            case MAP -> node.putObject(fieldName);
+            case RECORD -> {
+                com.fasterxml.jackson.databind.node.ObjectNode child = node.putObject(fieldName);
+                for (Schema.Field f : effectiveSchema.getFields()) {
+                    populateFieldDefault(child, f.name(), f.schema());
+                }
+            }
+            default -> node.putNull(fieldName);
+        }
+    }
+
+    /**
      * Parses or retrieves a cached Avro Schema instance from its JSON string.
      */
     public static Schema parseSchema(String schemaJson) {

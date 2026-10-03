@@ -380,6 +380,22 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
   - [x] Frontend `MessagePayloadViewer` renders badge pill `Schema #{id} · {type}`, JSON formatter, and raw toggle
   - [x] Connection wizard supports `schemaRegistryUrl` in Kafka configuration
 
+#### REQ-107: Schema-Aware Message Publishing
+
+- **Type:** Enhancement / Feature
+- **Priority:** P1
+- **Area:** `backend/eventore-core`, `eventore-provider-kafka`, `eventore-server`, `frontend`
+- **As implemented today:** Outbound messages can be validated and published against registered Avro schemas. The backend provides `/api/v1/schemas/{id}/template` to generate starter JSON payloads and `/api/v1/schemas/{id}/validate` for pre-flight payload validation. Both `CorePublishApiDelegateImpl` and `KafkaAdminApiDelegateImpl` enforce pre-flight schema validation when `x-eventore-schema-id` is provided, returning HTTP 400 Bad Request with field-level errors if validation fails. The frontend `KafkaPublishForm` integrates Schema ID configuration, a "Load Template" button that auto-populates sample JSON conforming to the schema, a "Validate Schema" button with live status pills, and automatic header injection.
+- **Requirement:** Schema-driven publishing workflow with automated starter template generation, pre-flight validation, and server-side schema enforcement.
+- **Acceptance criteria:**
+  - [x] `AvroPayloadDecoder.generateTemplateJson` recursive starter JSON generation from Avro schemas
+  - [x] `AvroPayloadDecoder.validateJson` and `SchemaPayloadValidator` pre-flight validation against registered schemas
+  - [x] Endpoints `GET /api/v1/schemas/{id}/template` and `POST /api/v1/schemas/{id}/validate`
+  - [x] Pre-flight schema validation in `CorePublishApiDelegateImpl` and `KafkaAdminApiDelegateImpl` when `x-eventore-schema-id` is present
+  - [x] Frontend `KafkaPublishForm` schema ID input, "Load Template" action, and "Validate Schema" status pill
+  - [x] Outbound publish encodes Avro Confluent wire format and injects `x-eventore-schema-id`
+  - [x] Comprehensive unit and UI contract test coverage
+
 ---
 
 ### P3 — Low / deferred

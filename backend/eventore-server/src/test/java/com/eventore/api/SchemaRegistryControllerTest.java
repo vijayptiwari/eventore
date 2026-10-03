@@ -71,4 +71,51 @@ class SchemaRegistryControllerTest {
         ResponseEntity<SchemaMetadata> response = controller.registerSchema(payload);
         assertEquals(400, response.getStatusCode().value());
     }
+
+    @Test
+    void getSchemaTemplateGeneratesJsonTemplate() {
+        client.registerLocalSchema(
+                2001,
+                "{\"type\":\"record\",\"name\":\"Order\",\"fields\":[{\"name\":\"orderId\",\"type\":\"string\"},{\"name\":\"amount\",\"type\":\"double\"}]}",
+                "AVRO");
+
+        ResponseEntity<SchemaRegistryController.SchemaTemplateResponse> response =
+                controller.getSchemaTemplate(2001, null);
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals(2001, response.getBody().schemaId());
+        assertEquals("AVRO", response.getBody().schemaType());
+        assertTrue(response.getBody().template().contains("\"orderId\" : \"example_orderId\""));
+        assertTrue(response.getBody().template().contains("\"amount\" : 99.99"));
+    }
+
+    @Test
+    void validatePayloadValidatesAgainstRegisteredSchema() {
+        client.registerLocalSchema(
+                2002,
+                "{\"type\":\"record\",\"name\":\"Sensor\",\"fields\":[{\"name\":\"sensorId\",\"type\":\"string\"},{\"name\":\"temperature\",\"type\":\"double\"}]}",
+                "AVRO");
+
+        // Valid payload
+        var validResponse = controller.validatePayload(
+                2002,
+                null,
+                new SchemaRegistryController.ValidatePayloadRequest("{\"sensorId\":\"s-123\",\"temperature\":24.5}"));
+        assertEquals(200, validResponse.getStatusCode().value());
+        assertNotNull(validResponse.getBody());
+        assertTrue(validResponse.getBody().valid());
+        assertTrue(validResponse.getBody().errors().isEmpty());
+
+        // Invalid payload (missing temperature)
+        var invalidResponse = controller.validatePayload(
+                2002,
+                null,
+                new SchemaRegistryController.ValidatePayloadRequest("{\"sensorId\":\"s-123\"}"));
+        assertEquals(200, invalidResponse.getStatusCode().value());
+        assertNotNull(invalidResponse.getBody());
+        assertEquals(false, invalidResponse.getBody().valid());
+        assertEquals(1, invalidResponse.getBody().errors().size());
+        assertTrue(!invalidResponse.getBody().errors().get(0).isBlank());
+    }
 }
+

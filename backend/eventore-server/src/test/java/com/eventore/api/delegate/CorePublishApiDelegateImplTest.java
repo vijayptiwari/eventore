@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -102,5 +103,69 @@ class CorePublishApiDelegateImplTest {
         ResponseStatusException ex =
                 assertThrows(ResponseStatusException.class, () -> delegate.publishMessage("conn-kafka", publishRequest));
         assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, ex.getStatusCode());
+    }
+
+    @Test
+    void publishValidatesSchemaSuccessfullyWhenConforming() {
+        var schemaClient = new com.eventore.schema.DefaultSchemaRegistryClient();
+        schemaClient.registerLocalSchema(
+                301,
+                "{\"type\":\"record\",\"name\":\"Order\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"amount\",\"type\":\"double\"}]}",
+                "AVRO");
+
+        CorePublishApiDelegateImpl schemaDelegate = new CorePublishApiDelegateImpl(
+                connectionRegistry, connectorRegistry, policy, auditService, schemaClient);
+
+        ConnectionProfile profile = new ConnectionProfile();
+        profile.setId("conn-kafka");
+        profile.setProtocol(ProtocolType.KAFKA);
+        when(connectionRegistry.find("conn-kafka")).thenReturn(java.util.Optional.of(profile));
+        when(connectorRegistry.get(ProtocolType.KAFKA)).thenReturn(messagingConnector);
+
+        PublishRequest publishRequest = new PublishRequest();
+        publishRequest.setDestination("orders");
+        publishRequest.setPayload("{\"id\":\"o-123\",\"amount\":59.99}");
+        publishRequest.setContentType("application/json");
+        publishRequest.setHeaders(java.util.Map.of("x-eventore-schema-id", "301"));
+
+        doNothing().when(policy).require(any());
+        doNothing().when(policy).requireProtocol(ProtocolType.KAFKA);
+        doNothing().when(policy).validatePublishSize(org.mockito.ArgumentMatchers.anyLong());
+        doNothing().when(messagingConnector).publish(eq(profile), eq(publishRequest));
+
+        var response = schemaDelegate.publishMessage("conn-kafka", publishRequest);
+        assertEquals(200, response.getStatusCode().value());
+        verify(messagingConnector).publish(profile, publishRequest);
+    }
+
+    @Test
+    void publishRejectsInvalidPayloadWhenSchemaHeaderPresent() {
+        var schemaClient = new com.eventore.schema.DefaultSchemaRegistryClient();
+        schemaClient.registerLocalSchema(
+                301,
+                "{\"type\":\"record\",\"name\":\"Order\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"amount\",\"type\":\"double\"}]}",
+                "AVRO");
+
+        CorePublishApiDelegateImpl schemaDelegate = new CorePublishApiDelegateImpl(
+                connectionRegistry, connectorRegistry, policy, auditService, schemaClient);
+
+        ConnectionProfile profile = new ConnectionProfile();
+        profile.setId("conn-kafka");
+        profile.setProtocol(ProtocolType.KAFKA);
+        when(connectionRegistry.find("conn-kafka")).thenReturn(java.util.Optional.of(profile));
+
+        PublishRequest publishRequest = new PublishRequest();
+        publishRequest.setDestination("orders");
+        publishRequest.setPayload("{\"id\":\"o-123\"}"); // missing amount
+        publishRequest.setContentType("application/json");
+        publishRequest.setHeaders(java.util.Map.of("x-eventore-schema-id", "301"));
+
+        doNothing().when(policy).require(any());
+        doNothing().when(policy).requireProtocol(ProtocolType.KAFKA);
+
+        ResponseStatusException ex =
+                assertThrows(ResponseStatusException.class, () -> schemaDelegate.publishMessage("conn-kafka", publishRequest));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        assertTrue(ex.getReason().contains("Payload failed schema validation"));
     }
 }

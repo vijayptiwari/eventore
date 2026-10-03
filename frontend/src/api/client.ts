@@ -55,6 +55,25 @@ export interface ConnectionProfileResponse {
   hasCredentials?: boolean;
 }
 
+export interface SchemaMetadata {
+  schemaId: number;
+  subject?: string;
+  version?: number;
+  schemaType?: string;
+  schemaContent: string;
+}
+
+export interface SchemaValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
+export interface SchemaTemplateResponse {
+  schemaId: number;
+  schemaType: string;
+  template: string;
+}
+
 const REQUEST_TIMEOUT_MS = 30_000;
 
 export class InspectNotSupportedError extends Error {
@@ -297,6 +316,35 @@ export const api = {
     >(
       `${connectionPath(connectionId, '/kinesis/streams/')}${encodeURIComponent(streamName)}/shards`,
     ),
+
+  getSchemas: () => request<SchemaMetadata[]>('/schemas'),
+  getSchemaById: (id: number, registryUrl?: string) =>
+    request<SchemaMetadata>(
+      `/schemas/${id}${registryUrl ? `?registryUrl=${encodeURIComponent(registryUrl)}` : ''}`
+    ),
+  getSchemaTemplate: (id: number, registryUrl?: string) =>
+    request<SchemaTemplateResponse>(
+      `/schemas/${id}/template${registryUrl ? `?registryUrl=${encodeURIComponent(registryUrl)}` : ''}`
+    ),
+  validateSchemaPayload: (id: number, payload: string, registryUrl?: string) =>
+    request<SchemaValidationResult>(
+      `/schemas/${id}/validate${registryUrl ? `?registryUrl=${encodeURIComponent(registryUrl)}` : ''}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ payload }),
+      }
+    ),
+  registerSchema: (body: {
+    schemaId?: number;
+    subject?: string;
+    schemaType?: string;
+    schemaContent: string;
+    registryUrl?: string;
+  }) =>
+    request<SchemaMetadata>('/schemas', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 };
 
 export function canAction(allowed: string[] | undefined, action: string): boolean {

@@ -13,6 +13,10 @@ import com.eventore.api.generated.kafka.model.KafkaPublishResult;
 import com.eventore.api.generated.kafka.model.KafkaReplaceAclRequest;
 import com.eventore.inspect.kafka.KafkaAdminModels;
 import com.eventore.inspect.kafka.KafkaAdminService;
+import com.eventore.schema.DefaultSchemaRegistryClient;
+import com.eventore.schema.SchemaPayloadValidator;
+import com.eventore.schema.SchemaRegistryClient;
+import com.eventore.schema.SchemaValidationResult;
 import com.eventore.security.Action;
 import com.eventore.security.DeploymentModePolicy;
 import com.eventore.service.AuditService;
@@ -23,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,16 +44,28 @@ public class KafkaAdminApiDelegateImpl implements KafkaAdminApiDelegate {
     private final KafkaAdminService kafkaAdmin;
     private final DeploymentModePolicy policy;
     private final AuditService auditService;
+    private final SchemaRegistryClient schemaRegistryClient;
 
     public KafkaAdminApiDelegateImpl(
             ConnectionRegistry connectionRegistry,
             KafkaAdminService kafkaAdmin,
             DeploymentModePolicy policy,
             AuditService auditService) {
+        this(connectionRegistry, kafkaAdmin, policy, auditService, new DefaultSchemaRegistryClient());
+    }
+
+    @Autowired
+    public KafkaAdminApiDelegateImpl(
+            ConnectionRegistry connectionRegistry,
+            KafkaAdminService kafkaAdmin,
+            DeploymentModePolicy policy,
+            AuditService auditService,
+            SchemaRegistryClient schemaRegistryClient) {
         this.connectionRegistry = connectionRegistry;
         this.kafkaAdmin = kafkaAdmin;
         this.policy = policy;
         this.auditService = auditService;
+        this.schemaRegistryClient = schemaRegistryClient != null ? schemaRegistryClient : new DefaultSchemaRegistryClient();
     }
 
     @Override
@@ -62,6 +79,19 @@ public class KafkaAdminApiDelegateImpl implements KafkaAdminApiDelegate {
             String connectionId, Boolean flush, PublishRequest publishRequest) {
         policy.require(Action.PUBLISH);
         ConnectionProfile profile = requireKafka(connectionId);
+
+        String registryUrl = profile != null ? profile.property("schemaRegistryUrl") : null;
+        if (registryUrl == null && profile != null) {
+            registryUrl = profile.property("schema.registry.url");
+        }
+        SchemaValidationResult validation = SchemaPayloadValidator.validate(
+                schemaRegistryClient, registryUrl, publishRequest.getPayload(), publishRequest.getHeaders());
+        if (!validation.valid()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Payload failed schema validation: " + String.join(", ", validation.errors()));
+        }
+
         boolean flushProducer = Boolean.TRUE.equals(flush)
                 || (publishRequest.getHeaders() != null
                         && "true".equalsIgnoreCase(publishRequest.getHeaders().get("flush")));

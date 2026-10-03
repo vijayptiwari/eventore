@@ -42,10 +42,27 @@ import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePattern;
 import org.apache.kafka.common.resource.ResourcePatternFilter;
 import org.apache.kafka.common.resource.ResourceType;
+import com.eventore.schema.AvroPayloadDecoder;
+import com.eventore.schema.DefaultSchemaRegistryClient;
+import com.eventore.schema.SchemaMetadata;
+import com.eventore.schema.SchemaRegistryClient;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class KafkaAdminService {
+
+    private final SchemaRegistryClient schemaRegistryClient;
+
+    public KafkaAdminService() {
+        this(new DefaultSchemaRegistryClient());
+    }
+
+    @Autowired
+    public KafkaAdminService(SchemaRegistryClient schemaRegistryClient) {
+        this.schemaRegistryClient = schemaRegistryClient != null ? schemaRegistryClient : new DefaultSchemaRegistryClient();
+    }
 
     public List<String> adminFeatures() {
         return List.of(
@@ -65,7 +82,30 @@ public class KafkaAdminService {
             throws Exception {
         Properties props = KafkaClientSupport.producerProps(profile);
         try (KafkaProducer<String, byte[]> producer = new KafkaProducer<>(props)) {
-            byte[] bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+            byte[] bytes;
+            String schemaIdHeader = headerValue(request, "x-eventore-schema-id");
+            if (schemaIdHeader == null) {
+                schemaIdHeader = headerValue(request, "schema-id");
+            }
+            String registryUrl = profile != null ? profile.property("schemaRegistryUrl") : null;
+            if (registryUrl == null && profile != null) {
+                registryUrl = profile.property("schema.registry.url");
+            }
+            if (schemaIdHeader != null) {
+                try {
+                    int schemaId = Integer.parseInt(schemaIdHeader.trim());
+                    Optional<SchemaMetadata> metaOpt = schemaRegistryClient.getSchemaById(registryUrl, schemaId);
+                    if (metaOpt.isPresent() && "AVRO".equalsIgnoreCase(metaOpt.get().schemaType())) {
+                        bytes = AvroPayloadDecoder.encodeJson(schemaId, request.getPayload(), metaOpt.get().schemaContent());
+                    } else {
+                        bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+                    }
+                } catch (Exception e) {
+                    bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+                }
+            } else {
+                bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+            }
             String key = headerValue(request, "key");
             Integer partition = parsePartition(request);
             ProducerRecord<String, byte[]> record =

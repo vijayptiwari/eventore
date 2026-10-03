@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
-import { api } from '../api/client';
+import { api, type SchemaValidationResult } from '../api/client';
 
 function parseHeaderLines(text: string): Record<string, string> {
   const headers: Record<string, string> = {};
@@ -26,11 +26,60 @@ export default function KafkaPublishForm({ connectionId, topic, onTopicChange }:
   const [publishHeaders, setPublishHeaders] = useState('correlationId=evt-1\ncontent-type=application/json');
   const [flushProducer, setFlushProducer] = useState(true);
 
+  // Schema-aware state
+  const [schemaId, setSchemaId] = useState('');
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<SchemaValidationResult | null>(null);
+  const [schemaActionError, setSchemaActionError] = useState<string | null>(null);
+
+  const handleLoadTemplate = async () => {
+    const idNum = parseInt(schemaId.trim(), 10);
+    if (isNaN(idNum) || idNum <= 0) {
+      setSchemaActionError('Please enter a valid numeric Schema ID');
+      return;
+    }
+    setSchemaActionError(null);
+    setLoadingTemplate(true);
+    try {
+      const res = await api.getSchemaTemplate(idNum);
+      if (res?.template) {
+        setPublishPayload(res.template);
+        setValidationResult({ valid: true, errors: [] });
+      }
+    } catch (err: unknown) {
+      setSchemaActionError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoadingTemplate(false);
+    }
+  };
+
+  const handleValidateSchema = async () => {
+    const idNum = parseInt(schemaId.trim(), 10);
+    if (isNaN(idNum) || idNum <= 0) {
+      setSchemaActionError('Please enter a valid numeric Schema ID to validate against');
+      return;
+    }
+    setSchemaActionError(null);
+    setValidating(true);
+    try {
+      const res = await api.validateSchemaPayload(idNum, publishPayload);
+      setValidationResult(res);
+    } catch (err: unknown) {
+      setSchemaActionError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setValidating(false);
+    }
+  };
+
   const publishMutation = useMutation({
     mutationFn: () => {
       const headers = parseHeaderLines(publishHeaders);
       if (publishKey) headers.key = publishKey;
       if (publishPartition) headers.partition = publishPartition;
+      if (schemaId.trim()) {
+        headers['x-eventore-schema-id'] = schemaId.trim();
+      }
       return api.kafkaPublish(connectionId, {
         destination: topic,
         payload: publishPayload,
@@ -61,9 +110,76 @@ export default function KafkaPublishForm({ connectionId, topic, onTopicChange }:
           />
         </div>
       </div>
+
+      <div className="form-row" style={{ marginTop: 8, padding: '10px 12px', background: 'var(--bg-card-hover, rgba(255,255,255,0.02))', borderRadius: 6, border: '1px solid var(--border-color, #333)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label style={{ margin: 0, fontWeight: 600 }}>Schema ID:</label>
+            <input
+              type="number"
+              style={{ width: 110 }}
+              placeholder="e.g. 1042"
+              value={schemaId}
+              onChange={(e) => {
+                setSchemaId(e.target.value);
+                setValidationResult(null);
+                setSchemaActionError(null);
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={loadingTemplate || !schemaId.trim()}
+              onClick={handleLoadTemplate}
+              title="Fetch schema from registry and fill payload with default JSON template"
+            >
+              {loadingTemplate ? 'Loading…' : 'Load Template'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={validating || !schemaId.trim() || !publishPayload.trim()}
+              onClick={handleValidateSchema}
+              title="Pre-flight validate current payload against schema"
+            >
+              {validating ? 'Validating…' : 'Validate Schema'}
+            </button>
+          </div>
+        </div>
+
+        {validationResult && (
+          <div style={{ marginTop: 8 }}>
+            {validationResult.valid ? (
+              <span className="tag tag-ok">✓ Payload matches Schema #{schemaId.trim()}</span>
+            ) : (
+              <div className="stream-error" style={{ marginTop: 4 }}>
+                ✗ Schema validation failed:{' '}
+                {validationResult.errors?.length ? validationResult.errors.join('; ') : 'Invalid payload format'}
+              </div>
+            )}
+          </div>
+        )}
+
+        {schemaActionError && (
+          <div className="stream-error" style={{ marginTop: 6 }}>
+            {schemaActionError}
+          </div>
+        )}
+      </div>
+
       <div className="form-row">
         <label>Payload</label>
-        <textarea rows={4} value={publishPayload} onChange={(e) => setPublishPayload(e.target.value)} />
+        <textarea
+          rows={5}
+          value={publishPayload}
+          onChange={(e) => {
+            setPublishPayload(e.target.value);
+            if (validationResult) setValidationResult(null);
+          }}
+          placeholder="JSON or raw payload string"
+        />
       </div>
       <div className="form-row">
         <label>Record headers (key=value per line)</label>
@@ -93,3 +209,4 @@ export default function KafkaPublishForm({ connectionId, topic, onTopicChange }:
     </div>
   );
 }
+
