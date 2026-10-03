@@ -73,14 +73,145 @@ export default function StreamInspectorTopicsTab({
         </tbody>
       </table>
       {topicDetail != null ? (
-        <>
-          <ExportResultActions
-            filenameBase={`topic-detail_${detailsTopic}`}
-            jsonData={topicDetail}
-            meta={{ connectionId, protocol }}
-          />
-          <pre className="inspector-pre">{JSON.stringify(topicDetail, null, 2)}</pre>
-        </>
+        <div className="topic-matrix-section" data-testid="topic-matrix-section">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+            <h4 style={{ margin: 0, color: '#f1f5f9' }}>
+              Topic Topology & Partition Distribution: <code style={{ color: '#38bdf8' }}>{detailsTopic}</code>
+            </h4>
+            <ExportResultActions
+              filenameBase={`topic-detail_${detailsTopic}`}
+              jsonData={topicDetail}
+              meta={{ connectionId, protocol }}
+            />
+          </div>
+
+          {/* Type-safe check for structured topic detail */}
+          {typeof topicDetail === 'object' && topicDetail !== null && 'partitions' in topicDetail && Array.isArray((topicDetail as { partitions: unknown[] }).partitions) ? (
+            (() => {
+              const detail = topicDetail as {
+                name?: string;
+                partitionCount?: number;
+                replicationFactor?: number;
+                partitions: { partition: number; leader: number; replicas: number[]; isr: number[] }[];
+                config?: Record<string, string>;
+              };
+
+              const totalPartitions = detail.partitions.length;
+              const underReplicated = detail.partitions.filter((p) => p.isr.length < p.replicas.length);
+              const isHealthy = underReplicated.length === 0;
+
+              return (
+                <>
+                  <div className="topology-kpi-grid" data-testid="topic-topology-kpi-grid">
+                    <div className="topology-kpi-card" data-testid="kpi-topic-partitions">
+                      <span className="topology-kpi-label">Partitions</span>
+                      <span className="topology-kpi-val">{totalPartitions}</span>
+                      <span className="topology-kpi-sub">Total topic partitions</span>
+                    </div>
+
+                    <div className="topology-kpi-card" data-testid="kpi-topic-replication">
+                      <span className="topology-kpi-label">Replication Factor</span>
+                      <span className="topology-kpi-val">{detail.replicationFactor ?? '—'}</span>
+                      <span className="topology-kpi-sub">Target replica count</span>
+                    </div>
+
+                    <div className="topology-kpi-card" data-testid="kpi-isr-health">
+                      <span className="topology-kpi-label">Replication Health</span>
+                      <div>
+                        <span className={`lag-status-badge ${isHealthy ? 'lag-status-healthy' : 'lag-status-critical'}`}>
+                          {isHealthy ? '● 100% IN-SYNC' : `▲ ${underReplicated.length} UNDER-REPLICATED`}
+                        </span>
+                      </div>
+                      <span className="topology-kpi-sub">In-sync replica status</span>
+                    </div>
+                  </div>
+
+                  <table data-testid="topic-partitions-table">
+                    <thead>
+                      <tr>
+                        <th>Partition</th>
+                        <th>Leader Broker</th>
+                        <th>Replicas</th>
+                        <th>In-Sync Replicas (ISR)</th>
+                        <th>Health Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detail.partitions.map((part) => {
+                        const inSync = part.isr.length >= part.replicas.length;
+                        return (
+                          <tr key={part.partition}>
+                            <td>
+                              <strong>P#{part.partition}</strong>
+                            </td>
+                            <td>
+                              <span style={{ color: '#facc15', fontWeight: 600 }}>
+                                🖥️ Broker #{part.leader}
+                              </span>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                                {part.replicas.map((r) => (
+                                  <span key={r} className="feature-chip" style={{ margin: 0 }}>
+                                    #{r}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                                {part.isr.map((r) => (
+                                  <span
+                                    key={r}
+                                    className="feature-chip"
+                                    style={{ margin: 0, borderColor: inSync ? '#22c55e' : '#f97316' }}
+                                  >
+                                    #{r}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`partition-health-tag ${inSync ? 'insync' : 'under-replicated'}`}>
+                                {inSync ? '✓ In-Sync' : '⚠️ Under-Replicated'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+
+                  {detail.config && Object.keys(detail.config).length > 0 && (
+                    <details style={{ marginTop: '1rem', cursor: 'pointer' }}>
+                      <summary style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                        View Topic Configuration ({Object.keys(detail.config).length} settings)
+                      </summary>
+                      <table style={{ marginTop: '0.5rem', fontSize: '0.78rem' }}>
+                        <thead>
+                          <tr>
+                            <th>Configuration Key</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(detail.config).map(([k, v]) => (
+                            <tr key={k}>
+                              <td><code>{k}</code></td>
+                              <td><code style={{ color: '#7dd3fc' }}>{v}</code></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </details>
+                  )}
+                </>
+              );
+            })()
+          ) : (
+            <pre className="inspector-pre">{JSON.stringify(topicDetail, null, 2)}</pre>
+          )}
+        </div>
       ) : null}
       {canDump && (
         <>

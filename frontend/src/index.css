@@ -808,3 +808,444 @@ td {
   font-size: 0.7rem;
   padding: 0.3rem 0.6rem;
 }
+
+/* ==========================================================================
+   REQ-112: Visual Topology, Consumer Lag Heatmap & Partition Distribution
+   ========================================================================== */
+
+/* Summary KPI Grid */
+.topology-kpi-grid,
+.lag-metrics-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.topology-kpi-card,
+.lag-kpi-card {
+  background: #161e2e;
+  border: 1px solid #2a3441;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.topology-kpi-card:hover,
+.lag-kpi-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.topology-kpi-label,
+.lag-kpi-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.topology-kpi-val,
+.lag-kpi-val {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.2;
+}
+
+.topology-kpi-sub,
+.lag-kpi-sub {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Lag Health Badges */
+.lag-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  width: fit-content;
+}
+
+.lag-status-healthy {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid #22c55e;
+  color: #4ade80;
+}
+
+.lag-status-low {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid #38bdf8;
+  color: #7dd3fc;
+}
+
+.lag-status-warning {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid #f59e0b;
+  color: #fbbf24;
+}
+
+.lag-status-critical {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid #ef4444;
+  color: #f87171;
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: #ef4444; box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
+  50% { border-color: #f87171; box-shadow: 0 0 8px rgba(239, 68, 68, 0.35); }
+}
+
+/* Skew Banner */
+.lag-skew-banner {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+  margin: 0.75rem 0;
+  font-size: 0.8rem;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Heatmap Section */
+.lag-heatmap-section {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.lag-heatmap-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.lag-heatmap-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.lag-heatmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.lag-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.lag-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.lag-legend-dot.healthy { background: #22c55e; }
+.lag-legend-dot.low { background: #eab308; }
+.lag-legend-dot.warning { background: #f97316; }
+.lag-legend-dot.critical { background: #ef4444; }
+
+.lag-heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.6rem;
+}
+
+.lag-heatmap-cell {
+  border-radius: 6px;
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px solid transparent;
+  user-select: none;
+  background: #1e293b;
+  position: relative;
+}
+
+.lag-heatmap-cell:hover {
+  transform: translateY(-2px) scale(1.02);
+  z-index: 2;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.lag-heatmap-cell.is-selected {
+  outline: 2px solid #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+  border-color: #38bdf8;
+}
+
+.lag-cell-healthy {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.28);
+}
+.lag-cell-healthy:hover {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: #22c55e;
+}
+
+.lag-cell-low {
+  background: rgba(234, 179, 8, 0.08);
+  border-color: rgba(234, 179, 8, 0.3);
+}
+.lag-cell-low:hover {
+  background: rgba(234, 179, 8, 0.18);
+  border-color: #eab308;
+}
+
+.lag-cell-warning {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.35);
+}
+.lag-cell-warning:hover {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: #f97316;
+}
+
+.lag-cell-critical {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.45);
+}
+.lag-cell-critical:hover {
+  background: rgba(239, 68, 68, 0.26);
+  border-color: #ef4444;
+}
+
+.lag-cell-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.lag-cell-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #f8fafc;
+}
+
+.lag-cell-sub {
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+/* Offset Consumption Progress Bar */
+.lag-progress-track {
+  width: 100%;
+  height: 5px;
+  background: #2a3441;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.lag-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+.lag-progress-fill.healthy { background: #22c55e; }
+.lag-progress-fill.warning { background: #f59e0b; }
+.lag-progress-fill.critical { background: #ef4444; }
+
+/* Filter Reset Button */
+.lag-filter-reset {
+  margin-left: auto;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.lag-filter-reset:hover {
+  background: #1d4ed8;
+}
+
+/* Broker Nodes & Topology Visualization */
+.broker-nodes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0;
+}
+
+.broker-node-card {
+  background: #161e2e;
+  border: 1px solid #2a3441;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.broker-node-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.broker-node-card.is-controller {
+  border-color: #eab308;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, #161e2e 70%);
+}
+
+.broker-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.broker-node-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.controller-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background: rgba(234, 179, 8, 0.18);
+  border: 1px solid #eab308;
+  color: #facc15;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.broker-status-pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.broker-status-pill .pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.broker-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid rgba(42, 52, 65, 0.4);
+}
+
+.broker-detail-row:last-child {
+  border-bottom: none;
+}
+
+.broker-detail-value {
+  font-weight: 600;
+  color: #e2e8f0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Feature Capability Chips */
+.feature-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.65rem 0;
+}
+
+.feature-chip {
+  font-size: 0.72rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Topic Partition Distribution Matrix */
+.topic-matrix-section {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.partition-health-tag {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.partition-health-tag.insync {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.partition-health-tag.under-replicated {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+

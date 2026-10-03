@@ -473,6 +473,27 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 
 ---
 
+#### REQ-112: Visual Topology & Consumer Lag Heatmap
+
+- **Type:** Enhancement / Feature (Control-Plane Observability & UI)
+- **Priority:** P1
+- **Area:** `frontend`, `frontend/src/components`
+- **As implemented today:** Interactive visual partition distribution chart, consumer group lag severity heatmap, partition skew detection, and broker node cluster topology card in the control plane inspector. `StreamInspectorLagTab` aggregates total consumer group lag, identifies peak partition deficit, computes partition spread (skew), and categorizes lag severity across partitions into color-coded heat tiles (`HEALTHY` for lag == 0, `LOW` for 1..100, `WARNING` for 101..1,000, and `CRITICAL` for >1,000 with pulsating alerts). Operators can interactively click individual partition cells to filter and inspect specific partitions in the detailed lag table, which features proportional progress bars displaying consumption percentage against log end offset. In `StreamInspectorOverviewTab`, broker nodes are presented as interactive hardware cards featuring node ID, host:port, rack placement, Raft/KRaft controller leader badges (`👑 Controller`), live connection status pills, and protocol capability chips. In `StreamInspectorTopicsTab`, topic details feature partition replica sets, in-sync replica (ISR) distribution matrices, and replication health tags.
+- **Requirement:** Enable real-time operational diagnosis of stuck consumers, hot partition keys, broker controller failovers, and under-replicated topics through intuitive visual heatmaps and topology representations without manual log scanning.
+- **Acceptance criteria:**
+  - [x] Summary KPI metric cards: Total Lag, Max Partition Lag with partition ID, Consumer Group Health Status, and Partition Skew
+  - [x] Partition skew alert banner highlighting uneven consumer progress across partitions
+  - [x] Interactive Partition Lag Heatmap grid with severity color-coding, hover metadata, and click-to-filter partition drilldown
+  - [x] Proportional consumption progress gauges rendering committed offset vs. log end offset
+  - [x] Cluster summary KPI cards and interactive Broker Nodes Grid with controller leader detection and badges
+  - [x] Topic Partition Distribution matrix with Leader Broker, Replicas, In-Sync Replicas (ISR), and replication health tags
+  - [x] Zero-dependency responsive Vanilla CSS design with glassmorphism styling and micro-animations
+  - [x] 100% test pass rate with 14 new unit and contract tests in `topology-lag-heatmap-ui-contract.test.ts`
+  - [x] Zero OpenAPI drift and 100% build verification
+
+---
+
+
 ### P3 — Low / deferred
 
 | REQ | Title | Type | Notes |
