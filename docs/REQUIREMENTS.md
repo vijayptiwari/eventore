@@ -185,10 +185,10 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **Problem / opportunity:** Operators enable persistence believing profiles survive deploys; data is lost on pod delete.
 - **Requirement:** Helm shall support PVC (or existing claim) for `/data` when persistence enabled, with `emptyDir` as explicit dev-only fallback via values flag.
 - **Acceptance criteria:**
-  - [ ] `values.yaml` documents `persistence.volumeType: emptyDir|pvc`
-  - [ ] PVC template creates or references claim when `pvc` selected
-  - [ ] `helm template` succeeds for both modes
-  - [ ] Deployment guide explains durability semantics
+  - [x] `values.yaml` documents `persistence.volumeType: emptyDir|pvc`
+  - [x] PVC template creates or references claim when `pvc` selected
+  - [x] `helm template` succeeds for both modes
+  - [x] Deployment guide explains durability semantics
 - **Dependencies / notes:** REQ-29 (code path); Brief H
 - **Business link:** Rank #1
 
@@ -204,9 +204,9 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** `inspect-api.yaml` uses generic objects; diagnostics REST has no OpenAPI stream.
 - **Requirement:** Add `diagnostics-api.yaml` and structured inspect response schemas; bundle in server OpenAPI catalog.
 - **Acceptance criteria:**
-  - [ ] `/api/v1/diagnostics/subscriptions` documented with response schema
-  - [ ] Inspect endpoints reference typed models (not bare `object`)
-  - [ ] Codegen compiles; existing delegates unchanged or migrated safely
+  - [x] `/api/v1/diagnostics/subscriptions` documented with response schema
+  - [x] Inspect endpoints reference typed models (not bare `object`)
+  - [x] Codegen compiles; existing delegates unchanged or migrated safely
 - **Dependencies / notes:** Brief I; former REQ-34
 
 #### REQ-52: Complete REQ-31 — WS/SSE auth + inspect policy HTTP tests
@@ -217,9 +217,9 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** `ApiTokenSecurityIntegrationTest` covers REST; `StreamSseControllerTest` covers SSE 403 only.
 - **Requirement:** Add tests for WS/SSE 401 when auth enabled and inspect HTTP 403 under READONLY.
 - **Acceptance criteria:**
-  - [ ] SSE without `token` param returns 401 when `eventore.security.api-token` set
-  - [ ] WebSocket rejected without token when auth enabled
-  - [ ] At least one inspect endpoint returns 403 when action disallowed
+  - [x] SSE without `token` param returns 401 when `eventore.security.api-token` set
+  - [x] WebSocket rejected without token when auth enabled
+  - [x] At least one inspect endpoint returns 403 when action disallowed
 - **Dependencies / notes:** Brief J
 
 #### REQ-53: Sync testing docs with 5-protocol CI matrix
@@ -230,9 +230,9 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** Docs list 4 protocols; JMS marked skipped; CI runs 5 modules.
 - **Requirement:** Update testing and parity docs to match `publish-artifacts.yml` and Wave 2 changelog.
 - **Acceptance criteria:**
-  - [ ] `TESTING.md` lists Kafka, RabbitMQ, MQTT, Pulsar, JMS with container images
-  - [ ] JMS removed from skip table; cloud protocols retain skip rationale
-  - [ ] MCP `build-mcp` job documented
+  - [x] `TESTING.md` lists Kafka, RabbitMQ, MQTT, Pulsar, JMS with container images
+  - [x] JMS removed from skip table; cloud protocols retain skip rationale
+  - [x] MCP `build-mcp` job documented
 
 #### REQ-54: Ingress session affinity for SSE/WS (HA Pattern B)
 
@@ -242,9 +242,9 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** No `sessionAffinity` annotations; `HA.md` describes pattern but no Helm template.
 - **Requirement:** Optional ingress annotations for cookie-based affinity when `backend.replicaCount > 1`.
 - **Acceptance criteria:**
-  - [ ] Values flag `ingress.sessionAffinity.enabled` with documented annotations
-  - [ ] `NOTES.txt` references affinity when multi-replica
-  - [ ] `helm template` renders valid ingress
+  - [x] Values flag `ingress.sessionAffinity.enabled` with documented annotations
+  - [x] `NOTES.txt` references affinity when multi-replica
+  - [x] `helm template` renders valid ingress
 
 #### REQ-55: MCP Helm EVENTORE_API_TOKEN wiring
 
@@ -254,9 +254,9 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** Chart sets `eventore.apiUrl` only; no secret ref for backend API token.
 - **Requirement:** MCP deployment shall accept `apiTokenExistingSecret` mirroring main Eventore chart pattern.
 - **Acceptance criteria:**
-  - [ ] `EVENTORE_API_TOKEN` env from secret when backend auth enabled
-  - [ ] Values documented in chart README or NOTES
-  - [ ] `helm template` succeeds with secret reference
+  - [x] `EVENTORE_API_TOKEN` env from secret when backend auth enabled
+  - [x] Values documented in chart README or NOTES
+  - [x] `helm template` succeeds with secret reference
 
 #### REQ-56: MCP README post-Wave 2 refresh
 
@@ -266,9 +266,9 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** README lists ~28 tools / 4 prompts; code has ~40 tools, 7 prompts, capability-matrix resource.
 - **Requirement:** README tool/prompt/resource tables match shipped MCP surface.
 - **Acceptance criteria:**
-  - [ ] Protocol-specific Rabbit/GCP/Azure tools documented
-  - [ ] `eventore_diagnostics_subscriptions` and `eventore://capability-matrix` listed
-  - [ ] Contract test file references accurate
+  - [x] Protocol-specific Rabbit/GCP/Azure tools documented
+  - [x] `eventore_diagnostics_subscriptions` and `eventore://capability-matrix` listed
+  - [x] Contract test file references accurate
 
 #### REQ-57: Playwright wizard + diagnostics smoke in CI (mocked)
 
@@ -278,9 +278,9 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** E2E scaffold exists; CI runs Vitest only.
 - **Requirement:** Add Playwright job running mocked smoke for connection wizard open/save and dashboard diagnostics card.
 - **Acceptance criteria:**
-  - [ ] `npx playwright test` passes locally with mocks
-  - [ ] CI job added (no Docker required)
-  - [ ] Documented in `docs/TESTING.md`
+  - [x] `npx playwright test` passes locally with mocks
+  - [x] CI job added (no Docker required)
+  - [x] Documented in `docs/TESTING.md`
 
 ---
 
@@ -305,8 +305,8 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** Publish + connection CRUD + provider lifecycle audited.
 - **Requirement:** Emit structured audit events for subscribe start/stop, inspect search, validate success/failure.
 - **Acceptance criteria:**
-  - [ ] No credential values in audit lines
-  - [ ] Event types listed in deployment/ops guide
+  - [x] No credential values in audit lines
+  - [x] Event types listed in deployment/ops guide
 
 #### REQ-60: Helm network policy TLS broker ports
 
@@ -316,8 +316,8 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** Fixed ports 9092, 1883, 61616, 6650, 5672, 8080.
 - **Requirement:** Configurable `networkPolicy.extraBrokerPorts` for TLS (5671, 8883, 9094, 6651) and cloud HTTPS guidance.
 - **Acceptance criteria:**
-  - [ ] Values accept extra port list
-  - [ ] `helm template` with `networkPolicy.enabled=true` succeeds
+  - [x] Values accept extra port list
+  - [x] `helm template` with `networkPolicy.enabled=true` succeeds
 
 #### REQ-61: Live-backend Playwright E2E (optional Docker job)
 
@@ -347,11 +347,11 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **Type:** Enhancement
 - **Priority:** P2
 - **Area:** `mcp/eventore-mcp`
-- **As implemented today:** Rabbit/GCP/Azure have `protocol-tools.ts`; others use generic inspect.
+- **As implemented today:** Dedicated tools and prompt templates for all 8 protocols.
 - **Requirement:** Add ≥2 dedicated tools per MQTT, JMS, Pulsar with inspection prompts.
 - **Acceptance criteria:**
-  - [ ] Contract tests for new tools
-  - [ ] README updated
+  - [x] Contract tests for new tools
+  - [x] README updated
 
 #### REQ-64: MCP HTTP integration test against Testcontainers backend
 
