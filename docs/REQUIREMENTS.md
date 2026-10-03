@@ -294,8 +294,8 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **As implemented today:** Unit tests only; no Testcontainers or emulator tests.
 - **Requirement:** Spike LocalStack Kinesis, Pub/Sub emulator, or Azure test namespace; document go/no-go in `TESTING.md`.
 - **Acceptance criteria:**
-  - [ ] Spike doc or issue with cost/parity assessment
-  - [ ] At least one cloud round-trip test OR explicit mock-only decision recorded
+  - [x] Spike doc or issue with cost/parity assessment (`docs/CLOUD-CI-SPIKE.md`)
+  - [x] At least one cloud round-trip test OR explicit mock-only decision recorded (decision recorded: mock-only for OSS v1)
 
 #### REQ-59: Expand audit logging (subscribe, inspect, validate)
 
@@ -324,11 +324,11 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **Type:** Test
 - **Priority:** P2
 - **Area:** `frontend/e2e`
-- **As implemented today:** All routes mocked.
+- **As implemented today:** Both mocked smoke tests and live backend tests supported.
 - **Requirement:** Optional CI job: Testcontainers Kafka + backend + one unmocked connect/validate flow.
 - **Acceptance criteria:**
-  - [ ] Gated on Docker availability
-  - [ ] Documented in `TESTING.md`
+  - [x] Gated on Docker availability (`frontend/e2e/live.spec.ts` skips cleanly when backend/broker down, runs full unmocked flow when available; `build-frontend-e2e-live` CI job added)
+  - [x] Documented in `TESTING.md`
 - **Dependencies / notes:** Former REQ-38
 
 #### REQ-62: Frontend OpenAPI drift check in CI

@@ -68,6 +68,23 @@ npm run test:e2e
 
 Routes are stubbed in `frontend/e2e/fixtures.ts` — no backend required. CI runs wizard + diagnostics card smoke tests.
 
+## Playwright Live E2E (unmocked, REQ-61)
+
+```bash
+# 1. Start Redpanda Kafka broker (or local Kafka on port 9092)
+docker compose -f docker/docker-compose.brokers.yml up -d redpanda
+
+# 2. Start Eventore backend
+cd backend && mvn package -DskipTests -pl eventore-server -am
+java -jar eventore-server/target/eventore-server-*.jar
+
+# 3. In another terminal, run unmocked live E2E
+cd frontend
+npm run test:e2e:live
+```
+
+`frontend/e2e/live.spec.ts` verifies unmocked configuration cascades, real connection creation, backend-delegated broker validation, and unmocked deletion against a running backend. When the backend is not reachable, live tests are automatically skipped without failing test suites.
+
 ## Observability artifacts
 
 Import `deploy/grafana/eventore-subscription-health.json` after Prometheus scrapes `/actuator/prometheus`.

@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+#### Wave 4 Phase 2 — Live Backend Playwright E2E (REQ-61) & Cloud CI Spike (REQ-58)
+- **Live Backend Playwright E2E Suite (REQ-61)**: Added `frontend/e2e/live.spec.ts` and `npm run test:e2e:live` validating unmocked control plane cascade, live connection creation, broker validation, and unmocked deletion against running backend.
+- **Fail-Fast Kafka Validation**: Added request and API timeout configuration (`AdminClientConfig`) and bounded `close(Duration.ofSeconds(2))` in `KafkaMessagingConnector.validate`, preventing thread hangs during broker reachability checks.
+- **Docker/Backend Gated E2E**: Playwright tests gracefully skip unmocked flows when live backend is offline, while full CI job `build-frontend-e2e-live` spins up Redpanda + backend in GitHub Actions.
+- **Cloud Broker Spike (REQ-58)**: Evaluated LocalStack Kinesis, GCP Pub/Sub emulator, and Azurite, formalizing mock-only decision for OSS v1 in `docs/CLOUD-CI-SPIKE.md`.
+
 #### Wave 4 Phase 2 — OpenAPI drift check in CI (REQ-62)
 - **Robust OpenAPI Bundler**: Rewrote `frontend/scripts/bundle-openapi.mjs` using `js-yaml` to cleanly merge multi-stream paths, parameters, and embedded component schemas without broken relative refs.
 - **Frontend Contract Drift CI Gate**: Added `check-openapi-drift.mjs` and `npm run check:openapi` to enforce zero drift between backend OpenAPI contracts and frontend TypeScript types in CI (`build-frontend` job).

@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -51,10 +52,17 @@ public class KafkaMessagingConnector implements MessagingConnector {
 
     @Override
     public void validate(ConnectionProfile profile) {
-        try (AdminClient admin = AdminClient.create(KafkaClientSupport.clientProps(profile))) {
-            admin.listTopics().names().get();
+        Properties props = new Properties();
+        props.putAll(KafkaClientSupport.clientProps(profile));
+        props.putIfAbsent(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, "3000");
+        props.putIfAbsent(AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, "5000");
+        AdminClient admin = AdminClient.create(props);
+        try {
+            admin.listTopics().names().get(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             throw new IllegalStateException("Kafka connection failed: " + e.getMessage(), e);
+        } finally {
+            admin.close(Duration.ofSeconds(2));
         }
     }
 
