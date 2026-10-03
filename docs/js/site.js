@@ -201,7 +201,7 @@
       asset('index.html') +
       '" aria-label="Eventore home">' +
       '<img src="' +
-      asset('assets/logo-light.svg') +
+      asset('assets/logo.svg') +
       '" alt="Eventore" width="200" height="36" decoding="async"/>' +
       '</a>' +
       '<nav class="site-nav" aria-label="Primary">' +

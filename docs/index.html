@@ -37,222 +37,142 @@
   <section class="hero">
     <div class="hero-inner">
       <div class="hero-badge-container">
-        <span class="hero-badge">
-          <span class="hero-badge-pill"></span>
-          Apache 2.0 Open Source
-        </span>
-        <span class="hero-badge">8 Streaming Protocols</span>
+        <span class="hero-badge">Apache 2.0 Open Source</span>
+        <span class="hero-badge">8 Wire Protocols</span>
         <span class="hero-badge">Cross-Broker Replication</span>
         <span class="hero-badge">Model Context Protocol</span>
       </div>
 
-      <h1>One Console for Every Stream, Queue &amp; Cluster</h1>
+      <p class="hero-eyebrow">Multi-Stream Messaging Console</p>
+      <h1>One console for every stream, queue, and cluster</h1>
       <p class="lead">
-        Unified enterprise messaging console for <strong>Apache Kafka</strong>, <strong>RabbitMQ</strong>, <strong>Pulsar</strong>, <strong>MQTT</strong>, <strong>JMS</strong>, <strong>AWS Kinesis</strong>, <strong>GCP Pub/Sub</strong>, and <strong>Azure Service Bus</strong>.
-        Streamline cross-broker replication, field-level PII data masking, OpenTelemetry tracing, partition lag heatmaps, and DLQ message redrive.
+        Connect, browse, live-stream, inspect, bridge, and administer messaging systems from a single UI —
+        with cross-broker data replication, field-level PII masking, OpenTelemetry tracing, visual lag heatmaps, and DLQ redrive.
       </p>
 
       <div class="hero-cta">
-        <a class="btn btn-primary" href="guide/getting-started.html">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Get Started in 5 Minutes
-        </a>
-        <a class="btn btn-secondary" href="guide/replication-bridging.html">
-          Explore Cross-Broker Bridging
-        </a>
-        <a class="btn btn-outline" href="https://github.com/vijayptiwari/eventore" target="_blank" rel="noopener noreferrer">
-          GitHub Repository
-        </a>
+        <a class="btn btn-primary" href="guide/getting-started.html">Get started in 5 minutes</a>
+        <a class="btn btn-secondary" href="guide/architecture.html">Architecture</a>
+        <a class="btn btn-secondary" href="guide/replication-bridging.html">Replication engine</a>
+        <a class="btn btn-outline" href="https://github.com/vijayptiwari/eventore" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
 
-      <!-- Live Interactive Console Mockup -->
-      <div class="console-mockup" aria-label="Eventore Console Preview">
-        <div class="console-mockup-header">
-          <div class="console-dots">
-            <span class="console-dot dot-red"></span>
-            <span class="console-dot dot-yellow"></span>
-            <span class="console-dot dot-green"></span>
-          </div>
-          <span class="console-title">eventore-console — cluster: prod-us-east-mesh (8 brokers connected)</span>
-        </div>
-        <div class="console-tabs">
-          <span class="console-tab active">Cross-Broker Bridges (2)</span>
-          <span class="console-tab">Partition Lag Heatmap</span>
-          <span class="console-tab">Live Stream (WebSocket)</span>
-          <span class="console-tab">DLQ Redrive Engine</span>
-          <span class="console-tab">OpenTelemetry Traces</span>
-        </div>
-        <div class="console-body">
-          <div class="console-row">
-            <div class="console-row-left">
-              <span class="console-tag tag-kafka">KAFKA:orders.v1</span>
-              <span>&rarr;</span>
-              <span class="console-tag tag-rabbit">RABBITMQ:warehouse.orders</span>
-              <span>| Filter: <code>status=="CONFIRMED"</code></span>
-            </div>
-            <div>
-              <span style="color: #94a3b8; font-size: 0.775rem; margin-right: 0.75rem;">Throughput: 3,420 msg/s</span>
-              <span class="console-tag tag-active">REPLICATING</span>
-            </div>
-          </div>
-          <div class="console-row">
-            <div class="console-row-left">
-              <span class="console-tag tag-pulsar">PULSAR:telemetry.events</span>
-              <span>&rarr;</span>
-              <span class="console-tag tag-kafka">KAFKA:analytics.sink</span>
-              <span>| Mask: <code>CREDIT_CARD, SSN (SHA-256)</code></span>
-            </div>
-            <div>
-              <span style="color: #94a3b8; font-size: 0.775rem; margin-right: 0.75rem;">Throughput: 14,800 msg/s</span>
-              <span class="console-tag tag-active">REPLICATING</span>
-            </div>
-          </div>
-          <div class="console-row">
-            <div class="console-row-left">
-              <span style="color: #f59e0b;">&#9888; Lag Skew Alert:</span>
-              <span>Group <code>checkout-workers</code> | Partition 7 lag (18,400) is 42x median lag</span>
-            </div>
-            <div>
-              <span class="console-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">SKEW WARN</span>
-            </div>
-          </div>
-          <div class="console-row">
-            <div class="console-row-left">
-              <span style="color: #38bdf8;">W3C TraceContext:</span>
-              <code>00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01</code>
-            </div>
-            <div>
-              <a href="guide/tracing.html" style="font-size: 0.775rem; color: #38bdf8; text-decoration: none;">View in Jaeger / Datadog &rarr;</a>
-            </div>
-          </div>
-        </div>
+      <div class="hero-quickstart">
+        <span class="hero-quickstart-label">Quick Start</span>
+        <code>docker run -d -p 8080:8080 -e EVENTORE_DEPLOYMENT_MODE=DEV ghcr.io/vijayptiwari/eventore:latest</code>
       </div>
     </div>
   </section>
 
-  <!-- 8 Core Capabilities Grid -->
-  <section class="section">
+  <!-- High-Level Architecture Diagram -->
+  <section class="section section-diagram">
+    <div class="section-inner">
+      <figure class="diagram diagram--compact">
+        <img src="assets/diagrams/architecture-overview.svg" alt="Eventore architecture: React UI, server control plane, data plane providers, messaging backends" width="920" height="540" loading="lazy" decoding="async"/>
+        <figcaption class="diagram-caption">Eventore decoupled control plane and data plane architecture with modular wire protocol providers</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Core Capabilities Section -->
+  <section class="section section-alt">
     <div class="section-inner">
       <div class="section-heading">
-        <h2>Enterprise-Grade Streaming Capabilities</h2>
-        <p>Beyond traditional UI tools: high-performance replication, automated privacy, distributed observability, and incident remediation built directly into your console.</p>
+        <h2>Enterprise Streaming Capabilities</h2>
+        <p>Built for platform engineers and SREs: cross-cluster replication, data governance, observability, and incident remediation.</p>
       </div>
 
       <div class="feature-grid">
         <article class="feature-card">
-          <div class="feature-card-header">
-            <div class="feature-icon-badge">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
-            </div>
+          <div class="feature-card-top">
+            <h3>Cross-Broker Replication</h3>
             <span class="badge badge-accent">REQ-110</span>
           </div>
-          <h3>Cross-Broker Replication &amp; Bridging</h3>
-          <p>Replicate events between heterogeneous systems (e.g. Kafka &harr; RabbitMQ, Kinesis &rarr; Pub/Sub) with loop prevention, regex filtering, header mutations, and dry-run testing.</p>
+          <p>Transfer and transform streaming records across heterogeneous systems (e.g. Kafka &harr; RabbitMQ, Kinesis &rarr; Pub/Sub) with loop prevention (<code>X-Eventore-Bridge-Id</code>), regex filtering, and dry-run testing.</p>
           <a class="feature-card-link" href="guide/replication-bridging.html">Explore replication bridges &rarr;</a>
         </article>
 
         <article class="feature-card">
-          <div class="feature-card-header">
-            <div class="feature-icon-badge">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </div>
+          <div class="feature-card-top">
+            <h3>Field-Level Data Masking</h3>
             <span class="badge badge-accent">REQ-105</span>
           </div>
-          <h3>Field-Level Data Masking &amp; PII Redaction</h3>
-          <p>Zero-copy Jackson AST data masker conceals credit cards, SSNs, API tokens, and confidential fields in memory before rendering in UI or logging. Full GDPR/PCI compliance.</p>
+          <p>Zero-copy Jackson AST PII redaction and regex scanners conceal payment cards, credentials, SSNs, and confidential fields in memory before rendering or logging. GDPR and PCI-DSS compliant.</p>
           <a class="feature-card-link" href="guide/data-masking.html">Learn about data masking &rarr;</a>
         </article>
 
         <article class="feature-card">
-          <div class="feature-card-header">
-            <div class="feature-icon-badge">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
+          <div class="feature-card-top">
+            <h3>OpenTelemetry Tracing</h3>
             <span class="badge badge-accent">REQ-111</span>
           </div>
-          <h3>OpenTelemetry Distributed Tracing</h3>
-          <p>Decodes W3C TraceContext <code>traceparent</code> headers in every record, propagates child bridge spans, and generates one-click jump links to Jaeger, Zipkin, and Datadog.</p>
+          <p>Extract and propagate W3C TraceContext <code>traceparent</code> headers across asynchronous brokers, creating bridge child spans with one-click deep links to Jaeger, Zipkin, Datadog, and Dynatrace.</p>
           <a class="feature-card-link" href="guide/tracing.html">View distributed tracing &rarr;</a>
         </article>
 
         <article class="feature-card">
-          <div class="feature-card-header">
-            <div class="feature-icon-badge">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            </div>
+          <div class="feature-card-top">
+            <h3>Partition Lag Heatmap</h3>
             <span class="badge badge-accent">REQ-112</span>
           </div>
-          <h3>Partition Lag Heatmap &amp; Cluster Topology</h3>
-          <p>Visual severity matrix color-codes partition lag from nominal to critical. Automatically analyzes standard deviation to flag consumer group lag skew and stalled pods.</p>
+          <p>Visual severity matrix color-codes partition lag from nominal to critical. Automatically analyzes standard deviation to flag consumer group lag skew and stalled pods across clusters.</p>
           <a class="feature-card-link" href="guide/topology-lag.html">Inspect lag heatmap &rarr;</a>
         </article>
 
         <article class="feature-card">
-          <div class="feature-card-header">
-            <div class="feature-icon-badge">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            </div>
+          <div class="feature-card-top">
+            <h3>DLQ Inspector &amp; Redrive</h3>
             <span class="badge badge-accent">REQ-108</span>
           </div>
-          <h3>Dead-Letter Queue (DLQ) &amp; Redrive</h3>
-          <p>Inspect poisoned messages, debug exception stacktraces in headers, fix invalid payloads in-place with JSON syntax validation, and safely redrive records with rate limiting.</p>
+          <p>Inspect poisoned messages, debug exception stacktraces in headers, fix invalid JSON payloads in-place with schema validation, and safely redrive records back to production queues with rate limiting.</p>
           <a class="feature-card-link" href="guide/dlq.html">Review DLQ redrive &rarr;</a>
         </article>
 
         <article class="feature-card">
-          <div class="feature-card-header">
-            <div class="feature-icon-badge">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-            </div>
+          <div class="feature-card-top">
+            <h3>Externalized Connection Stores</h3>
             <span class="badge badge-accent">REQ-101</span>
           </div>
-          <h3>Externalized Connection Stores</h3>
-          <p>Scale horizontally with zero configuration drift: PostgreSQL JDBC with optimistic locking, Kubernetes Custom Resource Definitions (CRDs), and encrypted file stores.</p>
+          <p>Scale Eventore horizontally without configuration drift: PostgreSQL JDBC with optimistic locking (<code>version</code> column), Kubernetes Custom Resource Definitions (CRDs), and encrypted file stores.</p>
           <a class="feature-card-link" href="guide/connection-stores.html">Configure external stores &rarr;</a>
         </article>
 
         <article class="feature-card">
-          <div class="feature-card-header">
-            <div class="feature-icon-badge">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            </div>
-            <span class="badge badge-accent">CORE</span>
+          <div class="feature-card-top">
+            <h3>Live WebSocket Streaming</h3>
+            <span class="badge badge-subtle">Core</span>
           </div>
-          <h3>Multi-Topic WebSocket Live Streaming</h3>
-          <p>Live-tail messages across multiple topics and brokers simultaneously with real-time regex filtering, timed capture windows, and instant JSON, CSV, or NDJSON export.</p>
+          <p>Multi-topic WebSocket live view with real-time header and body regex filtering, timed capture windows, and instant export to JSON, CSV, or NDJSON formats.</p>
           <a class="feature-card-link" href="guide/streaming.html">Explore live streaming &rarr;</a>
         </article>
 
         <article class="feature-card">
-          <div class="feature-card-header">
-            <div class="feature-icon-badge">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            </div>
-            <span class="badge badge-accent">EPIC-16</span>
+          <div class="feature-card-top">
+            <h3>MCP for AI Agents</h3>
+            <span class="badge badge-subtle">EPIC-16</span>
           </div>
-          <h3>Model Context Protocol (MCP) for AI Agents</h3>
-          <p>Official <code>eventore-mcp</code> server equips AI agent IDEs (Cursor, Claude, Gemini) with safe broker tools to probe streams, inspect offsets, and debug incidents autonomously.</p>
+          <p>Official <code>eventore-mcp</code> server equips AI agent tools (Cursor, Claude, Gemini) with safe broker tools to probe streams, inspect offsets, and diagnose incidents without the UI.</p>
           <a class="feature-card-link" href="guide/mcp.html">Setup MCP server &rarr;</a>
         </article>
       </div>
     </div>
   </section>
 
-  <!-- 8 Supported Messaging Protocols Grid -->
-  <section class="section section-alt">
+  <!-- Supported Messaging Protocols Grid -->
+  <section class="section">
     <div class="section-inner">
       <div class="section-heading">
-        <h2>Federated Wire Protocols &amp; Cloud Presets</h2>
-        <p>One unified abstraction layer across 8 wire protocols. Configure connections with pre-tuned cloud presets for AWS, Azure, GCP, and self-hosted clusters.</p>
+        <h2>Supported Messaging Protocols</h2>
+        <p>Connect and manage 8 wire protocols with pre-tuned cloud presets for enterprise environments.</p>
       </div>
 
       <div class="protocol-grid">
         <a class="protocol-card" href="guide/kafka.html">
-          <div class="protocol-card-top">
+          <div class="protocol-card-header">
             <h3>Apache Kafka</h3>
             <span class="badge badge-success">Active</span>
           </div>
-          <p>Topics, partition inspection, consumer groups, lag, and ACL administration.</p>
+          <p>Topics, partition lag, message search, produce with headers, and ACL administration.</p>
           <div class="protocol-presets">
             <span class="preset-pill">AWS MSK</span>
             <span class="preset-pill">Confluent Cloud</span>
@@ -262,7 +182,7 @@
         </a>
 
         <a class="protocol-card" href="guide/rabbitmq.html">
-          <div class="protocol-card-top">
+          <div class="protocol-card-header">
             <h3>RabbitMQ</h3>
             <span class="badge badge-success">Active</span>
           </div>
@@ -270,16 +190,16 @@
           <div class="protocol-presets">
             <span class="preset-pill">CloudAMQP</span>
             <span class="preset-pill">Amazon MQ</span>
-            <span class="preset-pill">K8s Cluster Operator</span>
+            <span class="preset-pill">K8s Operator</span>
           </div>
         </a>
 
         <a class="protocol-card" href="guide/pulsar.html">
-          <div class="protocol-card-top">
+          <div class="protocol-card-header">
             <h3>Apache Pulsar</h3>
             <span class="badge badge-success">Active</span>
           </div>
-          <p>Tenants, namespaces, partitioned topics, subscriptions, and message backlog.</p>
+          <p>Tenants, namespaces, partitioned topics, subscriptions, and backlog inspection.</p>
           <div class="protocol-presets">
             <span class="preset-pill">StreamNative</span>
             <span class="preset-pill">DataStax Astra</span>
@@ -288,21 +208,21 @@
         </a>
 
         <a class="protocol-card" href="guide/mqtt.html">
-          <div class="protocol-card-top">
+          <div class="protocol-card-header">
             <h3>MQTT &amp; IoT</h3>
             <span class="badge badge-success">Active</span>
           </div>
-          <p>Wildcard topics, QoS 0/1/2, retained messages, and IoT broker telemetry.</p>
+          <p>Wildcard topics, QoS 0/1/2, retained messages, and broker telemetry.</p>
           <div class="protocol-presets">
             <span class="preset-pill">AWS IoT Core</span>
             <span class="preset-pill">Azure IoT Hub</span>
-            <span class="preset-pill">EMQX</span>
             <span class="preset-pill">Mosquitto</span>
+            <span class="preset-pill">EMQX</span>
           </div>
         </a>
 
         <a class="protocol-card" href="guide/jms.html">
-          <div class="protocol-card-top">
+          <div class="protocol-card-header">
             <h3>JMS &amp; Artemis</h3>
             <span class="badge badge-success">Active</span>
           </div>
@@ -315,11 +235,11 @@
         </a>
 
         <a class="protocol-card" href="guide/kinesis.html">
-          <div class="protocol-card-top">
+          <div class="protocol-card-header">
             <h3>AWS Kinesis</h3>
             <span class="badge badge-success">Active</span>
           </div>
-          <p>Data streams, shard iterators, IAM credentials, and real-time shard record live view.</p>
+          <p>Data streams, shard iterators, IAM credentials, and real-time shard live view.</p>
           <div class="protocol-presets">
             <span class="preset-pill">AWS IAM</span>
             <span class="preset-pill">IRSA / Pod Identity</span>
@@ -328,11 +248,11 @@
         </a>
 
         <a class="protocol-card" href="guide/gcp-pubsub.html">
-          <div class="protocol-card-top">
+          <div class="protocol-card-header">
             <h3>Google Cloud Pub/Sub</h3>
             <span class="badge badge-success">Active</span>
           </div>
-          <p>Topics, pull &amp; push subscriptions, dead-letter topics, and message peek.</p>
+          <p>Topics, pull and push subscriptions, dead-letter topics, and message peek.</p>
           <div class="protocol-presets">
             <span class="preset-pill">ADC / Workload Identity</span>
             <span class="preset-pill">Service Account Keys</span>
@@ -340,26 +260,26 @@
         </a>
 
         <a class="protocol-card" href="guide/azure-service-bus.html">
-          <div class="protocol-card-top">
+          <div class="protocol-card-header">
             <h3>Azure Service Bus</h3>
             <span class="badge badge-success">Active</span>
           </div>
           <p>Queues, topics, rules, dead-letter subqueues, Entra ID (Azure AD), and peek.</p>
           <div class="protocol-presets">
             <span class="preset-pill">Shared Access Signature</span>
-            <span class="preset-pill">Entra ID Managed Identity</span>
+            <span class="preset-pill">Entra ID Identity</span>
           </div>
         </a>
       </div>
     </div>
   </section>
 
-  <!-- Competitor Comparison Matrix (SEO Magnet) -->
-  <section class="section">
+  <!-- Technical Feature Comparison Table -->
+  <section class="section section-alt">
     <div class="section-inner">
       <div class="section-heading">
-        <h2>Why Engineers Choose Eventore</h2>
-        <p>Compare Eventore side-by-side with single-protocol tools like Kafka UI, AKHQ, and proprietary consoles.</p>
+        <h2>Technical Specification &amp; Comparison</h2>
+        <p>A technical comparison of capabilities between Eventore and single-protocol tools.</p>
       </div>
 
       <div class="comparison-table-wrap">
@@ -368,7 +288,7 @@
             <tr>
               <th>Capability</th>
               <th class="col-highlight">Eventore (Open Source)</th>
-              <th>Kafka UI (Provectus)</th>
+              <th>Kafka UI</th>
               <th>AKHQ</th>
               <th>Conduktor</th>
             </tr>
@@ -379,11 +299,11 @@
               <td class="col-highlight"><strong>8 Protocols</strong> (Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, Service Bus)</td>
               <td>Kafka only</td>
               <td>Kafka only</td>
-              <td>Kafka (+ paid add-ons)</td>
+              <td>Kafka (+ paid plugins)</td>
             </tr>
             <tr>
               <td><strong>Cross-Broker Bridging</strong></td>
-              <td class="col-highlight"><span class="check-icon">&#10003; Built-in</span> (Any-to-Any with loop prevention &amp; dry run)</td>
+              <td class="col-highlight"><span class="check-icon">&#10003; Built-in</span> (Any-to-Any, loop prevention &amp; dry run)</td>
               <td><span class="cross-icon">&#10007; None</span></td>
               <td><span class="cross-icon">&#10007; None</span></td>
               <td><span class="cross-icon">&#10007; None</span> (Separate Gateway)</td>
@@ -393,49 +313,49 @@
               <td class="col-highlight"><span class="check-icon">&#10003; Built-in</span> (Jackson AST, Regex, Hash &amp; Redact)</td>
               <td><span class="cross-icon">&#10007; None</span></td>
               <td><span class="cross-icon">&#10007; None</span></td>
-              <td><span class="check-icon">&#10003;</span> Paid Enterprise only</td>
+              <td>Paid Enterprise only</td>
             </tr>
             <tr>
-              <td><strong>OpenTelemetry &amp; W3C Tracing</strong></td>
-              <td class="col-highlight"><span class="check-icon">&#10003; Native</span> (Traceparent decode &amp; Jaeger/Datadog links)</td>
+              <td><strong>OpenTelemetry Tracing</strong></td>
+              <td class="col-highlight"><span class="check-icon">&#10003; W3C TraceContext</span> &amp; direct APM deep links</td>
               <td><span class="cross-icon">&#10007; None</span></td>
-              <td><span class="cross-icon">&#10007; Basic Jaeger</span></td>
+              <td>Basic Jaeger link</td>
               <td>Proprietary APM</td>
             </tr>
             <tr>
-              <td><strong>Visual Lag Heatmap</strong></td>
-              <td class="col-highlight"><span class="check-icon">&#10003; High-Density Matrix</span> + Automated Skew Alerts</td>
-              <td>Text list only</td>
-              <td>Text list only</td>
+              <td><strong>Partition Lag Visualization</strong></td>
+              <td class="col-highlight"><span class="check-icon">&#10003; High-Density Heatmap</span> &amp; Lag Skew Detection</td>
+              <td>Text offset list</td>
+              <td>Text offset list</td>
               <td>Basic Heatmap</td>
             </tr>
             <tr>
-              <td><strong>DLQ Message Redrive</strong></td>
-              <td class="col-highlight"><span class="check-icon">&#10003; In-place edit</span>, schema check &amp; rate-limited redrive</td>
+              <td><strong>DLQ Redrive Engine</strong></td>
+              <td class="col-highlight"><span class="check-icon">&#10003; In-place payload edit</span> &amp; rate-limited redrive</td>
               <td><span class="cross-icon">&#10007; Manual resend</span></td>
               <td><span class="cross-icon">&#10007; Manual</span></td>
-              <td><span class="check-icon">&#10003;</span> Paid Enterprise only</td>
+              <td>Paid Enterprise only</td>
             </tr>
             <tr>
               <td><strong>Externalized Connection Stores</strong></td>
               <td class="col-highlight"><span class="check-icon">&#10003; PostgreSQL JDBC</span> (Optimistic Locking) &amp; K8s CRDs</td>
               <td>H2 / Local YAML</td>
               <td>H2 / Local YAML</td>
-              <td>Cloud Hosted / Proprietary</td>
+              <td>Proprietary Cloud</td>
             </tr>
             <tr>
-              <td><strong>AI Agent Integration (MCP)</strong></td>
+              <td><strong>AI Agent Integration</strong></td>
               <td class="col-highlight"><span class="check-icon">&#10003; Official MCP Server</span> for Cursor, Claude &amp; Gemini</td>
               <td><span class="cross-icon">&#10007; None</span></td>
               <td><span class="cross-icon">&#10007; None</span></td>
               <td><span class="cross-icon">&#10007; None</span></td>
             </tr>
             <tr>
-              <td><strong>License &amp; Pricing</strong></td>
-              <td class="col-highlight"><strong>100% Free &amp; Open Source</strong> (Apache 2.0)</td>
-              <td>Apache 2.0</td>
-              <td>Apache 2.0</td>
-              <td>Commercial / Freemium tier limits</td>
+              <td><strong>License &amp; Cost</strong></td>
+              <td class="col-highlight"><strong>100% Free &amp; Open Source</strong> (Apache-2.0)</td>
+              <td>Apache-2.0</td>
+              <td>Apache-2.0</td>
+              <td>Commercial / Freemium limits</td>
             </tr>
           </tbody>
         </table>
@@ -444,25 +364,25 @@
   </section>
 
   <!-- Interactive FAQ Accordion -->
-  <section class="section section-alt">
+  <section class="section">
     <div class="section-inner">
       <div class="section-heading">
         <h2>Frequently Asked Questions</h2>
-        <p>Everything you need to know about deploying and operating Eventore.</p>
+        <p>Deployment, protocols, and technical architecture.</p>
       </div>
 
       <div class="faq-grid">
         <details class="faq-item" open>
           <summary class="faq-question">What is Eventore and who is it built for?</summary>
           <div class="faq-answer">
-            Eventore is an enterprise-grade open-source multi-protocol streaming and messaging console that replaces fragmented single-broker UIs. It is built for platform engineers, SREs, and backend developers who manage messaging systems like Apache Kafka, RabbitMQ, Pulsar, MQTT, JMS, AWS Kinesis, GCP Pub/Sub, and Azure Service Bus.
+            Eventore is an enterprise-grade open-source multi-protocol streaming and messaging console that replaces fragmented single-broker tools. It is built for platform engineers, SREs, and backend developers who manage messaging systems including Apache Kafka, RabbitMQ, Pulsar, MQTT, JMS, AWS Kinesis, GCP Pub/Sub, and Azure Service Bus.
           </div>
         </details>
 
         <details class="faq-item">
           <summary class="faq-question">How is Eventore different from Kafka UI or AKHQ?</summary>
           <div class="faq-answer">
-            While Kafka UI and AKHQ only support Apache Kafka, Eventore supports 8 messaging wire protocols in a single interface. Furthermore, Eventore includes capabilities not found in traditional tools: cross-broker replication bridges, real-time PII data masking to prevent compliance leaks, native W3C OpenTelemetry distributed tracing, visual partition lag heatmaps with skew alerts, and official Model Context Protocol (MCP) server support for AI agents.
+            While Kafka UI and AKHQ only support Apache Kafka, Eventore supports 8 messaging wire protocols in a single interface. Furthermore, Eventore includes built-in cross-broker replication bridges, real-time PII data masking to prevent compliance leaks, native W3C OpenTelemetry distributed tracing, visual partition lag heatmaps with skew alerts, and official Model Context Protocol (MCP) server support for AI agents.
           </div>
         </details>
 
@@ -498,16 +418,16 @@
   </section>
 
   <!-- CTA Section -->
-  <section class="section section-cta">
-    <div class="section-inner section-narrow" style="text-align: center;">
+  <section class="section section-cta section-alt">
+    <div class="section-inner section-narrow">
       <div class="section-heading">
-        <h2>Ready to Unify Your Messaging Infrastructure?</h2>
-        <p>Deploy Eventore locally in seconds with Docker or on production Kubernetes with our official Helm charts.</p>
+        <h2>Product documentation</h2>
+        <p>Step-by-step guides, configuration reference, architecture diagrams, and deployment examples.</p>
       </div>
-      <div class="btn-group" style="justify-content: center;">
-        <a class="btn btn-primary" href="guide/getting-started.html">Get Started in 5 Minutes</a>
-        <a class="btn btn-secondary" href="guide/deployment.html">Deploy on Kubernetes with Helm</a>
-        <a class="btn btn-outline" href="guide/index.html">Browse All Guides</a>
+      <div class="btn-group">
+        <a class="btn btn-primary" href="guide/index.html">Open documentation hub</a>
+        <a class="btn btn-outline" href="guide/deployment.html">Deployment guide</a>
+        <a class="btn btn-outline" href="about.html">About &amp; contribute</a>
       </div>
     </div>
   </section>
