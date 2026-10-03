@@ -396,6 +396,24 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
   - [x] Outbound publish encodes Avro Confluent wire format and injects `x-eventore-schema-id`
   - [x] Comprehensive unit and UI contract test coverage
 
+#### REQ-108: Dead Letter Queue (DLQ) Inspector & Redrive Management
+
+- **Type:** Enhancement / Feature
+- **Priority:** P1
+- **Area:** `backend/eventore-core`, `backend/eventore-server`, `frontend`
+- **As implemented today:** Automated Dead Letter Queue (DLQ) pattern detection across all protocols (`.dlq`, `-dlq`, `_dlq`, `.dlt`, `-dlt`, `deadletter`) with target topic inference and custom regex support. Backend provides `/api/v1/connections/{id}/dlq/topics` to list detected DLQ topics, `/api/v1/connections/{id}/dlq/messages` to inspect dead-lettered messages and extract error diagnostics (`x-original-topic`, `x-exception-message`, `x-exception-fqcn`, `x-exception-stacktrace`), and `/api/v1/connections/{id}/dlq/redrive` for single-message redrive (with in-flight payload editing) and batch redrive back to primary topics with provenance tracking headers (`x-eventore-redriven-from`, `x-eventore-redrive-timestamp`). Frontend adds a dedicated "DLQ / Redrive" tab in `StreamInspector`, quick-selection topic pills, dead-letter message table with failure tags, interactive single-message inspection/edit modal, and batch redrive execution.
+- **Requirement:** First-class DLQ inspection and safe redrive capabilities enabling developers and SREs to rapidly diagnose poison pills, fix corrupted payloads, and redrive messages back to operational queues without external tooling.
+- **Acceptance criteria:**
+  - [x] `DlqDetector` automated pattern detection and inferred target queue/topic calculation
+  - [x] `DlqMessageInfo` extraction of error diagnostics from standard error headers
+  - [x] `DlqService` and `DlqController` REST endpoints (`/topics`, `/messages`, `/redrive`)
+  - [x] Provenance tracking headers (`x-eventore-redriven-from`, `x-eventore-redrive-timestamp`) attached during redrive
+  - [x] Enforced RBAC (`policy.require(Action.PUBLISH)`) and structured audit logging on redrive actions
+  - [x] Frontend `StreamInspectorDlqTab` mounted in `StreamInspector` with topic pills, dead-letter table, and diagnostics
+  - [x] Single-message inspection and payload editing before redrive
+  - [x] Batch redrive action with real-time feedback
+  - [x] 100% backend unit and frontend UI/API contract test coverage
+
 ---
 
 ### P3 — Low / deferred

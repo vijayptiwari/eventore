@@ -74,6 +74,39 @@ export interface SchemaTemplateResponse {
   template: string;
 }
 
+export interface DlqTopicSummary {
+  dlqTopic: string;
+  inferredTargetTopic: string;
+  partitionCount: number;
+  detectionReason: string;
+}
+
+export interface DlqMessageInfo {
+  message: UnifiedMessage;
+  originalTopic?: string;
+  failureReason?: string;
+  exceptionClass?: string;
+  stackTraceSnippet?: string;
+}
+
+export interface DlqRedriveRequest {
+  sourceTopic: string;
+  targetTopic?: string;
+  messageIds?: string[];
+  editedPayload?: string;
+  editedHeaders?: Record<string, string>;
+  maxMessages?: number;
+}
+
+export interface DlqRedriveResult {
+  sourceTopic: string;
+  targetTopic: string;
+  redrivenCount: number;
+  failedCount: number;
+  errors: string[];
+  timestamp: string;
+}
+
 const REQUEST_TIMEOUT_MS = 30_000;
 
 export class InspectNotSupportedError extends Error {
@@ -342,6 +375,18 @@ export const api = {
     registryUrl?: string;
   }) =>
     request<SchemaMetadata>('/schemas', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  listDlqTopics: (connectionId: string) =>
+    request<DlqTopicSummary[]>(connectionPath(connectionId, '/dlq/topics')),
+  inspectDlqMessages: (connectionId: string, topic: string, max?: number) =>
+    request<DlqMessageInfo[]>(
+      `${connectionPath(connectionId, '/dlq/messages')}?topic=${encodeURIComponent(topic)}${max ? `&max=${max}` : ''}`
+    ),
+  redriveDlq: (connectionId: string, body: DlqRedriveRequest) =>
+    request<DlqRedriveResult>(connectionPath(connectionId, '/dlq/redrive'), {
       method: 'POST',
       body: JSON.stringify(body),
     }),

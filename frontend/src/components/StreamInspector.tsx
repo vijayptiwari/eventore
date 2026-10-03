@@ -1,11 +1,12 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { api, InspectNotSupportedError } from '../api/client';
+import { api, InspectNotSupportedError, canAction } from '../api/client';
 import { useControlPlane } from '../hooks/useControlPlane';
 import type { LiveStreamSession } from '../stream/types';
 import type { ProtocolType } from '../api/types';
 import KafkaAdminPanel from './KafkaAdminPanel';
 import LiveViewPanel from './LiveViewPanel';
+import StreamInspectorDlqTab from './StreamInspectorDlqTab';
 import StreamInspectorGroupsTab from './StreamInspectorGroupsTab';
 import StreamInspectorLagTab from './StreamInspectorLagTab';
 import StreamInspectorOverviewTab from './StreamInspectorOverviewTab';
@@ -14,7 +15,7 @@ import StreamInspectorShardsTab from './StreamInspectorShardsTab';
 import StreamInspectorTopicsTab from './StreamInspectorTopicsTab';
 import { hasInspectFeature } from '../utils/inspectFeatures';
 
-type Tab = 'overview' | 'topics' | 'groups' | 'lag' | 'search' | 'shards' | 'admin' | 'live';
+type Tab = 'overview' | 'topics' | 'groups' | 'lag' | 'search' | 'dlq' | 'shards' | 'admin' | 'live';
 
 function groupsTabLabel(protocol: ProtocolType): string {
   if (protocol === 'RABBITMQ') return 'Queues';
@@ -46,7 +47,8 @@ export default function StreamInspector({ session }: Props) {
   const [dumpStartAt, setDumpStartAt] = useState<'latest' | 'earliest'>('latest');
   const cid = session.connectionId;
   const protocol = session.protocol;
-  const { adminProtocols } = useControlPlane();
+  const { adminProtocols, config } = useControlPlane();
+  const canPublish = canAction(config?.allowedActions, 'PUBLISH');
   const streamName = session.destination;
 
   useEffect(() => {
@@ -153,6 +155,7 @@ export default function StreamInspector({ session }: Props) {
     },
     { id: 'lag', label: lagTabLabel(protocol), show: canLag },
     { id: 'search', label: 'Message search', show: canSearch },
+    { id: 'dlq', label: 'DLQ / Redrive', show: canSearch },
     { id: 'shards', label: 'Shards', show: canShards },
     { id: 'admin', label: 'Kafka admin', show: protocol === 'KAFKA' },
     { id: 'live', label: 'Live messages', show: true },
@@ -246,6 +249,14 @@ export default function StreamInspector({ session }: Props) {
             searchMutation={searchMutation}
           />
         </>
+      )}
+
+      {tab === 'dlq' && canSearch && (
+        <StreamInspectorDlqTab
+          connectionId={cid}
+          defaultTopic={detailsTopic || session.destination}
+          canPublish={canPublish}
+        />
       )}
 
       {tab === 'shards' && canShards && (
