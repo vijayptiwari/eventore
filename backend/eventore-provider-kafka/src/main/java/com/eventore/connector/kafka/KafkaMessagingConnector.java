@@ -12,11 +12,16 @@ import com.eventore.domain.MessageDirection;
 import com.eventore.domain.ProtocolType;
 import com.eventore.domain.TopicRef;
 import com.eventore.domain.UnifiedMessage;
+import com.eventore.schema.AvroPayloadDecoder;
+import com.eventore.schema.DefaultSchemaRegistryClient;
+import com.eventore.schema.SchemaMetadata;
+import com.eventore.schema.SchemaRegistryClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +40,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -44,6 +50,16 @@ public class KafkaMessagingConnector implements MessagingConnector {
 
     private final Map<String, AutoCloseable> activeConsumers = new ConcurrentHashMap<>();
     private final Map<String, KafkaProducer<String, byte[]>> producers = new ConcurrentHashMap<>();
+    private final SchemaRegistryClient schemaRegistryClient;
+
+    public KafkaMessagingConnector() {
+        this(new DefaultSchemaRegistryClient());
+    }
+
+    @Autowired
+    public KafkaMessagingConnector(SchemaRegistryClient schemaRegistryClient) {
+        this.schemaRegistryClient = schemaRegistryClient != null ? schemaRegistryClient : new DefaultSchemaRegistryClient();
+    }
 
     @Override
     public ProtocolType protocol() {
@@ -173,9 +189,16 @@ public class KafkaMessagingConnector implements MessagingConnector {
                     msg.setProtocol(ProtocolType.KAFKA);
                     msg.setDestination(record.topic());
                     msg.setDirection(MessageDirection.INBOUND);
-                    PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(record.value());
+                    String registryUrl = resolveRegistryUrl(profile);
+                    PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(record.value(), schemaRegistryClient, registryUrl);
                     msg.setPayload(decoded.text());
                     msg.setContentType(decoded.contentType());
+                    if (decoded.schemaId() != null) {
+                        msg.putHeader("x-eventore-schema-id", String.valueOf(decoded.schemaId()));
+                    }
+                    if (decoded.schemaType() != null) {
+                        msg.putHeader("x-eventore-schema-type", decoded.schemaType());
+                    }
                     msg.putHeader("partition", String.valueOf(record.partition()));
                     msg.putHeader("offset", String.valueOf(record.offset()));
                     if (record.key() != null) {
@@ -205,7 +228,26 @@ public class KafkaMessagingConnector implements MessagingConnector {
                 profile.getId(),
                 id -> new KafkaProducer<>(KafkaClientSupport.producerProps(profile)));
         try {
-            byte[] bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+            byte[] bytes;
+            String schemaIdHeader = extractSchemaIdHeader(request);
+            String registryUrl = resolveRegistryUrl(profile);
+            if (schemaIdHeader != null) {
+                try {
+                    int schemaId = Integer.parseInt(schemaIdHeader.trim());
+                    Optional<SchemaMetadata> metaOpt = schemaRegistryClient.getSchemaById(registryUrl, schemaId);
+                    if (metaOpt.isPresent() && "AVRO".equalsIgnoreCase(metaOpt.get().schemaType())) {
+                        bytes = AvroPayloadDecoder.encodeJson(schemaId, request.getPayload(), metaOpt.get().schemaContent());
+                    } else {
+                        bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to encode payload with schema ID {}, falling back to standard encoding: {}", schemaIdHeader, e.getMessage());
+                    bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+                }
+            } else {
+                bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+            }
+
             String key = request.getHeaders() != null ? request.getHeaders().get("key") : null;
             Integer partition = parsePartitionHeader(request);
             ProducerRecord<String, byte[]> record = partition != null
@@ -228,6 +270,31 @@ public class KafkaMessagingConnector implements MessagingConnector {
                     profile.getId(), request.getDestination(), e);
             throw new IllegalStateException("Kafka publish failed: " + e.getMessage(), e);
         }
+    }
+
+    private static String resolveRegistryUrl(ConnectionProfile profile) {
+        if (profile == null) {
+            return null;
+        }
+        String url = profile.property("schemaRegistryUrl");
+        if (url == null || url.isBlank()) {
+            url = profile.property("schema.registry.url");
+        }
+        return url;
+    }
+
+    private static String extractSchemaIdHeader(PublishRequest request) {
+        if (request.getHeaders() == null) {
+            return null;
+        }
+        String id = request.getHeaders().get("x-eventore-schema-id");
+        if (id == null) {
+            id = request.getHeaders().get("schemaId");
+        }
+        if (id == null) {
+            id = request.getHeaders().get("schema.id");
+        }
+        return (id != null && !id.isBlank()) ? id : null;
     }
 
     private static Integer parsePartitionHeader(PublishRequest request) {

@@ -46,22 +46,83 @@ public final class PayloadCodec {
         return payload.getBytes(StandardCharsets.UTF_8);
     }
 
-    /** Result of decoding inbound bytes: payload text plus the effective content type. */
-    public record Decoded(String text, String contentType, boolean base64) {}
+    /** Result of decoding inbound bytes: payload text plus the effective content type and optional schema metadata. */
+    public record Decoded(
+            String text,
+            String contentType,
+            boolean base64,
+            Integer schemaId,
+            String schemaType) {
+
+        public Decoded(String text, String contentType, boolean base64) {
+            this(text, contentType, base64, null, null);
+        }
+    }
 
     /**
-     * Converts inbound raw bytes to a transport-safe string. Valid UTF-8 is
-     * passed through as text; anything else is base64-encoded and marked with
-     * {@link #BASE64_CONTENT_TYPE} so clients can reverse the encoding.
+     * Converts inbound raw bytes to a transport-safe string without external schema resolution.
      */
     public static Decoded fromBytes(byte[] data) {
+        return fromBytes(data, null, null);
+    }
+
+    /**
+     * Converts inbound raw bytes to a transport-safe string, automatically resolving
+     * Confluent Schema Registry wire format (0x00 + 4-byte Schema ID) to decoded JSON.
+     */
+    public static Decoded fromBytes(
+            byte[] data,
+            com.eventore.schema.SchemaRegistryClient schemaRegistryClient,
+            String registryUrl) {
         if (data == null || data.length == 0) {
-            return new Decoded("", TEXT_CONTENT_TYPE, false);
+            return new Decoded("", TEXT_CONTENT_TYPE, false, null, null);
         }
+
+        // 1. Detect Confluent Schema Registry wire format
+        if (com.eventore.schema.AvroPayloadDecoder.isConfluentWireFormat(data)) {
+            int schemaId = com.eventore.schema.AvroPayloadDecoder.extractSchemaId(data);
+            if (schemaRegistryClient != null) {
+                java.util.Optional<com.eventore.schema.SchemaMetadata> metaOpt =
+                        schemaRegistryClient.getSchemaById(registryUrl, schemaId);
+                if (metaOpt.isPresent()) {
+                    com.eventore.schema.SchemaMetadata meta = metaOpt.get();
+                    try {
+                        if ("AVRO".equalsIgnoreCase(meta.schemaType())) {
+                            String json = com.eventore.schema.AvroPayloadDecoder.decode(data, meta.schemaContent());
+                            return new Decoded(json, "application/json", false, schemaId, "AVRO");
+                        } else if ("JSON".equalsIgnoreCase(meta.schemaType())
+                                || "JSON_SCHEMA".equalsIgnoreCase(meta.schemaType())) {
+                            byte[] jsonBytes = new byte[data.length - com.eventore.schema.AvroPayloadDecoder.WIRE_HEADER_SIZE];
+                            System.arraycopy(
+                                    data,
+                                    com.eventore.schema.AvroPayloadDecoder.WIRE_HEADER_SIZE,
+                                    jsonBytes,
+                                    0,
+                                    jsonBytes.length);
+                            return new Decoded(
+                                    new String(jsonBytes, StandardCharsets.UTF_8),
+                                    "application/json",
+                                    false,
+                                    schemaId,
+                                    "JSON");
+                        }
+                    } catch (Exception e) {
+                        // Fall through to unresolved schema wire format
+                    }
+                }
+            }
+            return new Decoded(
+                    Base64.getEncoder().encodeToString(data),
+                    "application/vnd.apache.avro+binary; schemaId=" + schemaId,
+                    true,
+                    schemaId,
+                    "AVRO");
+        }
+
         if (isValidUtf8(data)) {
-            return new Decoded(new String(data, StandardCharsets.UTF_8), TEXT_CONTENT_TYPE, false);
+            return new Decoded(new String(data, StandardCharsets.UTF_8), TEXT_CONTENT_TYPE, false, null, null);
         }
-        return new Decoded(Base64.getEncoder().encodeToString(data), BASE64_CONTENT_TYPE, true);
+        return new Decoded(Base64.getEncoder().encodeToString(data), BASE64_CONTENT_TYPE, true, null, null);
     }
 
     static boolean isValidUtf8(byte[] data) {

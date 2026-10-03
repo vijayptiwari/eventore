@@ -201,4 +201,44 @@ class KafkaMessagingConnectorTest {
         verify(consumerRef.get()).wakeup();
         assertDoesNotThrow(() -> testConnector.close(profile.getId()));
     }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void publishEncodesAvroWhenSchemaIdHeaderProvided() throws Exception {
+        var profile = StreamTestFixtures.profile(ProtocolType.KAFKA, "localhost:9092");
+        String schemaJson = """
+                {"type":"record","name":"User","fields":[{"name":"id","type":"string"},{"name":"age","type":"int"}]}
+                """;
+        var client = new com.eventore.schema.DefaultSchemaRegistryClient();
+        client.registerLocalSchema(101, schemaJson, "AVRO");
+
+        KafkaMessagingConnector testConnector = new KafkaMessagingConnector(client);
+
+        PublishRequest request = new PublishRequest();
+        request.setDestination("user-topic");
+        request.setPayload("{\"id\":\"u1\",\"age\":20}");
+        request.setHeaders(Map.of("x-eventore-schema-id", "101"));
+
+        AtomicReference<byte[]> capturedBytes = new AtomicReference<>();
+        try (MockedConstruction<KafkaProducer> producers = mockConstruction(
+                KafkaProducer.class,
+                (mock, ctx) -> {
+                    when(mock.send(any(ProducerRecord.class))).thenAnswer(inv -> {
+                        ProducerRecord<String, byte[]> rec = inv.getArgument(0);
+                        capturedBytes.set(rec.value());
+                        Future future = mock(Future.class);
+                        return future;
+                    });
+                })) {
+            testConnector.publish(profile, request);
+        }
+
+        byte[] sent = capturedBytes.get();
+        org.junit.jupiter.api.Assertions.assertNotNull(sent);
+        assertTrue(com.eventore.schema.AvroPayloadDecoder.isConfluentWireFormat(sent));
+        assertEquals(101, com.eventore.schema.AvroPayloadDecoder.extractSchemaId(sent));
+        String decoded = com.eventore.schema.AvroPayloadDecoder.decode(sent, schemaJson);
+        assertTrue(decoded.contains("\"id\": \"u1\""));
+        assertTrue(decoded.contains("\"age\": 20"));
+    }
 }

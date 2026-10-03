@@ -363,6 +363,23 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **Acceptance criteria:**
   - [ ] Documented skip when Docker unavailable
 
+#### REQ-106: Schema Registry & Avro Decoder
+
+- **Type:** Enhancement / Feature
+- **Priority:** P1
+- **Area:** `backend/eventore-core`, `eventore-provider-kafka`, `eventore-server`, `frontend`
+- **As implemented today:** Confluent Schema Registry wire format (0x00 + 4-byte Schema ID) is automatically detected and decoded into structured JSON using cached Avro schemas. Kafka connector and inspector resolve schemas via connection profile property `schemaRegistryUrl` (or `schema.registry.url`), or local catalog. REST API endpoints `/api/v1/schemas` support listing, querying and registering schemas. Frontend displays interactive schema badge pills (`Schema #1042 · AVRO`), pretty-print JSON formatting, and Schema Registry URL inputs in the connection wizard.
+- **Requirement:** Seamless automated decoding of Confluent Avro messages into readable JSON across live view and inspection streams, with outbound schema-aware encoding support.
+- **Acceptance criteria:**
+  - [x] Wire format detection (0x00 magic byte + 4-byte big-endian Schema ID) and parsing
+  - [x] Avro payload binary decoding to GenericRecord and JSON string
+  - [x] Schema-aware outbound publishing using `AvroPayloadDecoder.encodeJson` and `x-eventore-schema-id`
+  - [x] Caching HTTP Schema Registry client with fallback to local in-memory catalog
+  - [x] `KafkaMessagingConnector` and `KafkaMessagingInspector` attach `x-eventore-schema-id` and `x-eventore-schema-type` headers
+  - [x] `SchemaRegistryController` in `eventore-server` exposes `/api/v1/schemas`
+  - [x] Frontend `MessagePayloadViewer` renders badge pill `Schema #{id} · {type}`, JSON formatter, and raw toggle
+  - [x] Connection wizard supports `schemaRegistryUrl` in Kafka configuration
+
 ---
 
 ### P3 — Low / deferred

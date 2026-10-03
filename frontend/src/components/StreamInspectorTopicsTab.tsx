@@ -1,6 +1,7 @@
 import type { UseMutationResult } from '@tanstack/react-query';
 import type { ProtocolType, UnifiedMessage } from '../api/types';
 import ExportResultActions from './ExportResultActions';
+import MessagePayloadViewer from './MessagePayloadViewer';
 
 interface TopicRow {
   name: string;
@@ -140,7 +141,9 @@ export default function StreamInspectorTopicsTab({
                     <td>{m.headers?.partition}</td>
                     <td>{m.headers?.offset}</td>
                     <td>{m.headers?.key ?? '—'}</td>
-                    <td className="message-payload">{m.payload}</td>
+                    <td className="message-payload">
+                      <MessagePayloadViewer payload={m.payload} headers={m.headers} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

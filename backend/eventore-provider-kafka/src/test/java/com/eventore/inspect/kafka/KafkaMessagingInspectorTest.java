@@ -63,6 +63,8 @@ class KafkaMessagingInspectorTest {
         assertTrue(features.contains("message-search"));
         assertTrue(features.contains("topic-create"));
         assertTrue(features.contains("acl-list"));
+        assertTrue(features.contains("schema-registry"));
+        assertTrue(features.contains("avro-decoder"));
         assertFalse(features.isEmpty());
     }
 
@@ -190,6 +192,45 @@ class KafkaMessagingInspectorTest {
             assertEquals("hello kafka", found.get(0).getPayload());
             assertEquals("text/plain", found.get(0).getContentType());
             assertEquals("k1", found.get(0).getHeaders().get("key"));
+        }
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void searchMessagesDecodesAvroConfluentPayload() throws Exception {
+        var profile = StreamTestFixtures.profile(ProtocolType.KAFKA, "localhost:9092", null, null);
+        String schemaJson = """
+                {"type":"record","name":"Order","fields":[{"name":"orderId","type":"string"},{"name":"amount","type":"double"}]}
+                """;
+        com.eventore.schema.DefaultSchemaRegistryClient client = new com.eventore.schema.DefaultSchemaRegistryClient();
+        client.registerLocalSchema(42, schemaJson, "AVRO");
+        KafkaMessagingInspector customInspector = new KafkaMessagingInspector(client);
+
+        byte[] wireBytes = com.eventore.schema.AvroPayloadDecoder.encodeJson(
+                42, "{\"orderId\":\"ord-99\",\"amount\":19.99}", schemaJson);
+
+        MessageSearchRequest request = new MessageSearchRequest();
+        request.setTopic("orders-avro");
+        request.setPartition("0");
+        request.setStartAt("earliest");
+        request.setMaxMessages(1);
+        TopicPartition tp = new TopicPartition("orders-avro", 0);
+        ConsumerRecords<String, byte[]> records = new ConsumerRecords<>(
+                Map.of(tp, List.of(new ConsumerRecord<>(
+                        "orders-avro", 0, 0L, "key-1", wireBytes))));
+
+        try (MockedConstruction<KafkaConsumer> consumers = mockConstruction(
+                KafkaConsumer.class,
+                (mock, ctx) -> when(mock.poll(any(Duration.class))).thenReturn(records))) {
+            List<UnifiedMessage> found = customInspector.searchMessages(profile, request);
+
+            assertEquals(1, found.size());
+            UnifiedMessage msg = found.get(0);
+            assertEquals("application/json", msg.getContentType());
+            assertTrue(msg.getPayload().contains("\"orderId\": \"ord-99\""));
+            assertTrue(msg.getPayload().contains("\"amount\": 19.99"));
+            assertEquals("42", msg.getHeaders().get("x-eventore-schema-id"));
+            assertEquals("AVRO", msg.getHeaders().get("x-eventore-schema-type"));
         }
     }
 }

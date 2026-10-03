@@ -5,6 +5,7 @@ import { useStreamWorkspace } from '../stream/StreamWorkspaceContext';
 import type { LiveStreamSession } from '../stream/types';
 import type { LiveViewDurationMinutes } from '../stream/types';
 import ExportResultActions from './ExportResultActions';
+import MessagePayloadViewer from './MessagePayloadViewer';
 
 const DURATIONS: LiveViewDurationMinutes[] = [1, 2, 5, 10];
 const MAX_REGEX_LENGTH = 512;
@@ -214,7 +215,9 @@ export default function LiveViewPanel({ session }: Props) {
                 <td>{new Date(m.timestamp).toLocaleTimeString()}</td>
                 <td>{m.destination}</td>
                 <td>{m.headers?.partition ?? '—'}</td>
-                <td className="message-payload">{m.payload}</td>
+                <td className="message-payload">
+                  <MessagePayloadViewer payload={m.payload} headers={m.headers} />
+                </td>
               </tr>
             ))}
           </tbody>

@@ -13,6 +13,14 @@ export interface ProtocolFieldDescriptor {
 }
 
 export const PROTOCOL_EXTRA_FIELDS: Partial<Record<ProtocolType, ProtocolFieldDescriptor[]>> = {
+  KAFKA: [
+    {
+      kind: 'property',
+      key: 'schemaRegistryUrl',
+      label: 'Schema Registry URL (e.g. http://localhost:8081)',
+      defaultValue: '',
+    },
+  ],
   MQTT: [{ kind: 'property', key: 'topicFilter', label: 'Topic filter', defaultValue: '#' }],
   RABBITMQ: [
     { kind: 'property', key: 'vhost', label: 'Virtual host', defaultValue: '/' },

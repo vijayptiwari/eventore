@@ -18,4 +18,9 @@ public class ControlPlaneConfiguration {
     DataPlaneRegistry dataPlaneRegistry(ControlPlaneRegistry controlPlaneRegistry) {
         return new DataPlaneRegistry(controlPlaneRegistry);
     }
+
+    @Bean
+    public com.eventore.schema.SchemaRegistryClient schemaRegistryClient() {
+        return new com.eventore.schema.DefaultSchemaRegistryClient();
+    }
 }

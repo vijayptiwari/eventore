@@ -42,10 +42,27 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import com.eventore.schema.DefaultSchemaRegistryClient;
+import com.eventore.schema.SchemaRegistryClient;
 
 @Component
 public class KafkaMessagingInspector implements MessagingInspector {
+
+    private static final Logger log = LoggerFactory.getLogger(KafkaMessagingInspector.class);
+    private final SchemaRegistryClient schemaRegistryClient;
+
+    public KafkaMessagingInspector() {
+        this(new DefaultSchemaRegistryClient());
+    }
+
+    @Autowired
+    public KafkaMessagingInspector(SchemaRegistryClient schemaRegistryClient) {
+        this.schemaRegistryClient = schemaRegistryClient != null ? schemaRegistryClient : new DefaultSchemaRegistryClient();
+    }
 
     @Override
     public ProtocolType protocol() {
@@ -59,7 +76,8 @@ public class KafkaMessagingInspector implements MessagingInspector {
                 "cluster", "brokers", "topics", "topic-detail", "consumer-groups",
                 "group-detail", "lag", "message-search",
                 "publish-headers", "topic-create", "topic-delete", "topic-flush",
-                "topic-configs", "acl-list", "acl-create", "acl-delete", "acl-replace"));
+                "topic-configs", "acl-list", "acl-create", "acl-delete", "acl-replace",
+                "schema-registry", "avro-decoder"));
         return c;
     }
 
@@ -314,15 +332,38 @@ public class KafkaMessagingInspector implements MessagingInspector {
         msg.setProtocol(ProtocolType.KAFKA);
         msg.setDestination(record.topic());
         msg.setDirection(MessageDirection.INBOUND);
-        PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(record.value());
+        String registryUrl = resolveRegistryUrl(profile);
+        PayloadCodec.Decoded decoded = PayloadCodec.fromBytes(record.value(), schemaRegistryClient, registryUrl);
         msg.setPayload(decoded.text());
         msg.setContentType(decoded.contentType());
+        if (decoded.schemaId() != null) {
+            msg.putHeader("x-eventore-schema-id", String.valueOf(decoded.schemaId()));
+        }
+        if (decoded.schemaType() != null) {
+            msg.putHeader("x-eventore-schema-type", decoded.schemaType());
+        }
         msg.putHeader("partition", String.valueOf(record.partition()));
         msg.putHeader("offset", String.valueOf(record.offset()));
         if (record.key() != null) {
             msg.putHeader("key", record.key());
         }
+        for (org.apache.kafka.common.header.Header header : record.headers()) {
+            if (header.key() != null && header.value() != null) {
+                msg.putHeader(header.key(), PayloadCodec.fromBytes(header.value()).text());
+            }
+        }
         return msg;
+    }
+
+    private static String resolveRegistryUrl(ConnectionProfile profile) {
+        if (profile == null) {
+            return null;
+        }
+        String url = profile.property("schemaRegistryUrl");
+        if (url == null || url.isBlank()) {
+            url = profile.property("schema.registry.url");
+        }
+        return url;
     }
 
     private TopicDetail toTopicDetail(TopicDescription td) {
