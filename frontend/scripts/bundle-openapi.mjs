@@ -13,7 +13,7 @@ const bundled = {
   openapi: '3.0.3',
   info: {
     title: 'Eventore API (bundled)',
-    version: '0.1.0',
+    version: yaml.load(readFileSync(join(root, 'eventore-api.yaml'), 'utf8')).info.version,
     description: 'Auto-bundled OpenAPI 3.0 contract combining all active streams'
   },
   servers: [{ url: '/api/v1' }],

@@ -40,7 +40,7 @@ Pick only the integration modules you need so the JAR, image, and UI stay small.
 ```bash
 cd backend
 mvn -DskipTests -Pkafka-kinesis -P!providers-all package
-java -jar eventore-server/target/eventore-server-0.2.0.jar \
+java -jar eventore-server/target/eventore-server-0.2.1.jar \
   --spring.profiles.active=kafka-kinesis
 ```
 
@@ -63,7 +63,7 @@ Profiles: `providers-all` (default), `kafka-kinesis`, `provider-kafka`, `provide
 ```bash
 cd backend
 mvn -DskipTests package
-java -jar eventore-server/target/eventore-server-0.2.0.jar
+java -jar eventore-server/target/eventore-server-0.2.1.jar
 ```
 
 ## OpenAPI (per-stream, code-generated)

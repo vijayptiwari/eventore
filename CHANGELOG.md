@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-10-04
+
+First published unified release. [Release notes and chart downloads](https://github.com/vijayptiwari/eventore/releases/tag/v0.2.1).
+
+### Fixed
+
+- Unified backend, frontend, MCP, API, and Helm versions from the root `VERSION` file, with CI drift checks.
+- Provider-specific image tags prevent bundle collisions; Helm defaults pin all images to the chart application version.
+- Corrected slim-provider packaging and combined-provider administration delegates; CI inspects all ten packaged variants before publication.
+- Live backend browser tests must run successfully in CI. Release publication gates the website's adoption status.
+- Expanded documentation, product release history, roadmap, shared branding, and SEO metadata.
+
+Version 0.2.0 was an unsuccessful packaging attempt, with no completed GitHub Release. Its tag remains for traceability; use 0.2.1.
+
 ### Added
 
 #### Wave 4 Phase 2 — Live Backend Playwright E2E (REQ-61) & Cloud CI Spike (REQ-58)
@@ -159,7 +173,7 @@ Credentials in connection profiles should use `env:` / `file:` references instea
 
 ---
 
-## [0.1.0-SNAPSHOT] — prior work
+## Initial foundation — prior development
 
 - Multi-protocol streaming platform (8 providers) with Spring Boot 3.3 / Java 21 backend and React/Vite frontend.
 - WebSocket live view, SSE subscriptions, OpenAPI surfaces per stream.
