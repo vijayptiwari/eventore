@@ -6,7 +6,7 @@ info:
     x-eventore-stream: kafka
     x-eventore-protocol: KAFKA
     x-eventore-module: eventore-provider-kafka
-  version: 0.2.0
+  version: 0.2.1
 servers:
   - url: /api/v1
 tags:

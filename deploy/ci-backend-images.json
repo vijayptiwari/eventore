@@ -10,11 +10,11 @@
   {
     "name": "backend-kafka-kinesis",
     "tag": "kafka-kinesis",
-    "profiles": "provider-kafka,provider-kinesis"
+    "profiles": "kafka-kinesis"
   },
   {
     "name": "backend-all",
     "tag": "all",
-    "profiles": "provider-kafka,provider-mqtt,provider-jms,provider-pulsar,provider-rabbitmq,provider-kinesis,provider-gcp-pubsub,provider-azure-servicebus"
+    "profiles": "providers-all"
   }
 ]

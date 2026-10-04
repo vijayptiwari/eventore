@@ -8,7 +8,7 @@ const matrix = JSON.parse(fs.readFileSync('deploy/ci-backend-images.json', 'utf8
 const protocols = { kafka: 'KAFKA', mqtt: 'MQTT', jms: 'JMS', pulsar: 'PULSAR', rabbitmq: 'RABBITMQ', kinesis: 'KINESIS', 'gcp-pubsub': 'GCP_PUBSUB', 'azure-servicebus': 'AZURE_SERVICE_BUS' };
 const tags = new Set();
 for (const item of matrix) {
-  const providers = item.profiles.split(',').map(p => protocols[p.replace('provider-', '')]);
+  const providers = item.tag === 'all' ? Object.values(protocols) : item.tag === 'kafka-kinesis' ? ['KAFKA', 'KINESIS'] : [protocols[item.tag]];
   assert.ok(providers.every(Boolean));
   const rendered = execFileSync('helm', ['template', 'eventore', 'deploy/helm/eventore', '--set-json', `eventore.streamProviders=${JSON.stringify(providers)}`], { encoding: 'utf8' });
   const image = `ghcr.io/vijayptiwari/eventore-backend:${version}-${item.tag}`;

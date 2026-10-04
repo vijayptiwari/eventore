@@ -21,7 +21,7 @@ public class OpenApiConfig {
                                 "Multi-stream messaging console. Modular providers: Kafka, Pulsar, RabbitMQ, MQTT, JMS, "
                                         + "Kinesis, GCP Pub/Sub, Azure Service Bus. Canonical contract: "
                                         + "classpath:openapi/eventore-api.yaml")
-                        .version("0.2.0")
+                        .version("0.2.1")
                         .contact(new Contact().name("Eventore").url("https://github.com/eventore")))
                 .servers(List.of(new Server().url(serverUrl).description("Eventore server")));
     }

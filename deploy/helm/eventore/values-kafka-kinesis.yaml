@@ -1,4 +1,4 @@
-# Kafka + Kinesis streams — image tag kafka-kinesis (CI-published bundle)
+# Kafka + Kinesis streams — image tag <version>-kafka-kinesis (CI-published bundle)
 eventore:
   streamProviders:
     - KAFKA

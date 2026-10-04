@@ -16,7 +16,7 @@ COPY backend/eventore-server backend/eventore-server
 COPY backend/openapi backend/openapi
 COPY docker/build-backend.sh /usr/local/bin/build-backend.sh
 WORKDIR /app/backend
-# Comma-separated Maven profiles, e.g. provider-kafka or provider-kafka,provider-kinesis
+# Comma-separated Maven profiles, e.g. provider-kafka or kafka-kinesis
 # Local all-providers dev build: EVENTORE_STREAM_PROFILES=providers-all
 ARG EVENTORE_STREAM_PROFILES=providers-all
 ENV EVENTORE_STREAM_PROFILES=${EVENTORE_STREAM_PROFILES}

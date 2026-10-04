@@ -4,7 +4,7 @@ info:
   description: |
     Index of per-stream OpenAPI modules. Implementations are generated from each stream spec
     under `streams/` via `eventore-api-codegen`.
-  version: 0.2.0
+  version: 0.2.1
 servers:
   - url: /api/v1
 paths: {}

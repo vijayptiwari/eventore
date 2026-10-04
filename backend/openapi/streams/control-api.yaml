@@ -4,7 +4,7 @@ info:
   description: |
     Provider registration and UI cascade metadata. No broker I/O on this plane.
     x-eventore-plane: control
-  version: 0.2.0
+  version: 0.2.1
 servers:
   - url: /api/v1
 tags:

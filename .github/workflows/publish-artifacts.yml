@@ -27,6 +27,19 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/sync-version.mjs --check
+      - name: Refuse to overwrite an existing release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          status=$(curl --silent --show-error --output /tmp/release-check.json --write-out '%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME")
+          case "$status" in
+            404) echo "Release version is available." ;;
+            200) echo "This version is already published. Choose a new VERSION and tag."; exit 1 ;;
+            *) echo "Unable to verify release availability (HTTP $status)."; exit 1 ;;
+          esac
 
   build-backend:
     runs-on: ubuntu-latest
@@ -174,8 +187,30 @@ jobs:
             echo 'MATRIX_EOF'
           } >> "$GITHUB_OUTPUT"
 
+  verify-backend-bundles:
+    needs: [prepare-backend-matrix]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare-backend-matrix.outputs.include) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Package the exact provider bundle used by Docker
+        env:
+          EVENTORE_STREAM_PROFILES: ${{ matrix.profiles }}
+          EVENTORE_BACKEND_DIR: ${{ github.workspace }}/backend
+        run: sh docker/build-backend.sh
+      - name: Check packaged providers and administration delegates
+        run: node scripts/check-backend-bundle.mjs '${{ matrix.tag }}'
+
   publish-backend-images:
-    needs: [version-check, build-backend, backend-integration-tests, build-mcp, build-frontend, build-frontend-e2e, build-frontend-e2e-live, helm-lint, prepare-backend-matrix]
+    needs: [version-check, build-backend, backend-integration-tests, build-mcp, build-frontend, build-frontend-e2e, build-frontend-e2e-live, helm-lint, prepare-backend-matrix, verify-backend-bundles]
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
@@ -213,7 +248,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
   publish-console-images:
-    needs: [version-check, build-backend, backend-integration-tests, build-frontend, build-mcp, build-frontend-e2e, build-frontend-e2e-live, helm-lint]
+    needs: [version-check, build-backend, backend-integration-tests, build-frontend, build-mcp, build-frontend-e2e, build-frontend-e2e-live, helm-lint, verify-backend-bundles]
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:

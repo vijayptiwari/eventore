@@ -5,7 +5,7 @@ info:
     Generic inspect SPI; behavior varies by stream provider capabilities.
     x-eventore-stream: inspect
     x-eventore-scope: generic-spi
-  version: 0.2.0
+  version: 0.2.1
 servers:
   - url: /api/v1
 tags:

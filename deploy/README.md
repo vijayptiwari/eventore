@@ -21,8 +21,8 @@ Catalog: `deploy/helm/eventore/files/stream-providers.yaml` · CI matrix: `deplo
 | # | Workload | Image | Role |
 |---|----------|-------|------|
 | 1 | **Backend** | `ghcr.io/vijayptiwari/eventore-backend:<tag>` | Spring API — tag matches `streamProviders` |
-| 2 | **Frontend** | `ghcr.io/vijayptiwari/eventore-frontend:0.2.0` | React UI (nginx) |
-| 3 | **MCP** (optional) | `ghcr.io/vijayptiwari/eventore-mcp:0.2.0` | AI agent MCP over HTTP |
+| 2 | **Frontend** | `ghcr.io/vijayptiwari/eventore-frontend:0.2.1` | React UI (nginx) |
+| 3 | **MCP** (optional) | `ghcr.io/vijayptiwari/eventore-mcp:0.2.1` | AI agent MCP over HTTP |
 
 ## Helm
 
@@ -52,7 +52,7 @@ helm install eventore deploy/helm/eventore -f deploy/helm/eventore/values-dev.ya
 ### From OCI (published chart + image)
 
 ```bash
-helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.2.0 \
+helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.2.1 \
   -f deploy/helm/eventore/values-stream-kafka.yaml
 ```
 

@@ -34,6 +34,8 @@ write('roadmap.html', 'Where EventOre goes next.', 'A transparent view of propos
 console.log('Built Product overview, release history, and roadmap. Run inject-seo.mjs next.');
 // Promote only verified release content; preparation pages never claim adoption readiness.
 if (release) {
+  const homepage = path.join(root, 'index.html');
+  fs.writeFileSync(homepage, fs.readFileSync(homepage, 'utf8').replace(/<p class="edition">[\s\S]*?<\/p>/, `<p class="edition"><a href="releases.html">EVENTORE ${escape(release.version)} / RELEASE NOTES ↗</a></p>`));
   const file = path.join(root, 'releases.html');
   let html = fs.readFileSync(file, 'utf8');
   html = html.replace('<div class="callout"><strong>Release status:</strong>', releaseBanner + '<div class="callout"><strong>Development history:</strong>');

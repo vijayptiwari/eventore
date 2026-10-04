@@ -24,7 +24,7 @@ GitHub Actions publishes **one backend image per stream provider** (tags `kafka`
 | `all` | All eight |
 
 ```bash
-helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.2.0 \
+helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.2.1 \
   -f deploy/helm/eventore/values-stream-kafka.yaml
 ```
 
@@ -84,9 +84,9 @@ curl -X POST http://localhost:8080/api/v1/connections \
 From repository root:
 
 ```bash
-docker build -f docker/Dockerfile.backend -t eventore/backend:0.1.0 .
-docker build -f docker/Dockerfile.frontend -t eventore/frontend:0.1.0 .
-docker build -f docker/Dockerfile.mcp -t eventore/mcp:0.1.0 .
+docker build -f docker/Dockerfile.backend -t eventore/backend:0.2.1 .
+docker build -f docker/Dockerfile.frontend -t eventore/frontend:0.2.1 .
+docker build -f docker/Dockerfile.mcp -t eventore/mcp:0.2.1 .
 ```
 
 ## Helm install (3 pods when MCP is enabled)

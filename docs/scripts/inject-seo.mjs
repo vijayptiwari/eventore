@@ -11,6 +11,8 @@ import { fileURLToPath } from 'url';
 const docsDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const site = JSON.parse(fs.readFileSync(path.join(docsDir, 'seo', 'site.json'), 'utf8'));
 const { pages } = JSON.parse(fs.readFileSync(path.join(docsDir, 'seo', 'pages.json'), 'utf8'));
+const releaseFile = path.join(docsDir, 'product', 'release.json');
+const publishedRelease = fs.existsSync(releaseFile) ? JSON.parse(fs.readFileSync(releaseFile, 'utf8')) : null;
 
 const baseUrl = site.origin.replace(/\/$/, '') + site.basePath.replace(/\/?$/, '/');
 
@@ -43,6 +45,7 @@ function homeJsonLd() {
       '@id': site.repoUrl + '#software',
       name: site.siteName,
       applicationCategory: 'DeveloperApplication',
+      softwareVersion: publishedRelease?.version,
       operatingSystem: 'Linux, Windows, macOS, Docker, Kubernetes',
       description:
         'Open-source multi-protocol streaming console with cross-broker replication, PII data masking, OpenTelemetry tracing, DLQ redrive, partition lag heatmap, and MCP AI agent tools.',

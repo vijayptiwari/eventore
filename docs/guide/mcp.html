@@ -202,14 +202,14 @@
 docker compose -f docker/docker-compose.stack.yml up -d
 
 # Published MCP image only (backend elsewhere)
-docker pull ghcr.io/vijayptiwari/eventore-mcp:0.2.0
+docker pull ghcr.io/vijayptiwari/eventore-mcp:0.2.1
 docker run -p 3100:3100 -e MCP_TRANSPORT=http \
   -e EVENTORE_API_URL=http://host.docker.internal:8080/api/v1 \
-  ghcr.io/vijayptiwari/eventore-mcp:0.2.0</code></pre>
-      <pre><code>helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.2.0 \
+  ghcr.io/vijayptiwari/eventore-mcp:0.2.1</code></pre>
+      <pre><code>helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.2.1 \
   -f deploy/helm/eventore/values-published.yaml
 
-helm install eventore-mcp oci://ghcr.io/vijayptiwari/charts/eventore-mcp --version 0.2.0 \
+helm install eventore-mcp oci://ghcr.io/vijayptiwari/charts/eventore-mcp --version 0.2.1 \
   --set eventore.apiUrl=http://eventore-backend:8080/api/v1</code></pre>
       <p>HTTP health: <code>GET :3100/health</code>. MCP endpoint: <code>POST/GET :3100/mcp</code> (streamable HTTP).</p>
 
