@@ -4,7 +4,7 @@ info:
   description: |
     Multi-stream messaging console with modular per-protocol providers.
     Deployment modes: ADMIN, DEV, READONLY (configuration-driven).
-  version: 0.1.0
+  version: 0.2.0
   contact:
     name: Eventore
 servers:

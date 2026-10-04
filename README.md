@@ -24,7 +24,7 @@ GitHub Actions publishes **one backend image per stream provider** (tags `kafka`
 | `all` | All eight |
 
 ```bash
-helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.1.0 \
+helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.2.0 \
   -f deploy/helm/eventore/values-stream-kafka.yaml
 ```
 

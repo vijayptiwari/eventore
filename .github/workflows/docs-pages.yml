@@ -8,6 +8,9 @@ on:
       - 'docs/**'
       - '.github/workflows/docs-pages.yml'
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Build and publish artifacts']
+    types: [completed]
 
 permissions:
   contents: read
@@ -20,6 +23,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'pull_request')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -32,7 +36,10 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Inject SEO metadata
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          node docs/scripts/sync-release.mjs
           node docs/scripts/build-product.mjs
           node docs/scripts/inject-seo.mjs
 

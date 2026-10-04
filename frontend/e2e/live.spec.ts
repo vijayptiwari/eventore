@@ -25,6 +25,9 @@ test.beforeEach(async ({ request }) => {
     backendAvailable = false;
   }
 
+  if (process.env.EVENTORE_REQUIRE_LIVE_BACKEND === 'true') {
+    expect(backendAvailable, 'Release CI requires a healthy live backend').toBe(true);
+  }
   test.skip(
     !backendAvailable,
     'Live backend not available at http://localhost:8080 (REQ-61 requires Docker / live backend)',
@@ -65,7 +68,11 @@ test.describe('Live Backend E2E (REQ-61)', () => {
     const validateRes = await request.post(
       `http://localhost:8080/api/v1/connections/${created.id}/validate`,
     );
-    expect([200, 422, 502]).toContain(validateRes.status());
+    if (process.env.EVENTORE_REQUIRE_LIVE_BACKEND === 'true') {
+      expect(validateRes.status()).toBe(200);
+    } else {
+      expect([200, 422, 502]).toContain(validateRes.status());
+    }
 
     // 3. UI loads the saved connection from real backend
     await page.goto('/connections');

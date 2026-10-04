@@ -136,7 +136,7 @@ eventore.enabled-protocols=KAFKA,KINESIS</code></pre>
   security:
     apiToken: ""             # or apiTokenExistingSecret
     allowedOrigins: "*"</code></pre>
-      <p>Image tag auto-derived: <code>kafka-kinesis</code>. Eight providers → tag <code>all</code>.</p>
+      <p>Image tag auto-derived from the chart application version: <code>0.2.0-kafka-kinesis</code>. Eight providers use <code>0.2.0-all</code>.</p>
       <pre><code>helm install eventore ./deploy/helm/eventore \
   -f deploy/helm/eventore/values-kafka-kinesis.yaml</code></pre>
       <p>Custom Docker build:</p>
@@ -173,7 +173,7 @@ DELETE /api/v1/control/providers/MQTT/register</code></pre>
     queue-capacity: 200
   security:
     api-token: ${EVENTORE_SECURITY_API_TOKEN}
-    allowed-origins: "http://localhost:5173"</code></pre><p>Set <code>EVENTORE_SECURITY_API_TOKEN</code> in the process environment, then pass the file location when starting the built JAR:</p><pre><code>java -jar backend/eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar --spring.config.additional-location=file:./eventore-local.yml</code></pre><p>Restart the backend after changing deployment configuration. Verify the effective mode and protocol list with <code>GET /api/v1/config</code>. Changing a connection profile is a separate operation.</p><h2>Diagnostics API</h2>
+    allowed-origins: "http://localhost:5173"</code></pre><p>Set <code>EVENTORE_SECURITY_API_TOKEN</code> in the process environment, then pass the file location when starting the built JAR:</p><pre><code>java -jar backend/eventore-server/target/eventore-server-0.2.0.jar --spring.config.additional-location=file:./eventore-local.yml</code></pre><p>Restart the backend after changing deployment configuration. Verify the effective mode and protocol list with <code>GET /api/v1/config</code>. Changing a connection profile is a separate operation.</p><h2>Diagnostics API</h2>
       <pre><code>GET /api/v1/diagnostics/subscriptions</code></pre>
       <p>Subscription health for the dashboard; requires API token when <code>eventore.security.api-token</code> is set. Documented in <code>diagnostics-api.yaml</code>.</p>
 

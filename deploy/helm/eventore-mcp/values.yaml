@@ -5,7 +5,7 @@ eventore:
 
 image:
   repository: ghcr.io/vijayptiwari/eventore-mcp
-  tag: "0.1.0"
+  tag: ""  # defaults to Chart.appVersion
   pullPolicy: IfNotPresent
 
 replicaCount: 1

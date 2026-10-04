@@ -19,6 +19,15 @@ env:
   MCP_IMAGE: ghcr.io/${{ github.repository_owner }}/eventore-mcp
 
 jobs:
+  version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/sync-version.mjs --check
+
   build-backend:
     runs-on: ubuntu-latest
     steps:
@@ -113,18 +122,22 @@ jobs:
           docker compose -f docker/docker-compose.brokers.yml up -d redpanda
       - name: Build and launch Eventore backend
         run: |
-          mvn -B package -DskipTests -pl eventore-server -am
+          mvn -B -f backend/pom.xml package -DskipTests -pl eventore-server -am
           nohup java -jar backend/eventore-server/target/eventore-server-*.jar > backend.log 2>&1 &
-          for i in {1..30}; do
-            if curl -s http://localhost:8080/api/v1/config | grep -q "deploymentMode"; then
+          for i in {1..60}; do
+            if curl -fsS http://localhost:8080/api/v1/config | grep -q "deploymentMode"; then
               echo "Backend is ready"
-              break
+              exit 0
             fi
             echo "Waiting for backend..."
             sleep 2
           done
+          cat backend.log
+          exit 1
       - name: Run Playwright Live E2E
         working-directory: frontend
+        env:
+          EVENTORE_REQUIRE_LIVE_BACKEND: 'true'
         run: |
           npm ci
           npx playwright install chromium --with-deps
@@ -161,8 +174,8 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
   publish-backend-images:
-    needs: [build-backend, backend-integration-tests, build-mcp, build-frontend, build-frontend-e2e, build-frontend-e2e-live, helm-lint, prepare-backend-matrix]
-    if: github.event_name != 'pull_request'
+    needs: [version-check, build-backend, backend-integration-tests, build-mcp, build-frontend, build-frontend-e2e, build-frontend-e2e-live, helm-lint, prepare-backend-matrix]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -181,11 +194,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.BACKEND_IMAGE }}
+          flavor: latest=false
           tags: |
-            type=sha,prefix=
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=${{ matrix.tag }}
+            type=sha,prefix=sha-,suffix=-${{ matrix.tag }}
+            type=semver,pattern={{version}},suffix=-${{ matrix.tag }}
+            type=raw,value=${{ matrix.tag }},enable={{is_default_branch}}
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -199,8 +212,8 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
   publish-console-images:
-    needs: [build-frontend, build-mcp, helm-lint]
-    if: github.event_name != 'pull_request'
+    needs: [version-check, build-backend, backend-integration-tests, build-frontend, build-mcp, build-frontend-e2e, build-frontend-e2e-live, helm-lint]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -225,12 +238,12 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ matrix.image }}
+          flavor: latest=false
           tags: |
             type=ref,event=branch
-            type=sha,prefix=
+            type=sha,prefix=sha-
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -244,7 +257,7 @@ jobs:
 
   publish-helm:
     needs: [publish-backend-images, publish-console-images]
-    if: github.event_name != 'pull_request'
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -259,8 +272,14 @@ jobs:
       - name: Package Helm charts
         run: |
           mkdir -p helm-packages
-          helm package deploy/helm/eventore -d helm-packages
-          helm package deploy/helm/eventore-mcp -d helm-packages
+          VERSION=$(cat VERSION | tr -d '\r\n')
+          APP_VERSION="$VERSION"
+          if [[ "$GITHUB_REF_TYPE" != "tag" ]]; then
+            VERSION="$VERSION-dev.$GITHUB_RUN_NUMBER"
+            APP_VERSION="sha-${GITHUB_SHA:0:7}"
+          fi
+          helm package deploy/helm/eventore --version "$VERSION" --app-version "$APP_VERSION" -d helm-packages
+          helm package deploy/helm/eventore-mcp --version "$VERSION" --app-version "$APP_VERSION" -d helm-packages
       - uses: actions/upload-artifact@v4
         with:
           name: helm-charts
@@ -271,3 +290,22 @@ jobs:
           for chart in helm-packages/*.tgz; do
             helm push "$chart" "oci://ghcr.io/${{ github.repository_owner }}/charts"
           done
+
+  publish-release:
+    needs: [publish-helm]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: helm-charts
+          path: helm-packages
+      - name: Publish verified versioned release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sha256sum helm-packages/*.tgz > helm-packages/SHA256SUMS
+          gh release create "$GITHUB_REF_NAME" helm-packages/*.tgz helm-packages/SHA256SUMS --verify-tag --title "EventOre $GITHUB_REF_NAME" --notes-file docs/product/RELEASE-NOTES.md

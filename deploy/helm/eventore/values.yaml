@@ -43,7 +43,7 @@ image:
     pullPolicy: IfNotPresent
   frontend:
     repository: ghcr.io/vijayptiwari/eventore-frontend
-    tag: "latest"
+    tag: ""  # defaults to Chart.appVersion for reproducible releases
     pullPolicy: IfNotPresent
 
 backend:

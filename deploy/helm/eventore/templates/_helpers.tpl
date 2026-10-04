@@ -37,6 +37,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{- define "eventore.backendImageTag" -}}
+{{- if .Values.image.backend.tag -}}
+{{- .Values.image.backend.tag -}}
+{{- else -}}
+{{- printf "%s-%s" .Chart.AppVersion (include "eventore.backendProviderTag" .) -}}
+{{- end -}}
+{{- end }}
+
+{{- define "eventore.backendProviderTag" -}}
 {{- if not .Values.eventore.streamProviders }}
 {{- fail "eventore.streamProviders is required (e.g. [KAFKA] or [KAFKA, KINESIS]). Backend image tag is derived from this list." }}
 {{- end }}

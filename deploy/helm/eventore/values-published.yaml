@@ -7,7 +7,7 @@ image:
   backend:
     pullPolicy: Always
   frontend:
-    tag: "latest"
+    tag: "" # use the chart's versioned frontend image
     pullPolicy: Always
 
 ingress:
