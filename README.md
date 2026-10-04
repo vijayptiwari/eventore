@@ -1,8 +1,14 @@
-# Eventore — Multi-Protocol Streaming Console
+# EventOre — Kafka & Multi-Protocol Messaging Console
 
 **Open-source unified console** for **Kafka**, **MQTT**, **JMS** (Artemis), **Pulsar**, **RabbitMQ**, **AWS Kinesis**, **GCP Pub/Sub**, and **Azure Service Bus** — live message streaming, broker inspection, and admin in one UI. Cloud presets cover MSK, Azure Event Hubs, IoT Core, OCP Strimzi, and more. Modular Spring Boot backend (`eventore-server` + per-protocol providers), **OpenAPI 3**, **React** frontend, optional **MCP** for AI agents. Deploy on **Kubernetes** with Helm in **Admin**, **Dev**, or **ReadOnly** mode.
 
 **Product documentation:** [vijayptiwari.github.io/eventore](https://vijayptiwari.github.io/eventore/) (GitHub Pages from [`docs/`](docs/), with sitemap and social previews). Repo: [github.com/vijayptiwari/eventore](https://github.com/vijayptiwari/eventore). Local preview: <code>npx serve docs</code>.
+
+## See it in action
+
+[Two-minute tour](https://vijayptiwari.github.io/eventore/guide/product-tour.html) · [Kafka → RabbitMQ tutorial](https://vijayptiwari.github.io/eventore/guide/kafka-rabbitmq-tutorial.html) · [Latest release](https://github.com/vijayptiwari/eventore/releases/latest)
+
+Connect your brokers, inspect a live event, then follow it across systems. Start with the version-pinned Docker Compose lab; review the protocol capability guide before adopting a workflow.
 
 ## Architecture
 
@@ -13,7 +19,7 @@
 
 ## Published artifacts (GHCR)
 
-GitHub Actions publishes **one backend image per stream provider** (tags `kafka`, `mqtt`, …) plus bundles (`kafka-kinesis`, `all`). Helm **`eventore.streamProviders`** selects the matching tag.
+GitHub Actions publishes **one backend image per stream provider** (tags `0.2.1-kafka`, `0.2.1-mqtt`, …) plus bundles (`0.2.1-kafka-kinesis`, `0.2.1-all`). Helm **`eventore.streamProviders`** selects the matching provider suffix; the chart application version supplies the version prefix.
 
 | Backend tag | Stream providers |
 |-------------|------------------|

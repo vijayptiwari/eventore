@@ -57,6 +57,8 @@ function initializeEventOreSite() {
     { href: 'index.html', label: 'Overview' },
     { href: 'getting-started.html', label: 'Getting started' },
     { href: 'examples.html', label: 'Examples & local lab' },
+    { href: 'product-tour.html', label: 'Two-minute tour' },
+    { href: 'kafka-rabbitmq-tutorial.html', label: 'Kafka → RabbitMQ lab' },
     { href: 'user-guide.html', label: 'User guide' },
     { href: 'troubleshooting.html', label: 'Troubleshooting' },
     { href: 'architecture.html', label: 'Architecture' },

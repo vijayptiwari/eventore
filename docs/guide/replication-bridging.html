@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Cross-Broker Replication &amp; Bridging — EventOre</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Replicate and transform streaming data between Kafka, RabbitMQ, Pulsar, MQTT, Kinesis, GCP Pub/Sub, and Azure Service Bus with loop prevention, regex filtering, and dry-run testing."/>
+  <meta name="description" content="Configure EventOre cross-broker bridges with accurate API examples, regex filters, header rules, delivery verification, and process-local lifecycle limits."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/replication-bridging.html"/>
   <meta property="og:type" content="article"/>
   <meta property="og:site_name" content="EventOre"/>
   <meta property="og:title" content="Cross-Broker Replication &amp; Bridging — EventOre"/>
-  <meta property="og:description" content="Replicate and transform streaming data between Kafka, RabbitMQ, Pulsar, MQTT, Kinesis, GCP Pub/Sub, and Azure Service Bus with loop prevention, regex filtering, and dry-run testing."/>
+  <meta property="og:description" content="Configure EventOre cross-broker bridges with accurate API examples, regex filters, header rules, delivery verification, and process-local lifecycle limits."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/replication-bridging.html"/>
   <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta property="og:image:width" content="1200"/>
@@ -22,10 +22,10 @@
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Cross-Broker Replication &amp; Bridging — EventOre"/>
-  <meta name="twitter:description" content="Replicate and transform streaming data between Kafka, RabbitMQ, Pulsar, MQTT, Kinesis, GCP Pub/Sub, and Azure Service Bus with loop prevention, regex filtering, and dry-run testing."/>
+  <meta name="twitter:description" content="Configure EventOre cross-broker bridges with accurate API examples, regex filters, header rules, delivery verification, and process-local lifecycle limits."/>
   <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Cross-Broker Replication & Bridging","item":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html#article","headline":"Cross-Broker Replication & Bridging — EventOre","description":"Replicate and transform streaming data between Kafka, RabbitMQ, Pulsar, MQTT, Kinesis, GCP Pub/Sub, and Azure Service Bus with loop prevention, regex filtering, and dry-run testing.","url":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Cross-Broker Replication & Bridging","item":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html#article","headline":"Cross-Broker Replication & Bridging — EventOre","description":"Configure EventOre cross-broker bridges with accurate API examples, regex filters, header rules, delivery verification, and process-local lifecycle limits.","url":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/replication-bridging.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
   <!-- /eventore-seo -->
   <script>
 (function () {
@@ -66,92 +66,15 @@
 <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
   <div class="guide-layout">
-    <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
-    <main id="main">
-      <h1 class="page-title">Cross-Broker Replication &amp; Bridging</h1>
-      <p class="page-subtitle">Multi-source to multi-target streaming bridge engine with header mutation, regex filtering, loop prevention, and interactive dry-run testing.</p>
-
-      <div class="callout callout-info">
-        <strong>Engine Capability (REQ-110):</strong> EventOre provides an active, asynchronous streaming bridge that transfers events across heterogeneous messaging clusters — such as Apache Kafka &harr; RabbitMQ, AWS Kinesis &rarr; GCP Pub/Sub, or local MQTT &rarr; Azure Service Bus — without external connector frameworks.
-      </div>
-
-      <h2 id="overview">Overview &amp; Architecture</h2>
-      <p>
-        In modern enterprise architectures, services often produce messages to distinct brokers: edge microservices might publish to lightweight <strong>RabbitMQ</strong> or <strong>MQTT</strong>, while analytics backends consume from high-throughput <strong>Apache Kafka</strong> or <strong>AWS Kinesis</strong>.
-      </p>
-      <p>
-        EventOre's <code>ReplicationBridgeEngine</code> runs concurrent, non-blocking worker pipelines using Java Virtual Threads and reactive streaming to consume from any configured source profile, apply transformation pipelines, and publish into target destinations.
-      </p>
-
-      <h2 id="features">Key Capabilities</h2>
-      <ul>
-        <li><strong>Cross-Protocol Bridging:</strong> Bridge between any of the 8 supported protocols (Kafka, RabbitMQ, Pulsar, MQTT, JMS, AWS Kinesis, GCP Pub/Sub, Azure Service Bus).</li>
-        <li><strong>Loop Prevention:</strong> Enforces <code>X-EventOre-Bridge-Id</code> and hop counter tracking headers to eliminate cyclic message loops in bidirectional or mesh topologies.</li>
-        <li><strong>Payload Filtering:</strong> Evaluates incoming records against regular expressions or JSONPath predicates, safely dropping non-matching payloads before target transmission.</li>
-        <li><strong>Header Transformation:</strong> Dynamically injects, removes, or mutates metadata headers (such as routing keys, correlation IDs, and environment markers).</li>
-        <li><strong>Dry-Run Verification:</strong> Interactive simulator tests bridge filter predicates and header mutations on sample payloads without publishing to downstream brokers.</li>
-        <li><strong>Real-time Telemetry:</strong> Real-time monitoring of replicated record counts, throughput (msg/s), byte volume, dropped records, and active worker statuses.</li>
-      </ul>
-
-      <h2 id="quickstart">Creating a Replication Bridge via API</h2>
-      <p>Bridges can be declared and started dynamically via the REST API:</p>
-      <pre><code>curl -X POST http://localhost:8080/api/v1/bridges \
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main id="main"><h1 class="page-title">Cross-broker message replication</h1><p class="page-subtitle">Forward messages between configured brokers, filter payloads, and transform headers with EventOre.</p><p>A bridge connects one source connection and destination to one target connection and destination. Both providers must be included in the backend image. For a complete local example, follow the <a href="kafka-rabbitmq-tutorial.html">Kafka to RabbitMQ tutorial</a>.</p><h2>How a bridge works</h2><div class="callout">Source subscription → regular-expression filter → header transformation → target publish</div><p>The backend manages the subscription and records successful publishes, bytes, and errors. An accepted create request does not prove end-to-end delivery; inspect the target broker and bridge statistics.</p><h2>Create a bridge</h2><p>Replace the connection IDs with IDs returned by the connections API. These are the request fields supported in 0.2.1:</p><pre><code>curl -X POST http://localhost:8080/api/v1/bridges \
   -H "Content-Type: application/json" \
-  -d '{
-    "name": "kafka-to-rabbitmq-orders",
-    "description": "Forward processed orders to warehouse queue",
-    "sourceConnectionId": "conn-kafka-prod",
-    "sourceTopic": "orders.v1",
-    "targetConnectionId": "conn-rabbitmq-warehouse",
-    "targetTopic": "warehouse.orders",
-    "filterRegex": ".*\"status\"\\s*:\\s*\"CONFIRMED\".*",
-    "headerTransforms": {
-      "X-Forwarded-By": "EventOre-Bridge",
-      "X-Environment": "production"
-    },
-    "batchSize": 100,
-    "pollIntervalMs": 250,
-    "loopPrevention": true
-  }'</code></pre>
-
-      <h2 id="dry-run">Interactive Dry-Run Testing</h2>
-      <p>
-        Before starting production replication, validate filter accuracy and header injection using the dry-run tester API:
-      </p>
-      <pre><code>curl -X POST http://localhost:8080/api/v1/bridges/dry-run \
+  -d '{"name":"orders-to-warehouse","sourceConnectionId":"SOURCE_ID","sourceDestination":"orders","targetConnectionId":"TARGET_ID","targetDestination":"warehouse.orders","headerTransform":{"x-origin":"orders-demo"},"payloadFilter":"CONFIRMED","loopPrevention":true,"autoStart":false}'</code></pre><p>Creation returns HTTP 201 and an <code>id</code>. Add your configured bearer token to requests when API authentication is enabled. Creating and changing bridges requires a deployment mode that permits connection management.</p><h2 id="dry-run">Test a filter without publishing</h2><pre><code>curl -X POST http://localhost:8080/api/v1/bridges/test \
   -H "Content-Type: application/json" \
-  -d '{
-    "samplePayload": "{\"orderId\":\"ORD-9821\",\"status\":\"CONFIRMED\",\"total\":149.99}",
-    "sampleHeaders": { "X-Tenant": "US-EAST" },
-    "filterRegex": ".*\"status\"\\s*:\\s*\"CONFIRMED\".*",
-    "headerTransforms": {
-      "X-Bridge-Origin": "Kafka-Prod",
-      "X-Tenant": "US-EAST"
-    }
-  }'</code></pre>
-
-      <p>The response immediately reports whether the message was accepted, the transformed headers, and matching latency:</p>
-      <pre><code>{
-  "matched": true,
-  "filtered": false,
-  "transformedHeaders": {
-    "X-Tenant": "US-EAST",
-    "X-Bridge-Origin": "Kafka-Prod",
-    "X-EventOre-Hop-Count": "1"
-  },
-  "executionDurationMs": 2
-}</code></pre>
-
-      <h2 id="lifecycle">Lifecycle &amp; High Availability</h2>
-      <p>
-        Bridges support <code>START</code>, <code>PAUSE</code>, and <code>STOP</code> lifecycle transitions. When running in a clustered Kubernetes deployment with PostgreSQL externalized connection stores, bridge states and metrics synchronize across pods to ensure seamless failover.
-      </p>
-
-      <div class="btn-group">
-        <a class="btn btn-primary" href="connections.html">Configure connections</a>
-        <a class="btn btn-outline" href="data-masking.html">Learn about data masking &rarr;</a>
-      </div>
-    </main>
+  -d '{"payload":"{\"status\":\"CONFIRMED\"}","headers":{},"payloadFilter":"CONFIRMED","headerTransform":{"x-origin":"orders-demo"},"loopPrevention":true}'</code></pre><p>The response includes <code>passedFilter</code>, <code>loopDetected</code>, <code>transformedHeaders</code>, <code>transformedPayload</code>, and <code>filterReason</code>. A dry run checks transformation rules; it does not test broker connectivity or deliver a message.</p><h2>Start, inspect, and stop</h2><pre><code>curl -X POST http://localhost:8080/api/v1/bridges/BRIDGE_ID/start
+curl http://localhost:8080/api/v1/bridges/BRIDGE_ID
+curl -X POST http://localhost:8080/api/v1/bridges/BRIDGE_ID/stop
+curl -X DELETE http://localhost:8080/api/v1/bridges/BRIDGE_ID</code></pre><p>Statistics include <code>totalReplicated</code>, <code>bytesReplicated</code>, <code>errorsCount</code>, <code>lastError</code>, and <code>state</code>. The API offers start and stop operations; it has no separate pause endpoint.</p><h2>Header rules and filters</h2><ul><li><code>payloadFilter</code> uses Java regular-expression matching with <code>find()</code>, not JSONPath.</li><li><code>headerTransform</code> sets headers. Keys prefixed with <code>rename:</code> rename existing headers; <code>remove:</code> removes them.</li><li>Loop detection uses <code>x-eventore-bridge-id</code> and <code>x-eventore-replicated</code>. Keep these reserved headers intact. Loop protection depends on providers preserving headers; do not assume it works across every protocol or multi-hop topology.</li></ul><h2>Delivery and lifecycle limits</h2><p>Bridge definitions, runtime state, and counters are held in the backend process. Restarting it loses bridge definitions. External connection persistence does not persist bridges or provide automatic bridge failover. There is no bridge-level durable retry queue or exactly-once guarantee. Validate source acknowledgement behavior and target delivery before adopting a workflow.</p><p><a href="kafka-rabbitmq-tutorial.html">Try the Kafka → RabbitMQ lab</a> · <a href="configuration.html">Authentication and configuration</a> · <a href="troubleshooting.html">Troubleshooting</a></p></main>
   </div>
   <footer class="site-footer" id="site-footer"></footer>
 </body>

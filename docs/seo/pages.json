@@ -45,7 +45,7 @@
       "file": "guide/replication-bridging.html",
       "path": "guide/replication-bridging.html",
       "title": "Cross-Broker Replication & Bridging — EventOre",
-      "description": "Replicate and transform streaming data between Kafka, RabbitMQ, Pulsar, MQTT, Kinesis, GCP Pub/Sub, and Azure Service Bus with loop prevention, regex filtering, and dry-run testing.",
+      "description": "Configure EventOre cross-broker bridges with accurate API examples, regex filters, header rules, delivery verification, and process-local lifecycle limits.",
       "keywords": "kafka rabbitmq bridge, cross-broker data replication, event streaming bridge, message transformation, loop prevention, data replication engine",
       "ogType": "article"
     },
@@ -249,7 +249,7 @@
       "file": "releases.html",
       "path": "releases.html",
       "title": "EventOre Release Notes & Feature History",
-      "description": "Follow EventOre feature introductions, unreleased development milestones, and the original product foundation.",
+      "description": "EventOre release notes, versioned container images, Helm downloads, feature introductions, and practical adoption guidance.",
       "ogType": "website"
     },
     {
@@ -258,6 +258,20 @@
       "title": "EventOre Roadmap — Upcoming Features",
       "description": "Explore proposed and deferred EventOre features, including rate limiting, deeper protocol inspection, enterprise identity, and distributed subscriptions.",
       "ogType": "website"
+    },
+    {
+      "file": "guide/kafka-rabbitmq-tutorial.html",
+      "path": "guide/kafka-rabbitmq-tutorial.html",
+      "title": "Kafka to RabbitMQ Bridge Tutorial — EventOre",
+      "description": "Run a local Kafka-to-RabbitMQ bridge with Docker Compose. Create connections, filter orders, verify delivery, and troubleshoot EventOre replication.",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/product-tour.html",
+      "path": "guide/product-tour.html",
+      "title": "EventOre Product Tour — Inspect Messages & Bridge Brokers",
+      "description": "Explore EventOre in two minutes: connect brokers, inspect messages, forward Kafka events to RabbitMQ, and deploy the console in your environment.",
+      "ogType": "article"
     }
   ]
 }

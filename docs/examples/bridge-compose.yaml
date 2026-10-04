@@ -1,0 +1,39 @@
+# Disposable local lab. Run from the directory containing this file.
+services:
+  kafka:
+    image: redpandadata/redpanda:v24.2.4
+    command: [redpanda, start, --overprovisioned, --smp, '1', --memory, 512M, --reserve-memory, 0M, --node-id, '0', --kafka-addr, 'PLAINTEXT://0.0.0.0:9092', --advertise-kafka-addr, 'PLAINTEXT://kafka:9092']
+    healthcheck:
+      test: [CMD, rpk, cluster, info, -X, 'brokers=kafka:9092']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: eventore
+      RABBITMQ_DEFAULT_PASS: eventore
+    ports: ['127.0.0.1:15672:15672']
+    healthcheck:
+      test: [CMD, rabbitmq-diagnostics, -q, ping]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  eventore-backend:
+    image: ghcr.io/vijayptiwari/eventore-backend:0.2.1-all
+    ports: ['127.0.0.1:8080:8080']
+    environment:
+      SPRING_APPLICATION_JSON: '{"eventore":{"deployment-mode":"DEV","enabled-protocols":"KAFKA,RABBITMQ"}}'
+    depends_on:
+      kafka: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+  eventore-frontend:
+    image: ghcr.io/vijayptiwari/eventore-frontend:0.2.1
+    ports: ['127.0.0.1:8088:80']
+    environment:
+      EVENTORE_BACKEND_HOST: eventore-backend
+      EVENTORE_BACKEND_PORT: '8080'
+      EVENTORE_API_BASE_URL: /api/v1
+      EVENTORE_WS_URL: ws://localhost:8088/ws/stream
+    depends_on:
+      eventore-backend: {condition: service_healthy}

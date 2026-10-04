@@ -1,0 +1,33 @@
+name: Verify published cross-broker tutorial
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/examples/bridge-compose.yaml'
+      - 'docs/guide/kafka-rabbitmq-tutorial.html'
+      - 'scripts/check-bridge-lab.mjs'
+      - '.github/workflows/docs-lab.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tutorial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Start the documented published-image lab
+        run: docker compose -f docs/examples/bridge-compose.yaml up -d --wait --wait-timeout 180
+      - name: Create source topic
+        run: docker compose -f docs/examples/bridge-compose.yaml exec -T kafka rpk topic create orders -X brokers=kafka:9092
+      - name: Verify filter, forwarding, and target payload
+        run: node scripts/check-bridge-lab.mjs
+      - name: Show lab logs
+        if: failure()
+        run: docker compose -f docs/examples/bridge-compose.yaml logs --tail 100
+      - name: Clean up lab
+        if: always()
+        run: docker compose -f docs/examples/bridge-compose.yaml down -v

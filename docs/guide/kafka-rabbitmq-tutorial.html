@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Kafka to RabbitMQ Bridge Tutorial — EventOre</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Run a local Kafka-to-RabbitMQ bridge with Docker Compose. Create connections, filter orders, verify delivery, and troubleshoot EventOre replication."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/kafka-rabbitmq-tutorial.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Kafka to RabbitMQ Bridge Tutorial — EventOre"/>
+  <meta property="og:description" content="Run a local Kafka-to-RabbitMQ bridge with Docker Compose. Create connections, filter orders, verify delivery, and troubleshoot EventOre replication."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/kafka-rabbitmq-tutorial.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Kafka to RabbitMQ Bridge Tutorial — EventOre"/>
+  <meta name="twitter:description" content="Run a local Kafka-to-RabbitMQ bridge with Docker Compose. Create connections, filter orders, verify delivery, and troubleshoot EventOre replication."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/kafka-rabbitmq-tutorial.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Kafka to RabbitMQ Bridge Tutorial","item":"https://vijayptiwari.github.io/eventore/guide/kafka-rabbitmq-tutorial.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/kafka-rabbitmq-tutorial.html#article","headline":"Kafka to RabbitMQ Bridge Tutorial — EventOre","description":"Run a local Kafka-to-RabbitMQ bridge with Docker Compose. Create connections, filter orders, verify delivery, and troubleshoot EventOre replication.","url":"https://vijayptiwari.github.io/eventore/guide/kafka-rabbitmq-tutorial.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/kafka-rabbitmq-tutorial.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main id="main"><h1 class="page-title">Bridge Kafka to RabbitMQ</h1><p class="page-subtitle">A local, version-pinned lab: publish an order to a Kafka-compatible broker, filter it in EventOre, and retrieve it from a RabbitMQ queue.</p><p>Use this walkthrough to evaluate cross-broker forwarding. It uses Redpanda's Kafka API, RabbitMQ, and EventOre 0.2.1. Prerequisites: Docker with Compose, curl, and available ports 8080, 8088, and 15672. Commands use a POSIX shell; on PowerShell use <code>curl.exe</code> and adapt line continuations.</p><nav class="article-toc" aria-label="On this page"><a href="#launch">Launch</a><a href="#connect">Connect</a><a href="#bridge">Bridge</a><a href="#verify">Verify</a><a href="#cleanup">Cleanup</a></nav><h2>The message path</h2><div class="learning-grid"><article class="learning-card"><span class="eyebrow">01 / Source</span><h3>Kafka topic</h3><p><code>orders</code><br>A CONFIRMED order enters the stream.</p></article><article class="learning-card"><span class="eyebrow">02 / Forward</span><h3>EventOre bridge</h3><p>Filter the payload and add the <code>x-origin</code> header.</p></article><article class="learning-card"><span class="eyebrow">03 / Target</span><h3>RabbitMQ queue</h3><p><code>warehouse.orders</code><br>Retrieve and inspect the forwarded message.</p></article></div><h2 id="launch">1. Launch the local environment</h2><p>Download <a href="../examples/bridge-compose.yaml" download>bridge-compose.yaml</a> into an empty directory. This example uses published images; no source build is needed.</p><pre><code>docker compose -f bridge-compose.yaml up -d
+docker compose -f bridge-compose.yaml ps</code></pre><p>Wait for the brokers and backend to become healthy. Open the console at <a href="http://localhost:8088">localhost:8088</a>. The lab binds exposed ports to localhost and uses disposable credentials. It is not a production deployment.</p><pre><code>docker compose -f bridge-compose.yaml exec kafka rpk topic create orders -X brokers=kafka:9092
+curl -u eventore:eventore -X PUT http://localhost:15672/api/queues/%2F/warehouse.orders \
+  -H "Content-Type: application/json" -d '{"durable":true}'</code></pre><h2 id="connect">2. Register the two connections</h2><pre><code>curl -X POST http://localhost:8080/api/v1/connections \
+  -H "Content-Type: application/json" \
+  -d '{"name":"lab-kafka","protocol":"KAFKA","brokerUrl":"kafka:9092"}'
+curl -X POST http://localhost:8080/api/v1/connections \
+  -H "Content-Type: application/json" \
+  -d '{"name":"lab-rabbitmq","protocol":"RABBITMQ","brokerUrl":"amqp://rabbitmq:5672","credentials":{"username":"eventore","password":"eventore"}}'</code></pre><p>Copy each response's <code>id</code>. Replace <code>SOURCE_ID</code> and <code>TARGET_ID</code> below. Container connections use broker service names; <code>localhost</code> inside EventOre would point back to its own container.</p><h2 id="bridge">3. Start the bridge</h2><pre><code>curl -X POST http://localhost:8080/api/v1/bridges \
+  -H "Content-Type: application/json" \
+  -d '{"name":"confirmed-orders","sourceConnectionId":"SOURCE_ID","sourceDestination":"orders","targetConnectionId":"TARGET_ID","targetDestination":"warehouse.orders","payloadFilter":"CONFIRMED","headerTransform":{"x-origin":"eventore-lab"},"loopPrevention":true,"autoStart":true}'</code></pre><p>Save the returned bridge <code>id</code>. Confirm <code>stats.state</code> is <code>RUNNING</code>. Allow the Kafka consumer to initialize before publishing; this demonstration does not backfill historical records.</p><h2 id="verify">4. Publish and verify delivery</h2><pre><code>curl -X POST http://localhost:8080/api/v1/connections/SOURCE_ID/publish \
+  -H "Content-Type: application/json" \
+  -d '{"destination":"orders","payload":"{\"orderId\":\"demo-1001\",\"status\":\"CONFIRMED\"}"}'
+curl http://localhost:8080/api/v1/bridges/BRIDGE_ID
+curl -u eventore:eventore -X POST http://localhost:15672/api/queues/%2F/warehouse.orders/get \
+  -H "Content-Type: application/json" \
+  -d '{"count":5,"ackmode":"ack_requeue_true","encoding":"auto","truncate":50000}'</code></pre><p>Expect the order payload in RabbitMQ, an <code>x-origin</code> header of <code>eventore-lab</code>, and an increase in <code>stats.totalReplicated</code>. The queue-read request requeues messages, so repeating it can show the same message. Publish a second order with status <code>PENDING</code>: the filter should exclude it.</p><h2>If no message arrives</h2><ul><li>Check <code>stats.lastError</code> and <code>stats.errorsCount</code>, then inspect <code>docker compose -f bridge-compose.yaml logs eventore-backend</code>.</li><li>Ensure the target queue exists before publishing; this lab uses RabbitMQ's default exchange and the queue name as routing key.</li><li>Start the bridge before sending fresh events. Confirm the source and target IDs are different and match the correct protocols.</li><li>Use <a href="replication-bridging.html#dry-run">the dry-run API</a> to isolate filtering problems from broker connectivity.</li></ul><h2 id="cleanup">5. Stop the lab</h2><pre><code>curl -X POST http://localhost:8080/api/v1/bridges/BRIDGE_ID/stop
+docker compose -f bridge-compose.yaml down -v</code></pre><p>The cleanup command removes this lab's containers and volumes. Bridge state is in memory; restarting EventOre requires recreating the bridge. For delivery guarantees, persistence limits, and header caveats, read the <a href="replication-bridging.html">bridge reference</a>. For a deployment with authentication, follow the <a href="deployment.html">Kubernetes deployment guide</a>.</p></main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>
