@@ -26,6 +26,8 @@ Prefer **`.html` URLs** (e.g. `http://localhost:3456/guide/pulsar.html`). Shortc
 
 The primary **Product** navigation opens `product.html`, with `releases.html` for version and feature history and `roadmap.html` for upcoming directions. Protocols remain in Documentation. Edit `product/updates.json` for curated development milestones and roadmap statuses, then run `node docs/scripts/build-product.mjs` before the SEO generator. Keep commit dates distinct from release dates; only add a numbered stable release when backed by release evidence. Generated pages are committed for static previews and rebuilt in the publishing workflow.
 
+Published release metadata comes from `node docs/scripts/sync-release.mjs`, which verifies the GitHub Release and its chart/checksum assets before creating `product/release.json`. The website refreshes after a successful release workflow. See `RELEASING.md` for the versioning and publication procedure.
+
 Start with `guide/examples.html` for a complete local MQTT lab, then `guide/user-guide.html` for the UI walkthrough. `guide/troubleshooting.html` covers common failures. Downloadable tutorial files live in `examples/`; Compose build paths assume the repository checkout. Configuration and deployment examples were checked against the Spring properties, API contract, and Helm templates. The Helm example uses one replica and a PVC; it is not an HA recipe. The diagrams in `assets/diagrams/operator-workflow.svg`, `deployment-routing.svg`, and `configuration-layers.svg` have accessible text descriptions.
 
 | Page | Path |

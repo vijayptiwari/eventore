@@ -157,6 +157,7 @@ jobs:
           helm template eventore deploy/helm/eventore -f deploy/helm/eventore/values-dev.yaml > /dev/null
           helm template eventore deploy/helm/eventore -f deploy/helm/eventore/values-kafka-kinesis.yaml > /dev/null
           helm template eventore deploy/helm/eventore -f deploy/helm/eventore/values-stream-kafka.yaml > /dev/null
+          node scripts/check-release-images.mjs
 
   prepare-backend-matrix:
     runs-on: ubuntu-latest
