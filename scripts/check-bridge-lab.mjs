@@ -23,7 +23,7 @@ try {
   let delivered = false;
   // Fresh messages also cover asynchronous Kafka consumer initialization.
   for (let attempt = 0; attempt < 20 && !delivered; attempt++) {
-    await request(`${api}/connections/${source.id}/publish`, 'POST', { destination: 'orders', payload: JSON.stringify({ orderId: 'demo-1001', status: 'CONFIRMED' }) });
+    await request(`${api}/connections/${source.id}/kafka/publish`, 'POST', { destination: 'orders', payload: JSON.stringify({ orderId: 'demo-1001', status: 'CONFIRMED' }) });
     await new Promise(resolve => setTimeout(resolve, 1500));
     const messages = await request(rabbit + '/get', 'POST', { count: 5, ackmode: 'ack_requeue_false', encoding: 'auto', truncate: 50000 }, rabbitHeaders);
     delivered = messages.some(message => JSON.parse(message.payload).orderId === 'demo-1001' && message.properties.headers['x-origin'] === 'eventore-lab');
