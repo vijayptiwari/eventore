@@ -1,15 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Eventore  One console for every stream">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0f172a"/>
-      <stop offset="100%" style="stop-color:#134e4a"/>
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <circle cx="1050" cy="120" r="180" fill="#0d9488" opacity="0.25"/>
-  <circle cx="150" cy="520" r="220" fill="#4f46e5" opacity="0.2"/>
-  <text x="80" y="200" fill="#ccfbf1" font-family="Segoe UI, system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="0.08em">EVENTORE</text>
-  <text x="80" y="310" fill="#ffffff" font-family="Segoe UI, system-ui, sans-serif" font-size="56" font-weight="700">One console for every stream</text>
-  <text x="80" y="390" fill="#94a3b8" font-family="Segoe UI, system-ui, sans-serif" font-size="28">Kafka · MQTT · RabbitMQ · Pulsar · Kinesis · GCP · Azure</text>
-  <text x="80" y="540" fill="#5eead4" font-family="Segoe UI, system-ui, sans-serif" font-size="24">vijayptiwari.github.io/eventore</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<rect width="1200" height="630" fill="#0c111b"/>
+<g stroke="#75a7ff" stroke-opacity=".13" fill="none"><path d="M730 0 1090 360 1200 360M850 0 1150 300H1200M970 0 1200 230M0 588H1200"/></g>
+<g transform="translate(72 68) scale(1.3)"><path d="M6 8h9l9 12h11M6 20h29M6 32h9l9-12" fill="none" stroke="#75a7ff" stroke-width="3"/><path d="m35 15 5 5-5 5-5-5z" fill="#75a7ff"/></g>
+<text x="145" y="108" font-family="Arial,sans-serif" font-size="38" font-weight="600" letter-spacing="-1" fill="#edf3ff">EventOre</text>
+<text x="80" y="250" font-family="Arial,sans-serif" font-size="77" letter-spacing="-4" fill="#edf3ff">Follow the message.</text>
+<text x="80" y="350" font-family="Arial,sans-serif" font-size="77" font-weight="600" letter-spacing="-4" fill="#75a7ff">Find the answer.</text>
+<text x="80" y="445" font-family="Arial,sans-serif" font-size="25" fill="#b7c4da">Eight messaging protocols. One self-hosted workspace.</text>
+<text x="80" y="533" font-family="monospace" font-size="15" letter-spacing="2" fill="#75a7ff">INSPECT / STREAM / UNDERSTAND</text>
+<text x="1120" y="533" text-anchor="end" font-family="Arial,sans-serif" font-size="18" fill="#93a4bf">Kafka Â· RabbitMQ Â· Pulsar + more</text>
 </svg>

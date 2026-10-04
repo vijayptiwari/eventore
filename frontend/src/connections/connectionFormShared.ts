@@ -59,7 +59,7 @@ const PROTOCOL_GUIDE_SLUG: Record<ProtocolType, string> = {
   RABBITMQ: 'rabbitmq',
   KINESIS: 'kinesis',
   GCP_PUBSUB: 'gcp-pubsub',
-  AZURE_SERVICE_BUS: 'azure-servicebus',
+  AZURE_SERVICE_BUS: 'azure-service-bus',
 };
 
 export function protocolGuideUrl(protocol: ProtocolType): string {

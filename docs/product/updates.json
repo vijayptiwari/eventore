@@ -1,0 +1,139 @@
+{
+  "reviewedOn": "2026-10-04",
+  "manifestVersion": "0.1.0",
+  "releaseStatus": "Release preparation",
+  "source": "https://github.com/vijayptiwari/eventore",
+  "milestones": [
+    {
+      "id": "bridges-storage",
+      "date": "2026-10-04",
+      "title": "Connect systems. Keep connection state.",
+      "features": [
+        [
+          "Cross-broker bridging",
+          "Route messages between brokers with filtering, header transformations, loop prevention, and a dry-run tester.",
+          "ed337a2",
+          "guide/replication-bridging.html"
+        ],
+        [
+          "Externalized connection stores",
+          "File, JDBC, and CRD-backed connection-store implementations, with migration controls. Store selection does not make live subscriptions distributed.",
+          "affb02a",
+          "guide/connection-stores.html"
+        ]
+      ]
+    },
+    {
+      "id": "inspection-observability",
+      "date": "2026-10-03",
+      "title": "Understand the event, its context, and its backlog.",
+      "features": [
+        [
+          "Topology and consumer lag",
+          "Visualize Kafka partition lag, skew, broker topology, and partition distribution.",
+          "9d933f5",
+          "guide/topology-lag.html"
+        ],
+        [
+          "Trace context",
+          "Follow W3C trace context and open configured tracing-system links from message details.",
+          "43b80a6",
+          "guide/tracing.html"
+        ],
+        [
+          "Field masking",
+          "Redact configured sensitive fields and inspect sample masking output. Masking is not a per-user authorization boundary.",
+          "77a87c4",
+          "guide/data-masking.html"
+        ]
+      ]
+    },
+    {
+      "id": "recovery-schemas",
+      "date": "2026-10-03",
+      "title": "Investigate failures and work with structured messages.",
+      "features": [
+        [
+          "Message replay and offset rewind",
+          "Introduced time-travel replay and offset-rewind workflows for supported operations.",
+          "201a114",
+          "guide/streaming.html"
+        ],
+        [
+          "Dead-letter inspection and redrive",
+          "Inspect failed messages and redrive them with controlled throughput.",
+          "b786b56",
+          "guide/dlq.html"
+        ],
+        [
+          "Schema-aware publishing",
+          "Publishing templates and pre-flight schema validation.",
+          "40fb38f",
+          "guide/kafka.html"
+        ],
+        [
+          "Schema Registry and Avro",
+          "Registry integration and Avro decoding for message inspection.",
+          "3ad4f74",
+          "guide/kafka.html"
+        ]
+      ]
+    },
+    {
+      "id": "contracts-testing",
+      "date": "2026-10-03",
+      "title": "Stronger feedback before shipping.",
+      "features": [
+        [
+          "Live-backend browser tests",
+          "Added browser flows against a running backend and bounded Kafka connection validation.",
+          "45bb423",
+          "guide/local-development.html"
+        ],
+        [
+          "OpenAPI drift checks",
+          "CI checks generated frontend types against the backend API contracts.",
+          "61a157e",
+          "guide/architecture.html"
+        ]
+      ]
+    }
+  ],
+  "roadmap": [
+    {
+      "title": "Per-connection rate limiting",
+      "status": "Proposed",
+      "reference": "REQ-69",
+      "description": "Bound publish, search, and subscription traffic per connection. Payload-size and concurrent-subscription limits already exist; request-rate controls are a separate backlog item.",
+      "source": "docs/REQUIREMENTS.md"
+    },
+    {
+      "title": "Deeper MQTT and JMS inspection",
+      "status": "Proposed",
+      "reference": "REQ-65",
+      "description": "Explore richer queue and retained-message inspection while respecting each broker’s semantics and avoiding destructive reads.",
+      "source": "docs/REQUIREMENTS.md"
+    },
+    {
+      "title": "Enterprise identity",
+      "status": "Deferred",
+      "reference": "REQ-72",
+      "description": "OIDC/SAML integration is deferred. The current authentication model uses a shared API token rather than per-user enterprise sign-in.",
+      "source": "docs/REQUIREMENTS.md"
+    },
+    {
+      "title": "Distributed subscription state",
+      "status": "Future design",
+      "reference": "HA Pattern C",
+      "description": "Shared subscription routing and cross-pod delivery remain open architecture work. PVCs and sticky sessions alone do not provide full active-active operation.",
+      "source": "docs/HA.md"
+    },
+    {
+      "title": "Live cloud-broker CI coverage",
+      "status": "Deferred",
+      "reference": "REQ-58",
+      "description": "Cloud SDK paths currently use mocked tests. Broader live cloud validation depends on service parity, credentials, and an approved CI budget.",
+      "source": "docs/CLOUD-CI-SPIKE.md"
+    }
+  ]
+}

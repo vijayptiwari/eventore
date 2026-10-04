@@ -15,7 +15,8 @@ const { pages } = JSON.parse(fs.readFileSync(path.join(docsDir, 'seo', 'pages.js
 const baseUrl = site.origin.replace(/\/$/, '') + site.basePath.replace(/\/?$/, '/');
 
 function absUrl(relativePath) {
-  return baseUrl + String(relativePath).replace(/^\//, '');
+  const normalized = String(relativePath).replace(/^\//, '');
+  return baseUrl + (normalized === 'index.html' ? '' : normalized);
 }
 
 function escapeHtml(value) {
@@ -48,7 +49,6 @@ function homeJsonLd() {
       url: site.repoUrl,
       downloadUrl: site.repoUrl,
       softwareHelp: absUrl('guide/index.html'),
-      license: 'https://www.apache.org/licenses/LICENSE-2.0',
       featureList: [
         'Multi-protocol federated support for 8 streaming systems (Kafka, RabbitMQ, Pulsar, MQTT, JMS, AWS Kinesis, GCP Pub/Sub, Azure Service Bus)',
         'Cross-Broker Data Replication & Bridging with loop prevention and dry-run tester',
@@ -61,60 +61,7 @@ function homeJsonLd() {
       ],
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     },
-    {
-      '@type': 'FAQPage',
-      '@id': siteUrl + '#faq',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'What is Eventore?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Eventore is an enterprise-grade open-source multi-protocol messaging and streaming console that unifies Apache Kafka, RabbitMQ, Pulsar, MQTT, JMS, AWS Kinesis, GCP Pub/Sub, and Azure Service Bus into a single web UI and API.'
-          }
-        },
-        {
-          '@type': 'Question',
-          name: 'How does Eventore compare to Kafka UI, AKHQ, or Conduktor?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Unlike single-protocol tools like Kafka UI or AKHQ which only support Kafka, Eventore supports 8 distinct messaging protocols simultaneously, enables cross-broker replication (e.g., Kafka to RabbitMQ), provides real-time PII data masking, OpenTelemetry distributed tracing, DLQ message redrive, and AI agent integration via Model Context Protocol (MCP).'
-          }
-        },
-        {
-          '@type': 'Question',
-          name: 'How does cross-broker data replication work in Eventore?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Eventore\'s Replication Bridge Engine transfers messages between heterogeneous brokers (e.g. Kafka to RabbitMQ, or Kinesis to GCP Pub/Sub) using Java Virtual Threads, automatic loop prevention, header transformations, regex payload filters, and an interactive dry-run simulator.'
-          }
-        },
-        {
-          '@type': 'Question',
-          name: 'Can Eventore mask sensitive PII and confidential fields in streaming messages?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes. Eventore\'s real-time DataMasker inspects JSON payloads using recursive AST parsing and regex patterns, supporting full redaction, partial masking (e.g. credit card trailing digits), and salted SHA-256 hashing to ensure GDPR, PCI-DSS, and HIPAA compliance.'
-          }
-        },
-        {
-          '@type': 'Question',
-          name: 'Does Eventore support OpenTelemetry distributed tracing?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Yes. Eventore natively extracts and propagates W3C TraceContext traceparent headers across brokers, creating child bridge spans and providing one-click deep links directly into Jaeger, Zipkin, Datadog, and other APM tools.'
-          }
-        },
-        {
-          '@type': 'Question',
-          name: 'How do AI agents interact with Eventore via Model Context Protocol (MCP)?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Eventore provides an official MCP server (eventore-mcp) enabling AI developer tools like Cursor, Claude Desktop, and Gemini to safely inspect topics, publish test messages, check consumer lag, and analyze cluster health via structured agent tools.'
-          }
-        }
-      ]
-    }
+
   ];
   return (
     '  <script type="application/ld+json">' +
@@ -147,7 +94,7 @@ function guideJsonLd(page) {
         {
           '@type': 'ListItem',
           position: 3,
-          name: page.title.replace(/\s*—\s*Eventore\s*$/, ''),
+          name: page.title.replace(/\s*—\s*EventOre\s*$/, ''),
           item: pageUrl
         }
       ]
@@ -190,9 +137,6 @@ function buildSeoBlock(page) {
     '  <meta name="description" content="' + escapeHtml(page.description) + '"/>',
     '  <meta name="robots" content="index, follow, max-image-preview:large"/>'
   );
-  if (page.keywords) {
-    lines.push('  <meta name="keywords" content="' + escapeHtml(page.keywords) + '"/>');
-  }
   lines.push(
     '  <link rel="canonical" href="' + escapeHtml(canonical) + '"/>',
     '  <meta property="og:type" content="' + escapeHtml(page.ogType || 'article') + '"/>',
@@ -201,7 +145,11 @@ function buildSeoBlock(page) {
     '  <meta property="og:description" content="' + escapeHtml(page.description) + '"/>',
     '  <meta property="og:url" content="' + escapeHtml(canonical) + '"/>',
     '  <meta property="og:image" content="' + escapeHtml(image) + '"/>',
-    '  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>',
+    '  <meta property="og:image:width" content="1200"/>',
+    '  <meta property="og:image:height" content="630"/>',
+    '  <meta property="og:image:type" content="image/png"/>',
+    '  <meta name="theme-color" content="#0c111b"/>',
+    '  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>',
     '  <meta property="og:locale" content="en_US"/>',
     '  <meta name="twitter:card" content="summary_large_image"/>',
     '  <meta name="twitter:title" content="' + escapeHtml(page.title) + '"/>',
@@ -228,6 +176,15 @@ function injectPage(page) {
     throw new Error('Missing HTML file: ' + page.file);
   }
   let html = fs.readFileSync(filePath, 'utf8');
+  html = html.replace(/<title>[^<]*<\/title>/, '<title>' + escapeHtml(page.title) + '</title>');
+  // Keep essential navigation usable and crawlable before JavaScript runs.
+  const root = page.file.startsWith('guide/') ? '../' : './';
+  const header = '<div class="site-header-inner"><a class="site-logo" href="' + root + 'index.html" aria-label="EventOre home"><img src="' + root + 'assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="' + root + 'product.html">Product</a><a href="' + root + 'guide/index.html">Documentation</a><a href="' + root + 'about.html">About</a><a href="' + site.repoUrl + '">GitHub</a><a class="site-nav-cta" href="' + root + 'guide/getting-started.html">Get started</a></nav></div>';
+  html = html.replace(/(<header\b[^>]*id="site-header"[^>]*>)[\s\S]*?(<\/header>)/, '$1' + header + '$2');
+  if (!html.includes('class="skip-link"')) {
+    html = html.replace(/<body>/, '<body>\n<a class="skip-link" href="#main">Skip to content</a>');
+  }
+  html = html.replace(/<main\b(?![^>]*\bid=)([^>]*)>/, '<main id="main"$1>');
   const block = SEO_START + '\n' + buildSeoBlock(page) + '\n' + SEO_END;
 
   if (html.includes(SEO_START)) {

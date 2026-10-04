@@ -1,0 +1,4 @@
+{
+  "payload": "{\"orderId\":\"demo-1001\",\"password\":\"example-secret\"}",
+  "contentType": "application/json"
+}

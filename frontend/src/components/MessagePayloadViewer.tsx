@@ -84,7 +84,7 @@ export default function MessagePayloadViewer({ payload, headers, contentType }: 
                 color: '#22c55e',
                 borderColor: 'rgba(34, 197, 94, 0.3)',
               }}
-              title="Sensitive fields or PII data redacted by Eventore DataMasker"
+              title="Sensitive fields or PII data redacted by EventOre DataMasker"
             >
               <span className="schema-badge-icon">🛡️</span>
               Masked

@@ -1,0 +1,34 @@
+# Example for a local port-forward; install from the repository root.
+eventore:
+  streamProviders: [KAFKA]
+  deploymentMode: DEV
+  security:
+    apiTokenExistingSecret: eventore-api
+    apiTokenSecretKey: api-token
+    allowedOrigins: "http://localhost:8088"
+  connections:
+    persistence:
+      enabled: true
+      volumeType: pvc
+      size: 1Gi
+backend:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+frontend:
+  replicaCount: 1
+  env:
+    apiBaseUrl: /api/v1
+    wsUrl: ws://localhost:8088/ws/stream
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+ingress:
+  enabled: false

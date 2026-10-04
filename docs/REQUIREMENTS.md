@@ -1,4 +1,4 @@
-# Eventore Requirements Backlog (Post–Wave 3)
+# EventOre Requirements Backlog (Post–Wave 3)
 
 Generated from Wave 2 analysis and delivered in Wave 3 (commits through `7dcf7a9`). **Wave 3 epics EPIC-12–EPIC-17 are complete** — see `docs/EPICS-WAVE3.md`.
 
@@ -264,7 +264,7 @@ Wave 3 shipped production-trustworthy Helm persistence (PVC option + ingress ses
 - **Priority:** P1
 - **Area:** `deploy/helm/eventore-mcp/`
 - **As implemented today:** Chart sets `eventore.apiUrl` only; no secret ref for backend API token.
-- **Requirement:** MCP deployment shall accept `apiTokenExistingSecret` mirroring main Eventore chart pattern.
+- **Requirement:** MCP deployment shall accept `apiTokenExistingSecret` mirroring main EventOre chart pattern.
 - **Acceptance criteria:**
   - [x] `EVENTORE_API_TOKEN` env from secret when backend auth enabled
   - [x] Values documented in chart README or NOTES

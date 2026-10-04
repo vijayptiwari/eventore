@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>User Guide — EventOre</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Learn to connect brokers, start and stop live streams, publish test events, inspect messages, and investigate broker state in EventOre."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/user-guide.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="User Guide — EventOre"/>
+  <meta property="og:description" content="Learn to connect brokers, start and stop live streams, publish test events, inspect messages, and investigate broker state in EventOre."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/user-guide.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="User Guide — EventOre"/>
+  <meta name="twitter:description" content="Learn to connect brokers, start and stop live streams, publish test events, inspect messages, and investigate broker state in EventOre."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/user-guide.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"User Guide","item":"https://vijayptiwari.github.io/eventore/guide/user-guide.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/user-guide.html#article","headline":"User Guide — EventOre","description":"Learn to connect brokers, start and stop live streams, publish test events, inspect messages, and investigate broker state in EventOre.","url":"https://vijayptiwari.github.io/eventore/guide/user-guide.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/user-guide.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main id="main"><h1 class="page-title">Using EventOre</h1><p class="page-subtitle">A practical tour of connections, live streams, inspection, and everyday operations.</p><nav class="article-toc" aria-label="On this page"><a href="#connect">Connect</a><a href="#observe">Observe</a><a href="#publish">Publish</a><a href="#inspect">Inspect</a><a href="#finish">Finish</a></nav>
+<p>New to the product? Complete the <a href="examples.html">local MQTT walkthrough</a> first. This guide assumes the console is running and the backend can reach your broker. Screen labels below match the current React interface.</p><figure class="diagram guide-diagram"><img src="../assets/diagrams/operator-workflow.svg" alt="Connect, observe, and act in the EventOre user interface" width="960" height="350" loading="lazy" decoding="async"/><figcaption>Start with a validated connection, then inspect a destination. Publishing depends on access mode.</figcaption></figure>
+<h2 id="connect">1. Create and validate a connection</h2><ol><li>Open <strong>Connections</strong>. Use the connection wizard or the <strong>New connection</strong> form.</li><li>Enter a descriptive name such as <code>staging-orders-kafka</code>. Choose a <strong>Stream platform preset</strong> or select a <strong>Protocol</strong>.</li><li>Enter the <strong>Broker URL</strong> reachable from the backend. For the tutorial this is <code>tcp://mosquitto:1883</code>, not the browser address.</li><li>Fill in protocol-specific fields. MQTT uses a topic filter; RabbitMQ uses a virtual host and queue; Kinesis uses an AWS region. Follow the relevant <a href="stream-platforms.html">protocol guide</a> for credentials and TLS.</li><li>Save the profile and run its validation action. Resolve authentication or network errors before starting a stream.</li></ol><p>In ReadOnly mode, an operator cannot create or change connections. Profiles must be provisioned by the deployment owner. If the API requires a token, open <strong>Settings</strong> and enter it before making requests.</p>
+<h2 id="observe">2. Open a live stream</h2><ol><li>Open <strong>Live Stream</strong>.</li><li>Under <strong>Add stream</strong>, choose a <strong>Connection</strong> and enter a <strong>Destination</strong>. For the MQTT tutorial, use <code>events/orders</code>.</li><li>Select <strong>Add to side panel</strong>. Select that stream in the side panel to inspect it.</li><li>Check the WebSocket indicator and stream status. Publish a fresh test message after the subscription starts.</li></ol><p>You can also start from <strong>Browse</strong> when the provider supports destination discovery. MQTT does not provide a universal list of historical topics; use a known topic or filter.</p><div class="callout">A connected WebSocket confirms the browser transport. It does not prove that broker credentials, destination permissions, or the subscription are correct. Check the selected stream’s error and message count as well.</div>
+<h2 id="publish">3. Publish a test event</h2><p>In Dev or Admin mode, the selected stream exposes <strong>Publish to [destination]</strong>. Use a test destination and paste this JSON:</p><pre><code>{"event":"order.created","orderId":"demo-1001","total":49.95,"currency":"USD"}</code></pre><p>Select <strong>Publish</strong> and look for <strong>Published</strong>. Confirm that a new record arrives in the selected stream. ReadOnly mode hides publishing; Dev mode caps payload size. A publish acknowledgement is not proof that a downstream consumer processed the event.</p>
+<h2 id="inspect">4. Investigate a message or backlog</h2><p>Select the relevant stream and use its available inspector tabs. These differ by provider; the <a href="stream-platforms.html">capability comparison</a> explains the differences.</p><ul><li><strong>Kafka topic investigation:</strong> inspect topics, partitions, consumer groups, and lag. A backlog concentrated in one partition can guide the next investigation; it does not alone identify the cause.</li><li><strong>Find an event:</strong> use the supported message search controls, choose a bounded sample, and inspect headers and payloads. Export returned results using the export controls where available.</li><li><strong>Recover failed messages:</strong> follow the <a href="dlq.html">DLQ guide</a> and test a small redrive before increasing volume.</li><li><strong>Move messages between systems:</strong> follow the <a href="replication-bridging.html">bridge guide</a>; check destination permissions and dry-run output first.</li></ul>
+<h2 id="finish">5. Stop and clean up</h2><p>Use <strong>Stop</strong> in the stream side panel when observation is finished. Use <strong>Start</strong> to resume a stopped stream, or <strong>Remove</strong> to remove it from the workspace. Browser workspace restoration is a convenience, not durable message storage. Export the evidence you need before closing the session.</p><p>Next: <a href="examples.html">worked example</a> · <a href="troubleshooting.html">troubleshooting</a> · <a href="configuration.html">configuration reference</a>.</p></main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

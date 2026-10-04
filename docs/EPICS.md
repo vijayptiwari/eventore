@@ -1,4 +1,4 @@
-# Eventore Epic & Feature Plan
+# EventOre Epic & Feature Plan
 
 Generated from `docs/REQUIREMENTS.md` by **feature-epic-planner**.
 
@@ -42,7 +42,7 @@ None remain blocking after assumptions above. Revisit if product chooses Kafka-o
 
 ## Epic EPIC-1: Secured Production Deployments
 
-**Outcome:** Operators can deploy Eventore via Helm with API token auth end-to-end; MCP consume and quick-probe work when `eventore.security.api-token` is set.
+**Outcome:** Operators can deploy EventOre via Helm with API token auth end-to-end; MCP consume and quick-probe work when `eventore.security.api-token` is set.
 
 **Success metrics:** `eventore_consume_messages` succeeds with token + SSE ownership; `helm install` with `values-admin.yaml` overlay yields authenticated backend without manual Spring JSON patching.
 

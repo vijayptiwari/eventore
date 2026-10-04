@@ -1,8 +1,8 @@
 {
   "origin": "https://vijayptiwari.github.io",
   "basePath": "/eventore/",
-  "siteName": "Eventore",
-  "defaultOgImage": "assets/og-card.svg",
+  "siteName": "EventOre",
+  "defaultOgImage": "assets/og-card.png",
   "twitterSite": "@vijayptiwari",
   "repoUrl": "https://github.com/vijayptiwari/eventore",
   "siteVerification": [

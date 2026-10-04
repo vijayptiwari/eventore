@@ -8,7 +8,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const docsDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const exts = new Set(['.html', '.md', '.js', '.json', '.css', '.mjs']);
+// Build and validation scripts contain templates/regular expressions, not rendered links.
+const exts = new Set(['.html', '.md', '.js', '.json', '.css']);
 const skipHref = /^(https?:|mailto:|tel:|#|javascript:)/i;
 
 function walk(dir, out = []) {

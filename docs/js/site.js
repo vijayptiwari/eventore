@@ -1,4 +1,4 @@
-(function () {
+function initializeEventOreSite() {
   var base = window.__EVENTORE_BASE__ || '/';
   var GITHUB = 'https://github.com/vijayptiwari/eventore';
 
@@ -30,7 +30,7 @@
   }
 
   function isHomeActive() {
-    return path === '/' || /\/index\.html?$/i.test(path);
+    return !inGuideSection() && (path === base || /\/index\.html?$/i.test(path));
   }
 
   function isAboutActive() {
@@ -38,10 +38,8 @@
   }
 
   var navItems = [
-    { href: asset('index.html'), label: 'Home', active: isHomeActive },
+    { href: asset('product.html'), label: 'Product', active: function () { return /\/(product|releases|roadmap)\.html$/i.test(path); } },
     { href: asset('guide/index.html'), label: 'Documentation', active: inGuideSection },
-    { href: asset('guide/replication-bridging.html'), label: 'Replication' },
-    { href: asset('guide/stream-platforms.html'), label: 'Protocols' },
     { href: asset('about.html'), label: 'About', active: isAboutActive },
     { href: GITHUB, label: 'GitHub', external: true },
   ];
@@ -58,6 +56,9 @@
   var guideCoreLinks = [
     { href: 'index.html', label: 'Overview' },
     { href: 'getting-started.html', label: 'Getting started' },
+    { href: 'examples.html', label: 'Examples & local lab' },
+    { href: 'user-guide.html', label: 'User guide' },
+    { href: 'troubleshooting.html', label: 'Troubleshooting' },
     { href: 'architecture.html', label: 'Architecture' },
     { href: 'control-data-plane.html', label: 'Control & data plane' },
     { href: 'configuration.html', label: 'Configuration' },
@@ -199,10 +200,10 @@
       '<div class="site-header-inner">' +
       '<a class="site-logo" href="' +
       asset('index.html') +
-      '" aria-label="Eventore home">' +
+      '" aria-label="EventOre home">' +
       '<img src="' +
-      asset('assets/logo.svg') +
-      '" alt="Eventore" width="200" height="36" decoding="async"/>' +
+      asset('assets/logo-light.svg') +
+      '" alt="EventOre" width="200" height="36" decoding="async"/>' +
       '</a>' +
       '<nav class="site-nav" aria-label="Primary">' +
       navHtml +
@@ -212,13 +213,25 @@
   var sidebar = document.getElementById('guide-sidebar-nav');
   if (sidebar && inGuideSection()) {
     sidebar.innerHTML =
-      '<p class="guide-sidebar-title">Capabilities</p><ul class="guide-sidebar-capabilities">' +
+      '<p class="guide-sidebar-title">Start &amp; operate</p><ul>' +
+      renderSidebarLinks(guideCoreLinks) +
+      '</ul><p class="guide-sidebar-title">Capabilities</p><ul class="guide-sidebar-capabilities">' +
       renderSidebarLinks(capabilityLinks) +
       '</ul><p class="guide-sidebar-title">Streams</p><ul class="guide-sidebar-streams">' +
       renderSidebarLinks(streamGuideLinks) +
-      '</ul><p class="guide-sidebar-title">Platform</p><ul>' +
-      renderSidebarLinks(guideCoreLinks) +
       '</ul>';
+    sidebar.insertAdjacentHTML('afterbegin', '<label class="guide-filter-label" for="guide-filter">Find a guide</label><input class="guide-filter" id="guide-filter" type="search" placeholder="Kafka, deployment, masking…" autocomplete="off"/><p class="guide-filter-status" role="status" hidden></p>');
+    sidebar.querySelector('.guide-filter').addEventListener('input', function (event) {
+      var query = event.target.value.trim().toLowerCase();
+      var count = 0;
+      sidebar.querySelectorAll('li').forEach(function (item) {
+        item.hidden = item.textContent.toLowerCase().indexOf(query) === -1;
+        if (!item.hidden) count++;
+      });
+      var status = sidebar.querySelector('.guide-filter-status');
+      status.hidden = !query;
+      status.textContent = count ? count + ' guides found' : 'No matching guides. Try a protocol or task.';
+    });
   }
 
   var footer = document.getElementById('site-footer');
@@ -257,6 +270,9 @@
       })
       .join('');
     var resourceList = [
+      { href: asset('product.html'), label: 'Product overview' },
+      { href: asset('releases.html'), label: 'Release notes' },
+      { href: asset('roadmap.html'), label: 'Roadmap' },
       { href: GITHUB, label: 'GitHub repository', external: true },
       { href: GITHUB + '/tree/main/deploy/helm', label: 'Helm charts', external: true },
       { href: guideHref('deployment.html'), label: 'Deployment options' },
@@ -281,10 +297,10 @@
       '<div class="site-footer-brand">' +
       '<a href="' +
       asset('index.html') +
-      '" aria-label="Eventore home">' +
+      '" aria-label="EventOre home">' +
       '<img src="' +
       asset('assets/logo-light.svg') +
-      '" alt="Eventore" width="160" height="32" decoding="async"/>' +
+      '" alt="EventOre" width="160" height="32" decoding="async"/>' +
       '</a>' +
       '<p class="site-footer-tagline">Unified multi-protocol streaming and messaging console for Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, and Azure Service Bus.</p>' +
       '</div>' +
@@ -304,7 +320,7 @@
       '<div class="site-footer-bottom">' +
       '<span>© ' +
       year +
-      ' Eventore. Open source Apache-2.0.</span>' +
+      ' EventOre. Built in the open.</span>' +
       '<span><a href="' +
       guideHref('index.html') +
       '">Documentation</a> · <a href="' +
@@ -329,4 +345,104 @@
   fixGuideRelativeLinks();
   injectStreamToc(file);
   injectGuidePager();
+  document.querySelectorAll('.guide-layout main pre').forEach(function (pre) {
+    if (pre.parentElement.classList.contains('code-example')) return;
+    var wrapper = document.createElement('div');
+    wrapper.className = 'code-example';
+    pre.replaceWith(wrapper);
+    wrapper.appendChild(pre);
+    var copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = 'code-copy';
+    copy.textContent = 'Copy code';
+    copy.setAttribute('aria-live', 'polite');
+    wrapper.appendChild(copy);
+    copy.addEventListener('click', async function () {
+      try {
+        await navigator.clipboard.writeText(pre.textContent);
+        copy.textContent = 'Copied';
+        setTimeout(function () { copy.textContent = 'Copy code'; }, 2000);
+      } catch (error) {
+        var range = document.createRange();
+        range.selectNodeContents(pre);
+        var selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        copy.textContent = 'Code selected';
+      }
+    });
+  });
+}
+initializeEventOreSite();
+
+// Keep the documentation shell mounted during guide-to-guide navigation.
+(function () {
+  if (!document.querySelector('.guide-layout')) return;
+  var pending;
+  var cache = new Map();
+  function isGuide(url) {
+    return url.origin === location.origin && url.pathname.indexOf((window.__EVENTORE_BASE__ || '/') + 'guide/') === 0 && /\.html$/.test(url.pathname);
+  }
+  async function load(url, signal) {
+    if (cache.has(url.pathname)) return cache.get(url.pathname);
+    var response = await fetch(url.href, { signal: signal });
+    if (!response.ok) throw new Error('Guide unavailable');
+    var parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+    if (!parsed.querySelector('.guide-layout main')) throw new Error('Not a guide');
+    cache.set(url.pathname, parsed);
+    return parsed;
+  }
+  async function navigate(url, push) {
+    if (pending) pending.abort();
+    var controller = new AbortController();
+    pending = controller;
+    var main = document.querySelector('.guide-layout main');
+    main.setAttribute('aria-busy', 'true');
+    try {
+      var parsed = await load(url, controller.signal);
+      if (controller.signal.aborted) return;
+      if (push) history.pushState(null, '', url.href);
+      var next = document.importNode(parsed.querySelector('.guide-layout main'), true);
+      main.replaceWith(next);
+      document.title = parsed.title;
+      document.querySelectorAll('head [data-guide-meta]').forEach(function (el) { el.remove(); });
+      document.querySelectorAll('head meta[name="description"],head link[rel="canonical"],head meta[property^="og:"],head meta[name^="twitter:"],head script[type="application/ld+json"]').forEach(function (el) { el.remove(); });
+      parsed.querySelectorAll('meta[name="description"],link[rel="canonical"],meta[property^="og:"],meta[name^="twitter:"],script[type="application/ld+json"]').forEach(function (el) {
+        var clone = document.importNode(el, true); clone.setAttribute('data-guide-meta', ''); document.head.appendChild(clone);
+      });
+      initializeEventOreSite();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      if (url.hash) {
+        var target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+        if (target) target.scrollIntoView({ behavior: 'instant' });
+      }
+      next.setAttribute('tabindex', '-1');
+      next.focus({ preventScroll: true });
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches && next.animate) {
+        next.animate([{ opacity: 0.65 }, { opacity: 1 }], { duration: 160, easing: 'ease-out' });
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') location.assign(url.href);
+    } finally {
+      if (pending === controller) { pending = null; main.removeAttribute('aria-busy'); }
+    }
+  }
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest('a[href]');
+    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
+    var url = new URL(link.href);
+    if (!isGuide(url) || (url.pathname === location.pathname && url.search === location.search)) return;
+    event.preventDefault();
+    navigate(url, true);
+  });
+  document.addEventListener('pointerover', function (event) {
+    var link = event.target.closest('a[href]');
+    if (!link || navigator.connection && navigator.connection.saveData) return;
+    var url = new URL(link.href);
+    if (isGuide(url) && !cache.has(url.pathname)) load(url).catch(function () {});
+  });
+  window.addEventListener('popstate', function () {
+    var url = new URL(location.href);
+    if (isGuide(url)) navigate(url, false); else location.reload();
+  });
 })();

@@ -31,3 +31,6 @@ frontend/src/api/generated/*
 backend/openapi/eventore-api-bundled.yaml
 test-results/
 .cursor/
+
+# Local documentation preview cache
+docs/.vite/

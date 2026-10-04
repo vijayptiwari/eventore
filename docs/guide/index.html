@@ -3,24 +3,27 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Product guide — Eventore</title>
+  <title>Product Guide &amp; Documentation Hub — EventOre</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Eventore documentation hub: comprehensive guides for 8 messaging protocols (Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, Service Bus) plus enterprise replication, data masking, tracing, lag heatmap, and DLQ redrive."/>
+  <meta name="description" content="Set up EventOre, connect your broker, compare protocol capabilities, and deploy with Docker or Kubernetes. Practical guides for operators and developers."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="eventore documentation, messaging console guide, kafka deployment, data replication engine, pii masking guide, kafka consumer lag"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/index.html"/>
   <meta property="og:type" content="website"/>
-  <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Product Guide &amp; Documentation Hub — Eventore"/>
-  <meta property="og:description" content="Eventore documentation hub: comprehensive guides for 8 messaging protocols (Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, Service Bus) plus enterprise replication, data masking, tracing, lag heatmap, and DLQ redrive."/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Product Guide &amp; Documentation Hub — EventOre"/>
+  <meta property="og:description" content="Set up EventOre, connect your broker, compare protocol capabilities, and deploy with Docker or Kubernetes. Practical guides for operators and developers."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/index.html"/>
-  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Product Guide &amp; Documentation Hub — Eventore"/>
-  <meta name="twitter:description" content="Eventore documentation hub: comprehensive guides for 8 messaging protocols (Kafka, RabbitMQ, Pulsar, MQTT, JMS, Kinesis, Pub/Sub, Service Bus) plus enterprise replication, data masking, tracing, lag heatmap, and DLQ redrive."/>
-  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:title" content="Product Guide &amp; Documentation Hub — EventOre"/>
+  <meta name="twitter:description" content="Set up EventOre, connect your broker, compare protocol capabilities, and deploy with Docker or Kubernetes. Practical guides for operators and developers."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
   <!-- /eventore-seo -->
   <script>
@@ -55,45 +58,42 @@
 })();
   </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
-    <main>
-      <h1 class="page-title">Documentation Hub</h1>
-      <p class="page-subtitle">Comprehensive guides for all 8 supported messaging protocols, advanced streaming capabilities, deployment options, and enterprise configuration.</p>
+    <main id="main">
+      <h1 class="page-title">From first connection<br>to everyday operations.</h1>
+      <p class="page-subtitle">Connect your first broker, inspect a message, or deploy EventOre in your environment. Start here and follow the guide for your platform.</p>
 
-      <h2 class="guide-section-title" id="capabilities">Enterprise Capabilities</h2>
-      <p class="guide-section-lead">Advanced features designed for reliability, compliance, observability, and incident remediation.</p>
+      <div class="learning-grid guide-start"><a class="learning-card" href="getting-started.html"><span class="eyebrow">Start here</span><h3>Connect a broker</h3><p>Prerequisites, local stack, and your first message.</p></a><a class="learning-card" href="stream-platforms.html"><span class="eyebrow">Evaluate</span><h3>Check capabilities</h3><p>Understand the features available for your protocol.</p></a><a class="learning-card" href="deployment.html"><span class="eyebrow">Deploy</span><h3>Run in your environment</h3><p>Images, Helm values, and deployment modes.</p></a></div><h2 id="learn-by-doing">Learn by doing</h2><div class="toc-grid"><a class="toc-card" href="examples.html"><h3>Run the MQTT lab</h3><p>A complete stack, sample payloads, API requests, and cleanup.</p></a><a class="toc-card" href="user-guide.html"><h3>Use the console</h3><p>Connect, observe, publish, investigate, and stop streams.</p></a><a class="toc-card" href="troubleshooting.html"><h3>Resolve a problem</h3><p>Follow symptoms through the browser, backend, and broker.</p></a></div><h2 class="guide-section-title" id="capabilities">Operate your message flows</h2>
+      <p class="guide-section-lead">Follow task-focused guides for message inspection, recovery, and integrations. Available operations depend on the provider, deployment mode, and broker permissions.</p>
       <div class="toc-grid toc-grid--6">
         <a class="toc-card" href="./replication-bridging.html">
-          <span class="badge badge-accent">REQ-110</span>
           <h3>Cross-Broker Replication</h3>
           <p>Multi-source to multi-target streaming bridge, loop prevention, and dry-run tester.</p>
         </a>
         <a class="toc-card" href="./data-masking.html">
-          <span class="badge badge-accent">REQ-105</span>
           <h3>PII Data Masking</h3>
-          <p>Real-time Jackson AST redaction, regex patterns, and JSONPath masking.</p>
+          <p>Mask selected fields and redact sensitive patterns in message payloads.</p>
         </a>
         <a class="toc-card" href="./tracing.html">
-          <span class="badge badge-accent">REQ-111</span>
           <h3>Distributed Tracing</h3>
           <p>W3C TraceContext, child span propagation, and Jaeger/Datadog deep links.</p>
         </a>
         <a class="toc-card" href="./topology-lag.html">
-          <span class="badge badge-accent">REQ-112</span>
           <h3>Lag Heatmap &amp; Topology</h3>
-          <p>High-density partition tiles, consumer skew detection, and broker health.</p>
+          <p>Inspect Kafka partition lag and find uneven consumer backlogs.</p>
         </a>
         <a class="toc-card" href="./dlq.html">
-          <span class="badge badge-accent">REQ-108</span>
           <h3>DLQ Inspector &amp; Redrive</h3>
-          <p>Poison message triage, in-place JSON edit, and rate-limited replay.</p>
+          <p>Inspect failed messages, correct payloads, and redrive at a controlled rate.</p>
         </a>
         <a class="toc-card" href="./connection-stores.html">
-          <span class="badge badge-accent">REQ-101</span>
           <h3>Externalized Stores</h3>
           <p>PostgreSQL JDBC store with optimistic locking, Kubernetes CRDs, and live migration.</p>
         </a>
@@ -114,7 +114,7 @@
 
       <h2 class="guide-section-title" id="platform">Platform Architecture &amp; Operations</h2>
       <div class="toc-grid toc-grid--6">
-        <a class="toc-card" href="./getting-started.html"><h3>Getting started</h3><p>Install and first connection in five minutes.</p></a>
+        <a class="toc-card" href="./getting-started.html"><h3>Getting started</h3><p>Prerequisites, installation, and your first connection.</p></a>
         <a class="toc-card" href="./architecture.html"><h3>Architecture</h3><p>Control plane, data plane, providers.</p></a>
         <a class="toc-card" href="./control-data-plane.html"><h3>Control &amp; data plane</h3><p>Provider registration and UI cascade.</p></a>
         <a class="toc-card" href="./configuration.html"><h3>Configuration</h3><p>YAML, Helm, ADMIN / DEV / READONLY.</p></a>

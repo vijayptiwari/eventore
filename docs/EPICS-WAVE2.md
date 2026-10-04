@@ -1,4 +1,4 @@
-# Eventore Wave 2 Epics
+# EventOre Wave 2 Epics
 
 **Status:** COMPLETE (commit `99f608a`)  
 **Source:** `docs/REQUIREMENTS.md` (post-MVP, REQ-29+)  

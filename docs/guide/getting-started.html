@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Getting started — Eventore</title>
+  <title>Getting Started — EventOre</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Install Eventore locally or on Kubernetes, create your first broker connection, and start a live message stream in about five minutes."/>
+  <meta name="description" content="Build the EventOre Docker stack, connect an existing broker, and inspect your first live message. Includes prerequisites, ports, and connection troubleshooting."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="eventore install, kafka quick start, messaging console tutorial, helm eventore"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/getting-started.html"/>
   <meta property="og:type" content="article"/>
-  <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Getting Started — Eventore"/>
-  <meta property="og:description" content="Install Eventore locally or on Kubernetes, create your first broker connection, and start a live message stream in about five minutes."/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Getting Started — EventOre"/>
+  <meta property="og:description" content="Build the EventOre Docker stack, connect an existing broker, and inspect your first live message. Includes prerequisites, ports, and connection troubleshooting."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/getting-started.html"/>
-  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Getting Started — Eventore"/>
-  <meta name="twitter:description" content="Install Eventore locally or on Kubernetes, create your first broker connection, and start a live message stream in about five minutes."/>
-  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:title" content="Getting Started — EventOre"/>
+  <meta name="twitter:description" content="Build the EventOre Docker stack, connect an existing broker, and inspect your first live message. Includes prerequisites, ports, and connection troubleshooting."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/getting-started.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Getting Started","item":"https://vijayptiwari.github.io/eventore/guide/getting-started.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/getting-started.html#article","headline":"Getting Started — Eventore","description":"Install Eventore locally or on Kubernetes, create your first broker connection, and start a live message stream in about five minutes.","url":"https://vijayptiwari.github.io/eventore/guide/getting-started.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/getting-started.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/getting-started.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Getting Started","item":"https://vijayptiwari.github.io/eventore/guide/getting-started.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/getting-started.html#article","headline":"Getting Started — EventOre","description":"Build the EventOre Docker stack, connect an existing broker, and inspect your first live message. Includes prerequisites, ports, and connection troubleshooting.","url":"https://vijayptiwari.github.io/eventore/guide/getting-started.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/getting-started.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
   <!-- /eventore-seo -->
   <script>
 (function () {
@@ -56,21 +59,26 @@
 })();
   </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
-    <main>
+    <main id="main">
       <h1 class="page-title">Getting started</h1>
-      <p class="page-subtitle">From zero to your first live stream in about five minutes.</p>
+      <p class="page-subtitle">Run the console, connect your broker, and inspect your first live message.</p>
 
       <figure class="diagram">
         <img src="../assets/diagrams/user-journey.svg" alt="User journey steps" width="920" height="200" loading="lazy" decoding="async"/>
         <figcaption class="diagram-caption">Typical workflow after deployment</figcaption>
       </figure>
 
-      <h2>Prerequisites</h2>
+      <div class="callout"><strong>Need a broker too?</strong> Follow the <a href="examples.html">complete MQTT lab</a> for a self-contained example, then use the <a href="user-guide.html">user guide</a> for everyday workflows.</div><h2 id="docker-start">Start with Docker Compose</h2><p>For the local container stack, install Git and Docker with Compose. Run these commands from a terminal. The first build downloads dependencies and can take several minutes.</p><pre><code>git clone https://github.com/vijayptiwari/eventore.git
+cd eventore
+docker compose -f docker/docker-compose.stack.yml up -d --build</code></pre><p>Open <a href="http://localhost:8088">http://localhost:8088</a> for the console. The API is on <code>http://localhost:8080</code>; the optional MCP service included in this stack is on port <code>3100</code>.</p><div class="callout"><strong>Bring a broker:</strong> this stack starts EventOre, not a messaging broker. In the Connections screen, use an address reachable from the backend container. On Docker Desktop, <code>host.docker.internal</code> reaches services on your host; <code>localhost</code> inside a container refers to that container.</div><p>Continue with <a href="#first-connection">Create your first connection</a> below. For test brokers and advertised-listener configuration, use the <a href="local-development.html">local development guide</a>.</p><h2>Prerequisites for running from source</h2>
       <ul>
         <li>Java 21+ (for running the backend JAR locally)</li>
         <li>Node 18+ (for building the frontend)</li>
@@ -95,7 +103,7 @@ npm run dev</code></pre>
       <pre><code>curl -s http://localhost:8080/api/v1/control/plane | jq .activeProtocols</code></pre>
       <p>You should see protocols matching the provider modules in your build (default: all eight).</p>
 
-      <h3>4. Create your first connection</h3>
+      <h3 id="first-connection">4. Create your first connection</h3>
       <ol class="steps">
         <li>Open the UI → <strong>Connections</strong>.</li>
         <li>Choose a <strong>stream platform preset</strong> (e.g. generic Kafka) or enter settings manually.</li>
@@ -128,7 +136,7 @@ java -jar eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar \
   --spring.profiles.active=kafka-kinesis</code></pre>
       <p>Only Kafka and Kinesis appear in the UI protocol list. See <a href="configuration.html">Configuration</a>.</p>
 
-      <h2>Next steps</h2>
+      <h2>Check your setup</h2><ul><li><strong>Console is unavailable:</strong> run <code>docker compose -f docker/docker-compose.stack.yml ps</code> and check service logs with <code>docker compose -f docker/docker-compose.stack.yml logs --tail=100</code>.</li><li><strong>Connection test fails:</strong> check broker reachability from the backend, credentials, TLS settings, and any advertised Kafka broker addresses.</li><li><strong>Stream is empty:</strong> confirm the topic or queue and subscription settings, then send a test message using your broker tools.</li><li><strong>An action is missing:</strong> check your <a href="configuration.html">deployment mode</a> and <a href="stream-platforms.html">provider capabilities</a>.</li></ul><h2>Next steps</h2>
       <ul>
         <li><a href="architecture.html">Understand architecture</a></li>
         <li><a href="configuration.html">Tune deployment mode and protocols</a></li>

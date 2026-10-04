@@ -7,6 +7,9 @@
   --app-gutter: clamp(1rem, 2vw, 2rem);
 }
 
+/* Shared EventOre identity; status colors retain their operational meaning. */
+:root { --brand-blue: #75a7ff; --brand-graphite: #0c111b; }
+
 * {
   box-sizing: border-box;
 }
@@ -163,9 +166,13 @@ a:hover {
 }
 
 .app-topbar {
-  border-bottom: 1px solid #2a3441;
-  background: #0f1419;
+  border-bottom: 1px solid #344967;
+  background: var(--brand-graphite);
 }
+
+.app-topbar a { color: #b7c4da; }
+.app-topbar a.active, .app-topbar a:hover { color: var(--brand-blue); }
+.app-topbar a.active { text-decoration: underline; text-underline-offset: 8px; }
 
 .nav-inner {
   display: flex;
@@ -189,7 +196,17 @@ a:hover {
 
 .brand-logo-btn:hover {
   opacity: 0.92;
-  box-shadow: 0 0 0 1px #2dd4bf44;
+  box-shadow: 0 0 0 1px #75a7ff44;
+}
+
+.brand-logo-btn {
+  flex-shrink: 0;
+  transition: opacity 180ms ease, box-shadow 180ms ease;
+}
+
+.brand-logo-btn:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 5px;
 }
 
 .brand-logo {

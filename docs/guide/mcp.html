@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>MCP for AI agents — Eventore</title>
+  <title>MCP for AI Agents — EventOre</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Use the optional Eventore MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents."/>
+  <meta name="description" content="Use the optional EventOre MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="model context protocol, mcp kafka, ai agent messaging, eventore mcp, mcp streaming server"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/mcp.html"/>
   <meta property="og:type" content="article"/>
-  <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="MCP for AI Agents — Eventore"/>
-  <meta property="og:description" content="Use the optional Eventore MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents."/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="MCP for AI Agents — EventOre"/>
+  <meta property="og:description" content="Use the optional EventOre MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/mcp.html"/>
-  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="MCP for AI Agents — Eventore"/>
-  <meta name="twitter:description" content="Use the optional Eventore MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents."/>
-  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:title" content="MCP for AI Agents — EventOre"/>
+  <meta name="twitter:description" content="Use the optional EventOre MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/mcp.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"MCP for AI Agents","item":"https://vijayptiwari.github.io/eventore/guide/mcp.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/mcp.html#article","headline":"MCP for AI Agents — Eventore","description":"Use the optional Eventore MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents.","url":"https://vijayptiwari.github.io/eventore/guide/mcp.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/mcp.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/mcp.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"MCP for AI Agents","item":"https://vijayptiwari.github.io/eventore/guide/mcp.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/mcp.html#article","headline":"MCP for AI Agents — EventOre","description":"Use the optional EventOre MCP server with Cursor and Claude to probe brokers, publish messages, and inspect streams via AI agents.","url":"https://vijayptiwari.github.io/eventore/guide/mcp.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/mcp.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
   <!-- /eventore-seo -->
   <script>
 (function () {
@@ -56,14 +59,17 @@
 })();
   </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
-    <main>
+    <main id="main">
       <h1 class="page-title">MCP server for AI agents</h1>
-      <p class="page-subtitle">Optional Model Context Protocol layer that exposes Eventore control and data plane APIs to Cursor, Claude, and other MCP clients.</p>
+      <p class="page-subtitle">Optional Model Context Protocol layer that exposes EventOre control and data plane APIs to Cursor, Claude, and other MCP clients.</p>
 
       <figure class="diagram">
         <img src="../assets/diagrams/kubernetes-deploy.svg" alt="Three workloads: frontend, backend, optional MCP" width="920" height="460" loading="lazy" decoding="async"/>
@@ -71,8 +77,8 @@
       </figure>
 
       <h2>Role in the architecture</h2>
-      <p>Eventore separates <strong>control plane</strong> (provider registration, UI cascade, no broker TCP) from <strong>data plane</strong> (connections, publish, subscribe, inspect). The MCP server is a thin <strong>agent adapter</strong> — it never embeds Kafka or MQTT clients. All broker I/O goes through the same backend delegates as the React UI.</p>
-      <pre><code>AI client ── MCP (stdio or HTTP) ──► eventore-mcp ── REST/SSE ──► Eventore backend
+      <p>EventOre separates <strong>control plane</strong> (provider registration, UI cascade, no broker TCP) from <strong>data plane</strong> (connections, publish, subscribe, inspect). The MCP server is a thin <strong>agent adapter</strong> — it never embeds Kafka or MQTT clients. All broker I/O goes through the same backend delegates as the React UI.</p>
+      <pre><code>AI client ── MCP (stdio or HTTP) ──► eventore-mcp ── REST/SSE ──► EventOre backend
                                               │
                     control plane ◄───────────┼───────────► data plane
                     /api/v1/control           │           /api/v1/connections

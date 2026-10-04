@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Troubleshooting — EventOre</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Diagnose EventOre startup, authentication, broker connections, empty streams, WebSocket reconnects, persistence, and Kubernetes issues."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/troubleshooting.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Troubleshooting — EventOre"/>
+  <meta property="og:description" content="Diagnose EventOre startup, authentication, broker connections, empty streams, WebSocket reconnects, persistence, and Kubernetes issues."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/troubleshooting.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Troubleshooting — EventOre"/>
+  <meta name="twitter:description" content="Diagnose EventOre startup, authentication, broker connections, empty streams, WebSocket reconnects, persistence, and Kubernetes issues."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/troubleshooting.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Troubleshooting","item":"https://vijayptiwari.github.io/eventore/guide/troubleshooting.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/troubleshooting.html#article","headline":"Troubleshooting — EventOre","description":"Diagnose EventOre startup, authentication, broker connections, empty streams, WebSocket reconnects, persistence, and Kubernetes issues.","url":"https://vijayptiwari.github.io/eventore/guide/troubleshooting.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/troubleshooting.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main id="main"><h1 class="page-title">Troubleshooting</h1><p class="page-subtitle">Follow the request from the browser to the backend and broker, then check the active subscription.</p><figure class="diagram guide-diagram"><img src="../assets/diagrams/deployment-routing.svg" alt="Troubleshoot browser, backend, and broker in order" width="960" height="350" loading="lazy" decoding="async"/><figcaption>A working web page does not guarantee that the backend can reach the broker.</figcaption></figure><h2 id="startup">The console or API will not start</h2><p>For the MQTT lab, run:</p><pre><code>docker compose -f docs/examples/mqtt-compose.yaml ps
+docker compose -f docs/examples/mqtt-compose.yaml logs --tail=100 eventore-backend eventore-frontend
+curl http://localhost:8080/actuator/health/readiness</code></pre><p>If image compilation failed, read the build output before investigating networking. If a port is occupied, stop the conflicting service or update the host port and corresponding frontend WebSocket URL together. A successful readiness response indicates the application is ready, not that every saved broker profile is valid.</p>
+<h2 id="auth">Requests return 401 or actions are unavailable</h2><p>For a 401, enter the configured API token in <strong>Settings</strong>, or add a Bearer header to REST requests. For missing write controls, inspect <code>GET /api/v1/config</code> and the deployment mode. ReadOnly disables writes; Dev excludes broker administration. Broker-level authorization is separate from EventOre API authentication.</p>
+<h2 id="network">Connection validation fails</h2><ol><li>Check the protocol module is installed and enabled.</li><li>Check the broker address from the backend’s network, not from your browser.</li><li>Check broker credentials, TLS trust, and required permissions.</li><li>For Kafka, check every advertised broker address. A reachable bootstrap address is insufficient if metadata advertises unreachable hosts.</li></ol><p>The repository’s development Redpanda service advertises <code>localhost:9092</code> for a host-run backend. That address is unsuitable for a backend in another container. Configure appropriate advertised listeners before combining those stacks. The MQTT lab avoids this by using a single Compose network and the service name <code>mosquitto</code>.</p>
+<h2 id="empty">A stream is connected but no messages arrive</h2><p>Check the stream’s status and destination, not just the WebSocket indicator. Start the subscription before publishing a test message. Confirm topic filters and broker read permissions. Queue consumers may compete for deliveries; Kafka consumer groups affect assignment. Read the provider guide before observing a production queue.</p>
+<h2 id="websocket">The WebSocket keeps reconnecting</h2><p>Check <code>frontend.env.wsUrl</code> in Helm or <code>EVENTORE_WS_URL</code> in Docker. An HTTPS site needs <code>wss://</code>. Verify proxy upgrade headers, allowed origins, and idle timeouts. If multiple backend replicas are running, subscriptions remain process-local; inspect session routing and affinity.</p>
+<h2 id="persistence">Connections disappear after restart</h2><p>Persistence is disabled by default. <code>emptyDir</code> can survive a container restart within the same pod, but not pod replacement. Use a retained PVC for the single-replica file store. Confirm the configured file path points into the mounted volume and the process can write there.</p>
+<h2 id="kubernetes">Kubernetes workloads stay pending or cannot reach brokers</h2><pre><code>kubectl -n eventore get pods,pvc,svc
+kubectl -n eventore describe deployment eventore-backend
+kubectl -n eventore logs deployment/eventore-backend --tail=100
+kubectl -n eventore get events --sort-by=.lastTimestamp</code></pre><p>For a pending PVC, check StorageClass provisioning and access modes. For image pull failures, verify the image tag and registry access. If network policy is enabled, inspect broker egress and DNS separately: the current chart’s egress policy does not include an explicit DNS rule. Have the cluster operator provide the resolver access required by that cluster.</p>
+<h2 id="report">Collect a useful issue report</h2><p>Include the image tag or commit, deployment mode, protocol, topology, exact UI steps, response status, and a small sanitized log excerpt. Remove tokens, connection secrets, customer payloads, and private hostnames. State whether the issue reproduces in the local lab. Use the <a href="https://github.com/vijayptiwari/eventore/issues">project issue tracker</a>.</p></main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

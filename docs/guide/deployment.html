@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Deployment — Eventore</title>
+  <title>Deployment Guide — EventOre</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Deploy Eventore with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod."/>
+  <meta name="description" content="Deploy EventOre with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="eventore helm chart, ghcr kubernetes, kafka kinesis slim image, docker messaging console"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/deployment.html"/>
   <meta property="og:type" content="article"/>
-  <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Deployment Guide — Eventore"/>
-  <meta property="og:description" content="Deploy Eventore with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod."/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Deployment Guide — EventOre"/>
+  <meta property="og:description" content="Deploy EventOre with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/deployment.html"/>
-  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Deployment Guide — Eventore"/>
-  <meta name="twitter:description" content="Deploy Eventore with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod."/>
-  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:title" content="Deployment Guide — EventOre"/>
+  <meta name="twitter:description" content="Deploy EventOre with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/deployment.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Deployment Guide","item":"https://vijayptiwari.github.io/eventore/guide/deployment.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/deployment.html#article","headline":"Deployment Guide — Eventore","description":"Deploy Eventore with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod.","url":"https://vijayptiwari.github.io/eventore/guide/deployment.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/deployment.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/deployment.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Deployment Guide","item":"https://vijayptiwari.github.io/eventore/guide/deployment.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/deployment.html#article","headline":"Deployment Guide — EventOre","description":"Deploy EventOre with Docker, Kubernetes, and Helm. GHCR images per protocol, OCI charts, slim builds, ingress, and optional MCP pod.","url":"https://vijayptiwari.github.io/eventore/guide/deployment.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/deployment.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
   <!-- /eventore-seo -->
   <script>
 (function () {
@@ -56,12 +59,15 @@
 })();
   </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
-    <main>
+    <main id="main">
       <h1 class="page-title">Deployment</h1>
       <p class="page-subtitle">Docker, Kubernetes, Helm, static product site, and optional MCP for AI agents.</p>
 
@@ -69,7 +75,63 @@
         <img src="../assets/diagrams/kubernetes-deploy.svg" alt="Kubernetes deployment" width="920" height="460" loading="lazy" decoding="async"/>
       </figure>
 
-      <h2>Local brokers (development)</h2>
+      <nav class="article-toc" aria-label="On this page"><a href="#local-lab">Local lab</a><a href="#kubernetes-walkthrough">Kubernetes</a><a href="#published-artifacts">Images</a><a href="#ingress-tls">Ingress and TLS</a><a href="#operating">Operations</a></nav><h2 id="local-lab">Choose a deployment path</h2><ul><li><strong>Try the complete product:</strong> use the <a href="examples.html">MQTT lab</a>, which includes a test broker and builds from source.</li><li><strong>Use existing brokers:</strong> the repository’s <code>docker/docker-compose.stack.yml</code> starts backend, frontend, and MCP; it does not start a broker.</li><li><strong>Run on Kubernetes:</strong> use the single-replica Helm walkthrough below. You need a cluster context, Helm, kubectl, a reachable broker, and a StorageClass for the example PVC.</li></ul>
+<h2 id="kubernetes-walkthrough">Kubernetes: install, connect, verify</h2><p>Commands run from a repository checkout. The example uses release name and namespace <code>eventore</code>, a Kafka backend, one replica, a PVC, and local port forwarding. Resource values are starting examples, not measured sizing recommendations. Confirm the registry images are available in your environment.</p><ol><li>Create the namespace and API-token secret.</li><li>Review the <a href="../examples/helm-single-replica.yaml" download>downloadable Helm values</a>; set your StorageClass or existing claim if the cluster has no default.</li><li>Render the manifests, install, and wait for both deployments.</li></ol><pre><code>kubectl create namespace eventore
+kubectl -n eventore create secret generic eventore-api --from-file=api-token=./api-token.txt
+helm template eventore ./deploy/helm/eventore -n eventore -f docs/examples/helm-single-replica.yaml
+helm upgrade --install eventore ./deploy/helm/eventore -n eventore -f docs/examples/helm-single-replica.yaml --wait --timeout 5m
+kubectl -n eventore rollout status deployment/eventore-backend
+kubectl -n eventore rollout status deployment/eventore-frontend</code></pre><p>Create <code>api-token.txt</code> beforehand with a strong token on a single line and no trailing newline; keep the file out of Git. Both the Secret and release must be in the same namespace.</p><pre><code># Example for a local port-forward; install from the repository root.
+eventore:
+  streamProviders: [KAFKA]
+  deploymentMode: DEV
+  security:
+    apiTokenExistingSecret: eventore-api
+    apiTokenSecretKey: api-token
+    allowedOrigins: "http://localhost:8088"
+  connections:
+    persistence:
+      enabled: true
+      volumeType: pvc
+      size: 1Gi
+backend:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+frontend:
+  replicaCount: 1
+  env:
+    apiBaseUrl: /api/v1
+    wsUrl: ws://localhost:8088/ws/stream
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+ingress:
+  enabled: false
+</code></pre><p>In one terminal, forward the frontend service:</p><pre><code>kubectl -n eventore port-forward service/eventore-frontend 8088:80</code></pre><p>Open <a href="http://localhost:8088">localhost:8088</a>, enter the token through <strong>Settings</strong>, and create a Kafka profile using a broker address reachable from the backend pod. The frontend proxies API and WebSocket requests to the backend.</p><p>In another terminal, forward the backend for a direct health check:</p><pre><code>kubectl -n eventore port-forward service/eventore-backend 8080:8080</code></pre><p>Then check readiness and effective configuration:</p><pre><code>curl http://localhost:8080/actuator/health/readiness
+curl http://localhost:8080/api/v1/config -H "Authorization: Bearer YOUR_TOKEN"</code></pre><p>Expected: readiness reports <code>UP</code>; config shows the requested mode and Kafka protocol. Validate a broker profile separately.</p>
+<h2 id="ingress-tls">Move from port forwarding to ingress</h2><p>Set the host and WebSocket URL together. These are supported chart keys:</p><pre><code>ingress:
+  enabled: true
+  className: nginx
+  host: eventore.example.com
+frontend:
+  env:
+    apiBaseUrl: /api/v1
+    wsUrl: wss://eventore.example.com/ws/stream
+eventore:
+  security:
+    allowedOrigins: "https://eventore.example.com"</code></pre><p>The chart routes <code>/api</code> and <code>/ws</code> to the backend and <code>/</code> to the frontend. The current ingress template does not render a <code>spec.tls</code> block. Configure TLS termination through your ingress platform or an explicitly managed ingress manifest; adding an unsupported <code>ingress.tls</code> value alone will not provision TLS. Verify WebSocket upgrades and idle timeouts with your controller.</p>
+<h2 id="operating">Persistence, upgrades, and recovery</h2><p>The chart-created PVC uses <code>ReadWriteOnce</code>. Keep the example at one backend replica. Increasing replicas is not a complete HA solution: subscriptions and validation history are process-local, and a shared file needs a compatible access mode and coordinated writers. Nginx affinity alone does not solve state sharing. Review your store and routing design before scaling out.</p><p>Back up connection data and keep the values file used for each release. Inspect release history before rollback:</p><pre><code>helm history eventore -n eventore
+helm upgrade eventore ./deploy/helm/eventore -n eventore -f docs/examples/helm-single-replica.yaml --wait --timeout 5m
+# Replace REVISION with the known-good revision from helm history:
+helm rollback eventore REVISION -n eventore --wait</code></pre><p>A Helm rollback changes workloads and configuration; it does not restore external broker data or undo messages published during operation. Pin image tags appropriate to your release policy. For a failed rollout, inspect pod events, logs, registry access, and PVC status using the <a href="troubleshooting.html#kubernetes">troubleshooting guide</a>.</p><h2>Local brokers (development)</h2>
       <pre><code>docker compose -f docker/docker-compose.brokers.yml up -d
 cd backend && mvn -pl eventore-server -am spring-boot:run -Dspring-boot.run.profiles=local
 cd frontend && npm install && npm run dev</code></pre>
@@ -175,7 +237,7 @@ docker build -f docker/Dockerfile.backend \
       </ul>
       <pre><code>helm install eventore ./deploy/helm/eventore \
   --set ingress.enabled=true \
-  --set ingress.hosts[0].host=eventore.example.com
+  --set ingress.host=eventore.example.com
 
 # Slim stack
 helm upgrade --install eventore ./deploy/helm/eventore \

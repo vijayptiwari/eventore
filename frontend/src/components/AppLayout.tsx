@@ -38,14 +38,14 @@ export default function AppLayout() {
             className="brand-logo-btn"
             onClick={() => setAboutOpen(true)}
             aria-haspopup="dialog"
-            title="About Eventore"
+            title="About EventOre"
           >
             <img
               className="brand-logo"
               src={logoLightSrc}
-              alt="Eventore — open about & links"
-              width={220}
-              height={44}
+              alt="EventOre — open about & links"
+              width={190}
+              height={40}
               decoding="async"
             />
           </button>

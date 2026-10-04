@@ -1,4 +1,4 @@
-# Eventore Wave 3 Epics
+# EventOre Wave 3 Epics
 
 **Status:** COMPLETE  
 **Source:** `docs/REQUIREMENTS.md` (post–Wave 2, REQ-50+)  

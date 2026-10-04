@@ -1,0 +1,4 @@
+{
+  "destination": "events/orders",
+  "payload": "{\"event\":\"order.created\",\"orderId\":\"demo-1001\",\"total\":49.95,\"currency\":\"USD\"}"
+}

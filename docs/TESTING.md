@@ -74,7 +74,7 @@ Routes are stubbed in `frontend/e2e/fixtures.ts` — no backend required. CI run
 # 1. Start Redpanda Kafka broker (or local Kafka on port 9092)
 docker compose -f docker/docker-compose.brokers.yml up -d redpanda
 
-# 2. Start Eventore backend
+# 2. Start EventOre backend
 cd backend && mvn package -DskipTests -pl eventore-server -am
 java -jar eventore-server/target/eventore-server-*.jar
 

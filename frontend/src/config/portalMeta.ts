@@ -1,7 +1,7 @@
 /** Shared portal branding — aligned with docs/seo/site.json */
 export const portalMeta = {
-  name: 'Eventore',
-  tagline: 'Multi-stream messaging console',
+  name: 'EventOre',
+  tagline: 'Follow the message. Find the answer.',
   description:
     'Unified open-source console for Kafka, MQTT, RabbitMQ, Pulsar, JMS, Kinesis, GCP Pub/Sub, and Azure Service Bus — live streaming, inspection, and admin in one UI.',
   versionLabel: 'Open source · modular control & data plane',

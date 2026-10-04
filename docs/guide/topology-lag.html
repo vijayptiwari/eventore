@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Partition Lag Heatmap &amp; Cluster Topology — Eventore</title>
+  <title>Partition Lag Heatmap &amp; Cluster Topology — EventOre</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Diagnose consumer bottlenecks and partition skews instantly with Eventore's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics."/>
+  <meta name="description" content="Diagnose consumer bottlenecks and partition skews instantly with EventOre's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="kafka consumer lag ui, partition lag heatmap, kafka cluster topology, kafka consumer group skew, under-replicated partitions, kafka broker health"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/topology-lag.html"/>
   <meta property="og:type" content="article"/>
-  <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Partition Lag Heatmap &amp; Cluster Topology — Eventore"/>
-  <meta property="og:description" content="Diagnose consumer bottlenecks and partition skews instantly with Eventore's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics."/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Partition Lag Heatmap &amp; Cluster Topology — EventOre"/>
+  <meta property="og:description" content="Diagnose consumer bottlenecks and partition skews instantly with EventOre's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/topology-lag.html"/>
-  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Partition Lag Heatmap &amp; Cluster Topology — Eventore"/>
-  <meta name="twitter:description" content="Diagnose consumer bottlenecks and partition skews instantly with Eventore's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics."/>
-  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:title" content="Partition Lag Heatmap &amp; Cluster Topology — EventOre"/>
+  <meta name="twitter:description" content="Diagnose consumer bottlenecks and partition skews instantly with EventOre's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Partition Lag Heatmap & Cluster Topology","item":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html#article","headline":"Partition Lag Heatmap & Cluster Topology — Eventore","description":"Diagnose consumer bottlenecks and partition skews instantly with Eventore's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics.","url":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Partition Lag Heatmap & Cluster Topology","item":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html#article","headline":"Partition Lag Heatmap & Cluster Topology — EventOre","description":"Diagnose consumer bottlenecks and partition skews instantly with EventOre's real-time Partition Lag Heatmap, cluster topology map, and broker health metrics.","url":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/topology-lag.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
   <!-- /eventore-seo -->
   <script>
 (function () {
@@ -56,17 +59,20 @@
 })();
   </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
-    <main>
+    <main id="main">
       <h1 class="page-title">Partition Lag Heatmap &amp; Cluster Topology</h1>
       <p class="page-subtitle">Real-time visual partition health, consumer group lag skew detection, and interactive broker topology maps for enterprise streaming clusters.</p>
 
       <div class="callout callout-info">
-        <strong>Monitoring Innovation (REQ-112):</strong> Instead of scrolling through text tables of hundreds of partition offsets, Eventore's visual lag heatmap provides an instant high-density matrix that flags struggling consumer instances in seconds.
+        <strong>Monitoring Innovation (REQ-112):</strong> Instead of scrolling through text tables of hundreds of partition offsets, EventOre's visual lag heatmap provides an instant high-density matrix that flags struggling consumer instances in seconds.
       </div>
 
       <h2 id="the-problem">The Problem with Traditional Lag Tables</h2>
@@ -80,7 +86,7 @@
 
       <h2 id="lag-heatmap">The Partition Lag Heatmap</h2>
       <p>
-        Eventore's <code>LagHeatmapView</code> groups partitions into compact visual severity tiles color-coded by lag thresholds:
+        EventOre's <code>LagHeatmapView</code> groups partitions into compact visual severity tiles color-coded by lag thresholds:
       </p>
       <ul>
         <li><span class="badge badge-success">Nominal (&lt; 100 msgs)</span>: Emerald green tiles indicating healthy consumers keeping up with real-time producer velocity.</li>
@@ -90,7 +96,7 @@
 
       <h2 id="skew-detection">Automated Partition Skew Detection</h2>
       <p>
-        Eventore automatically analyzes the standard deviation and max-to-median ratio across all partitions assigned to a consumer group. If a subset of partitions has significantly higher lag than others, Eventore raises an automatic <strong>Skew Warning</strong>:
+        EventOre automatically analyzes the standard deviation and max-to-median ratio across all partitions assigned to a consumer group. If a subset of partitions has significantly higher lag than others, EventOre raises an automatic <strong>Skew Warning</strong>:
       </p>
       <div class="callout callout-warn">
         <strong>Lag Skew Alert Detected:</strong> Partition 7 lag (38,410) is <strong>94x</strong> higher than median partition lag (408). Check consumer worker <code>order-service-pod-2</code> for thread stalls or poison pill processing errors.

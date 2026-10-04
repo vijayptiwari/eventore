@@ -44,6 +44,66 @@
       "type": 301
     },
     {
+      "source": "/guide/replication-bridging",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/replication-bridging/",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/data-masking",
+      "destination": "/guide/data-masking.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/data-masking/",
+      "destination": "/guide/data-masking.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/tracing",
+      "destination": "/guide/tracing.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/tracing/",
+      "destination": "/guide/tracing.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/topology-lag",
+      "destination": "/guide/topology-lag.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/topology-lag/",
+      "destination": "/guide/topology-lag.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/dlq",
+      "destination": "/guide/dlq.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/dlq/",
+      "destination": "/guide/dlq.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/connection-stores",
+      "destination": "/guide/connection-stores.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/connection-stores/",
+      "destination": "/guide/connection-stores.html",
+      "type": 301
+    },
+    {
       "source": "/guide/mcp",
       "destination": "/guide/mcp.html",
       "type": 301
@@ -204,6 +264,36 @@
       "type": 301
     },
     {
+      "source": "/guide/examples",
+      "destination": "/guide/examples.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/examples/",
+      "destination": "/guide/examples.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/user-guide",
+      "destination": "/guide/user-guide.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/user-guide/",
+      "destination": "/guide/user-guide.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/troubleshooting",
+      "destination": "/guide/troubleshooting.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/troubleshooting/",
+      "destination": "/guide/troubleshooting.html",
+      "type": 301
+    },
+    {
       "source": "/guide/developers",
       "destination": "/about.html#developer",
       "type": 301
@@ -271,96 +361,6 @@
     {
       "source": "/azure-service-bus",
       "destination": "/guide/azure-service-bus.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/replication-bridging",
-      "destination": "/guide/replication-bridging.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/replication-bridging/",
-      "destination": "/guide/replication-bridging.html",
-      "type": 301
-    },
-    {
-      "source": "/replication-bridging",
-      "destination": "/guide/replication-bridging.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/data-masking",
-      "destination": "/guide/data-masking.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/data-masking/",
-      "destination": "/guide/data-masking.html",
-      "type": 301
-    },
-    {
-      "source": "/data-masking",
-      "destination": "/guide/data-masking.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/tracing",
-      "destination": "/guide/tracing.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/tracing/",
-      "destination": "/guide/tracing.html",
-      "type": 301
-    },
-    {
-      "source": "/tracing",
-      "destination": "/guide/tracing.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/topology-lag",
-      "destination": "/guide/topology-lag.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/topology-lag/",
-      "destination": "/guide/topology-lag.html",
-      "type": 301
-    },
-    {
-      "source": "/topology-lag",
-      "destination": "/guide/topology-lag.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/dlq",
-      "destination": "/guide/dlq.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/dlq/",
-      "destination": "/guide/dlq.html",
-      "type": 301
-    },
-    {
-      "source": "/dlq",
-      "destination": "/guide/dlq.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/connection-stores",
-      "destination": "/guide/connection-stores.html",
-      "type": 301
-    },
-    {
-      "source": "/guide/connection-stores/",
-      "destination": "/guide/connection-stores.html",
-      "type": 301
-    },
-    {
-      "source": "/connection-stores",
-      "destination": "/guide/connection-stores.html",
       "type": 301
     }
   ]

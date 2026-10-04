@@ -19,6 +19,13 @@
     document.head.appendChild(css);
   }
 
+  if (!document.getElementById('eventore-brand-css')) {
+  var brand = document.createElement('link');
+  brand.id = 'eventore-brand-css';
+  brand.rel = 'stylesheet';
+  brand.href = asset('css/brand.css');
+  document.head.appendChild(brand);
+  }
   var icon = document.querySelector('link[rel="icon"]');
   if (icon) {
     var href = icon.getAttribute('href') || '';

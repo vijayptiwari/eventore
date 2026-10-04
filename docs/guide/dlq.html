@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive — Eventore</title>
+  <title>Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive — EventOre</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with Eventore's DLQ Redrive Engine."/>
+  <meta name="description" content="Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with EventOre's DLQ Redrive Engine."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="kafka dlq redrive, dead letter queue ui, rabbitmq dead letter exchange, message redrive engine, poison pill message remediation, kafka dlq inspector"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/dlq.html"/>
   <meta property="og:type" content="article"/>
-  <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive — Eventore"/>
-  <meta property="og:description" content="Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with Eventore's DLQ Redrive Engine."/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive — EventOre"/>
+  <meta property="og:description" content="Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with EventOre's DLQ Redrive Engine."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/dlq.html"/>
-  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive — Eventore"/>
-  <meta name="twitter:description" content="Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with Eventore's DLQ Redrive Engine."/>
-  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:title" content="Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive — EventOre"/>
+  <meta name="twitter:description" content="Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with EventOre's DLQ Redrive Engine."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/dlq.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Dead-Letter Queue (DLQ) Inspector & Message Redrive","item":"https://vijayptiwari.github.io/eventore/guide/dlq.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/dlq.html#article","headline":"Dead-Letter Queue (DLQ) Inspector & Message Redrive — Eventore","description":"Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with Eventore's DLQ Redrive Engine.","url":"https://vijayptiwari.github.io/eventore/guide/dlq.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/dlq.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/dlq.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Dead-Letter Queue (DLQ) Inspector & Message Redrive","item":"https://vijayptiwari.github.io/eventore/guide/dlq.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/dlq.html#article","headline":"Dead-Letter Queue (DLQ) Inspector & Message Redrive — EventOre","description":"Inspect poisoned streaming messages, debug stacktraces, edit payloads and headers in-place, and redrive messages back to production with EventOre's DLQ Redrive Engine.","url":"https://vijayptiwari.github.io/eventore/guide/dlq.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/dlq.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
   <!-- /eventore-seo -->
   <script>
 (function () {
@@ -56,17 +59,20 @@
 })();
   </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
-    <main>
+    <main id="main">
       <h1 class="page-title">Dead-Letter Queue (DLQ) Inspector &amp; Message Redrive</h1>
       <p class="page-subtitle">Isolate poisoned messages, analyze exception stacktraces, repair malformed JSON payloads in-place, and safely redrive records back to production queues.</p>
 
       <div class="callout callout-info">
-        <strong>Incident Remediation (REQ-108):</strong> Eventore eliminates custom redrive scripts and manual database updates by providing an interactive DLQ management suite with single-message replay, bulk redrive, and audit tracking.
+        <strong>Incident Remediation (REQ-108):</strong> EventOre eliminates custom redrive scripts and manual database updates by providing an interactive DLQ management suite with single-message replay, bulk redrive, and audit tracking.
       </div>
 
       <h2 id="why-dlq-management">The Operational Nightmare of DLQs</h2>
@@ -77,7 +83,7 @@
         Historically, operators had to write one-off Python or Bash scripts to fetch messages from the DLQ, edit the JSON payload to fix a missing attribute, and re-produce to the original topic. This workflow is error-prone and risks corrupting partition order or leaking unmasked PII.
       </p>
 
-      <h2 id="dlq-features">Eventore DLQ Suite Capabilities</h2>
+      <h2 id="dlq-features">EventOre DLQ Suite Capabilities</h2>
       <ul>
         <li><strong>Automatic DLQ Detection:</strong> Auto-discovers dead-letter topics and queues matching standard naming conventions (<code>*.dlq</code>, <code>*.deadletter</code>, <code>*-retry-exhausted</code>) or custom configured regex.</li>
         <li><strong>Exception Header Inspection:</strong> Decodes and displays error stacktraces typically stored in headers (e.g., <code>x-exception-message</code>, <code>x-death</code>, <code>x-exception-stacktrace</code>, or Spring Kafka <code>kafka_dlt-exception-message</code>).</li>
@@ -101,7 +107,7 @@ Content-Type: application/json
     "offset-49281": "{\"orderId\":\"ORD-101\",\"amount\":42.50,\"currency\":\"USD\"}"
   },
   "injectHeader": {
-    "X-Redrive-Origin": "Eventore-DLQ-Engine",
+    "X-Redrive-Origin": "EventOre-DLQ-Engine",
     "X-Redrive-Operator": "sre-oncall"
   },
   "rateLimitPerSecond": 100

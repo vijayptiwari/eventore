@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Examples &amp; MQTT Tutorial — EventOre</title>
+  <!-- eventore-seo -->
+  <meta name="description" content="Run a complete local MQTT lab with EventOre, sample connection and publish requests, Docker Compose files, and expected results."/>
+  <meta name="robots" content="index, follow, max-image-preview:large"/>
+  <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/examples.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Examples &amp; MQTT Tutorial — EventOre"/>
+  <meta property="og:description" content="Run a complete local MQTT lab with EventOre, sample connection and publish requests, Docker Compose files, and expected results."/>
+  <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/examples.html"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
+  <meta property="og:locale" content="en_US"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Examples &amp; MQTT Tutorial — EventOre"/>
+  <meta name="twitter:description" content="Run a complete local MQTT lab with EventOre, sample connection and publish requests, Docker Compose files, and expected results."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta name="twitter:site" content="@vijayptiwari"/>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/examples.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Examples & MQTT Tutorial","item":"https://vijayptiwari.github.io/eventore/guide/examples.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/examples.html#article","headline":"Examples & MQTT Tutorial — EventOre","description":"Run a complete local MQTT lab with EventOre, sample connection and publish requests, Docker Compose files, and expected results.","url":"https://vijayptiwari.github.io/eventore/guide/examples.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/examples.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <!-- /eventore-seo -->
+  <script>
+(function () {
+  var path = location.pathname.replace(/\\/g, '/');
+
+  function docsRoot(p) {
+    var guideRoot = p.match(/^(.*)\/guide(?:\/|$)/);
+    if (guideRoot) {
+      var prefix = guideRoot[1];
+      return (prefix ? prefix : '') + '/';
+    }
+    if (/\.[a-z0-9]+$/i.test(p)) {
+      return p.replace(/\/[^/]*$/, '/') || '/';
+    }
+    if (p.endsWith('/')) return p;
+    return p + '/';
+  }
+
+  window.__EVENTORE_BASE__ = docsRoot(path);
+
+  function loadScript(src, onload) {
+    var s = document.createElement('script');
+    s.src = window.__EVENTORE_BASE__ + String(src).replace(/^\//, '');
+    if (onload) s.onload = onload;
+    document.head.appendChild(s);
+  }
+
+  loadScript('js/base-path.js', function () {
+    loadScript('js/guide-init.js');
+  });
+})();
+  </script>
+  <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
+  <div class="guide-layout">
+    <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
+    <main id="main"><h1 class="page-title">Examples: your first message</h1><p class="page-subtitle">A complete local MQTT lab with a broker, EventOre, sample payloads, and API requests.</p><nav class="article-toc" aria-label="On this page"><a href="#launch">Launch</a><a href="#connect">Connect</a><a href="#message">Send a message</a><a href="#api">Use the API</a><a href="#cleanup">Clean up</a></nav><p>This tutorial runs on Docker with Compose and Git. It builds a MQTT-only backend from this checkout, starts Mosquitto, and serves the console on port 8088. The first build needs internet access and can take several minutes. Ports 8080 and 8088 must be available.</p><div class="callout">This is a local learning environment: API authentication and broker authentication are disabled. Host ports bind to loopback. Use the <a href="deployment.html#kubernetes-walkthrough">Kubernetes deployment walkthrough</a> for an authenticated setup.</div>
+<h2 id="launch">1. Start the lab</h2><pre><code>git clone https://github.com/vijayptiwari/eventore.git
+cd eventore
+docker compose -f docs/examples/mqtt-compose.yaml up -d --build
+docker compose -f docs/examples/mqtt-compose.yaml ps</code></pre><p>Open <a href="http://localhost:8088">http://localhost:8088</a>. The backend should become healthy. The exact lab files are <a href="../examples/mqtt-compose.yaml" download>mqtt-compose.yaml</a> and <a href="../examples/mosquitto.conf" download>mosquitto.conf</a>; keep them together under <code>docs/examples</code> in the checkout because the build paths are relative.</p><figure class="diagram guide-diagram"><img src="../assets/diagrams/deployment-routing.svg" alt="Browser connects to frontend, frontend proxies to backend, backend connects to Mosquitto" width="960" height="350" loading="lazy" decoding="async"/><figcaption>All three services share the Compose network. No host broker or cloud account is needed.</figcaption></figure>
+<h2 id="connect">2. Create the MQTT profile</h2><p>In <strong>Connections</strong>, enter these values and save the profile:</p><dl class="config-list"><dt>Name</dt><dd><code>local-mqtt</code></dd><dt>Protocol</dt><dd><code>MQTT</code></dd><dt>Broker URL</dt><dd><code>tcp://mosquitto:1883</code></dd><dt>Topic filter</dt><dd><code>events/#</code></dd><dt>Credentials</dt><dd>Leave empty for this local lab.</dd></dl><p>Validate the connection. Then open <strong>Live Stream</strong>, select <code>local-mqtt</code>, enter <code>events/orders</code>, and choose <strong>Add to side panel</strong>.</p>
+<h2 id="message">3. Send and inspect a message</h2><p>Wait for the stream to start. Paste this into the Publish field and select <strong>Publish</strong>:</p><pre><code>{"event":"order.created","orderId":"demo-1001","total":49.95,"currency":"USD"}</code></pre><p>Expected result: a publish acknowledgement, an increased message count, and a received payload containing <code>demo-1001</code>. MQTT live subscriptions do not replay earlier non-retained messages. If nothing arrives, publish another message after the stream has started.</p>
+<h2 id="api">4. Repeat with the REST API</h2><p>Run from the repository root. These examples use <code>curl</code>; in Windows PowerShell use <code>curl.exe</code>. If you created a profile in the UI, list it and reuse its <code>id</code>. Otherwise create it from the sample file:</p><pre><code>curl http://localhost:8080/api/v1/connections
+
+curl -X POST http://localhost:8080/api/v1/connections -H "Content-Type: application/json" --data-binary "@docs/examples/mqtt-connection.json"</code></pre><p>Copy the returned <code>id</code>. Replace <code>CONNECTION_ID</code> in each command below with that actual value:</p><pre><code>curl -X POST http://localhost:8080/api/v1/connections/CONNECTION_ID/validate
+
+curl -X POST http://localhost:8080/api/v1/connections/CONNECTION_ID/publish -H "Content-Type: application/json" --data-binary "@docs/examples/publish-order.json"</code></pre><p>Keep the UI stream running while publishing. The publish request uses a string <code>payload</code> containing JSON, not a nested JSON object:</p><pre><code>{
+  "destination": "events/orders",
+  "payload": "{\"event\":\"order.created\",\"orderId\":\"demo-1001\",\"total\":49.95,\"currency\":\"USD\"}"
+}
+</code></pre><p>Download <a href="../examples/mqtt-connection.json" download>connection JSON</a> and <a href="../examples/publish-order.json" download>publish JSON</a>. For an authenticated deployment, add <code>Authorization: Bearer YOUR_TOKEN</code> to API requests. See <a href="configuration.html#authentication">authentication</a>.</p>
+<h2 id="cleanup">5. Stop the lab</h2><pre><code>docker compose -f docs/examples/mqtt-compose.yaml down</code></pre><p>This removes the tutorial containers and network. Images remain cached. This lab does not enable durable connection persistence or broker message storage; recreate the profile after rebuilding the environment.</p><p>Next: <a href="user-guide.html">complete user guide</a> · <a href="kafka.html">Kafka setup</a> · <a href="troubleshooting.html">diagnose connection problems</a>.</p></main>
+  </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>

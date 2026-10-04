@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Field-Level Data Masking &amp; PII Redaction — Eventore</title>
+  <title>Field-Level Data Masking &amp; PII Redaction — EventOre</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Secure streaming data with Eventore's real-time PII redaction and field-level masking engine. Recursive Jackson DataMasker, regex rules, and JSONPath redaction."/>
+  <meta name="description" content="Configure EventOre field masking, test a sample payload with the preview API, and understand the supported settings and access limitations."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="pii data masking streaming, kafka data redaction, field level masking, regex pii redaction, jsonpath masking, gdpr event streaming compliance"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/data-masking.html"/>
   <meta property="og:type" content="article"/>
-  <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Field-Level Data Masking &amp; PII Redaction — Eventore"/>
-  <meta property="og:description" content="Secure streaming data with Eventore's real-time PII redaction and field-level masking engine. Recursive Jackson DataMasker, regex rules, and JSONPath redaction."/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Field-Level Data Masking &amp; PII Redaction — EventOre"/>
+  <meta property="og:description" content="Configure EventOre field masking, test a sample payload with the preview API, and understand the supported settings and access limitations."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/data-masking.html"/>
-  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Field-Level Data Masking &amp; PII Redaction — Eventore"/>
-  <meta name="twitter:description" content="Secure streaming data with Eventore's real-time PII redaction and field-level masking engine. Recursive Jackson DataMasker, regex rules, and JSONPath redaction."/>
-  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:title" content="Field-Level Data Masking &amp; PII Redaction — EventOre"/>
+  <meta name="twitter:description" content="Configure EventOre field masking, test a sample payload with the preview API, and understand the supported settings and access limitations."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/data-masking.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Field-Level Data Masking & PII Redaction","item":"https://vijayptiwari.github.io/eventore/guide/data-masking.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/data-masking.html#article","headline":"Field-Level Data Masking & PII Redaction — Eventore","description":"Secure streaming data with Eventore's real-time PII redaction and field-level masking engine. Recursive Jackson DataMasker, regex rules, and JSONPath redaction.","url":"https://vijayptiwari.github.io/eventore/guide/data-masking.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/data-masking.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/data-masking.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Field-Level Data Masking & PII Redaction","item":"https://vijayptiwari.github.io/eventore/guide/data-masking.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/data-masking.html#article","headline":"Field-Level Data Masking & PII Redaction — EventOre","description":"Configure EventOre field masking, test a sample payload with the preview API, and understand the supported settings and access limitations.","url":"https://vijayptiwari.github.io/eventore/guide/data-masking.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/data-masking.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
   <!-- /eventore-seo -->
   <script>
 (function () {
@@ -56,98 +59,23 @@
 })();
   </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav" aria-label="Guide sections"></nav></aside>
-    <main>
-      <h1 class="page-title">Field-Level Data Masking &amp; PII Redaction</h1>
-      <p class="page-subtitle">Real-time recursive JSON and regex data masking to protect sensitive customer data, credentials, and PII across live streams and message inspection.</p>
-
-      <div class="callout callout-info">
-        <strong>Privacy &amp; Compliance (REQ-105):</strong> Eventore inspects and masks streaming payloads in memory before rendering in the browser UI, recording to audit logs, or streaming via WebSocket. This ensures complete GDPR, HIPAA, and PCI-DSS compliance.
-      </div>
-
-      <h2 id="how-it-works">How Data Masking Works</h2>
-      <p>
-        Eventore incorporates a dedicated, zero-copy <code>DataMasker</code> service powered by Jackson AST recursive tree walking. When messages arrive from any broker (Kafka, RabbitMQ, MQTT, etc.), the payload is evaluated against active masking rules:
-      </p>
-      <ul>
-        <li><strong>Field Name Matches:</strong> Matches target JSON property names (e.g. <code>password</code>, <code>ssn</code>, <code>creditCard</code>, <code>apiKey</code>) case-insensitively across nested objects and arrays.</li>
-        <li><strong>JSONPath Selectors:</strong> Pinpoints deeply nested paths such as <code>$.customer.payment.card_number</code> or <code>$.billing.accounts[*].secret</code>.</li>
-        <li><strong>Regex Value Scanners:</strong> Scans string values and plain-text payloads for patterns such as credit card numbers (Luhn-compliant), email addresses, Social Security Numbers, and JWT tokens.</li>
-      </ul>
-
-      <h2 id="masking-strategies">Masking Strategies</h2>
-      <p>Eventore supports three configurable transformation strategies:</p>
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Strategy</th>
-              <th>Sample Input</th>
-              <th>Masked Output</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>REDACT</code></td>
-              <td><code>"secretToken": "xyz-12345"</code></td>
-              <td><code>"secretToken": "******"</code></td>
-              <td>Replaces the entire value with a fixed-length mask.</td>
-            </tr>
-            <tr>
-              <td><code>PARTIAL</code></td>
-              <td><code>"cardNumber": "4111222233334444"</code></td>
-              <td><code>"cardNumber": "4111********4444"</code></td>
-              <td>Preserves leading and trailing characters for debugging while concealing the middle.</td>
-            </tr>
-            <tr>
-              <td><code>HASH_SHA256</code></td>
-              <td><code>"userId": "user_9841"</code></td>
-              <td><code>"userId": "a7b3c8...e1"</code></td>
-              <td>Produces a deterministic salted SHA-256 hash to allow tracking events across partitions without revealing the identifier.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2 id="configuration">Configuring Masking Rules</h2>
-      <p>Rules can be specified globally in <code>application.yml</code> or configured per connection profile:</p>
-      <pre><code>eventore:
+    <main id="main"><h1 class="page-title">Data masking</h1><p class="page-subtitle">Configure the current server-side masking settings and verify the result with a sample payload.</p><h2 id="how-it-works">How it works</h2><p>EventOre’s masking service redacts recognized sensitive fields and value patterns. Default sensitive field names include password, token, authorization, cardNumber, and ssn. The default replacement is <code>[REDACTED]</code>. This changes the displayed or returned representation; it does not rewrite messages stored in a broker.</p><h2 id="configuration">Supported Spring configuration</h2><p>The current server binds these properties under <code>eventore.masking</code>:</p><pre><code>eventore:
   masking:
     enabled: true
-    default-strategy: REDACT
-    rules:
-      - name: "Credit Card Redaction"
-        strategy: PARTIAL
-        preserve-prefix: 4
-        preserve-suffix: 4
-        pattern: "^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})$"
-      - name: "Credential Fields"
-        strategy: REDACT
-        fields:
-          - "password"
-          - "apiKey"
-          - "client_secret"
-          - "token"
-          - "authorization"
-      - name: "Social Security Numbers"
-        strategy: REDACT
-        pattern: "^\\d{3}-\\d{2}-\\d{4}$"</code></pre>
-
-      <h2 id="live-streaming-impact">Live Streaming &amp; Inspection Safety</h2>
-      <p>
-        When operators view live messages in the <a href="streaming.html">Live Streaming Workspace</a> or execute point-in-time topic inspection, the data plane applies masking before transmitting frames over WebSocket. Operators without elevated security permissions never receive raw unmasked secrets on their client workstations.
-      </p>
-
-      <div class="btn-group">
-        <a class="btn btn-primary" href="streaming.html">Explore live streaming</a>
-        <a class="btn btn-outline" href="tracing.html">OpenTelemetry tracing &rarr;</a>
-      </div>
-    </main>
+    replacement: "[REDACTED]"
+    custom-fields:
+      - customerSecret
+      - internalToken
+    mask-values: true</code></pre><p><code>custom-fields</code> adds sensitive field-name patterns to the defaults. <code>mask-values</code> controls value-pattern detection. Configure this in Spring application configuration; the bundled Helm chart does not expose these masking fields as values. The current binding does not accept a <code>rules</code> list with <code>strategy</code> or <code>default-strategy</code>.</p><h2 id="masking-strategies">Verify an example</h2><p>Use the <a href="../examples/masking-preview.json" download>sample preview request</a> from the repository root. In PowerShell, use <code>curl.exe</code>. Add your Bearer header if API authentication is enabled.</p><pre><code>curl http://localhost:8080/api/v1/masking/config
+curl -X POST http://localhost:8080/api/v1/masking/preview -H "Content-Type: application/json" --data-binary "@docs/examples/masking-preview.json"</code></pre><p>With default masking enabled, the returned <code>masked</code> string should contain:</p><pre><code>{"orderId":"demo-1001","password":"[REDACTED]"}</code></pre><p>The preview response includes <code>original</code>, <code>masked</code>, and <code>wasMasked</code>. Use synthetic data when testing because the endpoint echoes the original input.</p><h2 id="live-streaming-impact">Limits and access behavior</h2><p>The masking service supports an explicit unmasked override on some call paths. Static API-token authentication is not a per-user permission system. Do not treat this feature as a guarantee that every client or endpoint can only access redacted data. Verify the specific streaming or inspection path you use, and apply broker permissions and API access controls separately.</p><p>Next: <a href="configuration.html">configuration reference</a> · <a href="streaming.html">live streaming</a> · <a href="examples.html">local lab</a>.</p></main>
   </div>
   <footer class="site-footer" id="site-footer"></footer>
 </body>

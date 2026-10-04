@@ -1,6 +1,6 @@
 # High Availability & Multi-Replica Guidance
 
-Eventore **0.1.x** supports **single-replica** backends by default. Multi-replica deploys require **PVC persistence** and **ingress session affinity** (Wave 3 Pattern B).
+EventOre **0.1.x** supports **single-replica** backends by default. Multi-replica deploys require **PVC persistence** and **ingress session affinity** (Wave 3 Pattern B).
 
 ## Current limitations
 

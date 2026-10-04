@@ -1,0 +1,9 @@
+{
+  "name": "local-mqtt",
+  "protocol": "MQTT",
+  "brokerUrl": "tcp://mosquitto:1883",
+  "properties": {
+    "topicFilter": "events/#"
+  },
+  "credentials": {}
+}

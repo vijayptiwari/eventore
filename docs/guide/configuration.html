@@ -3,26 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Configuration — Eventore</title>
+  <title>Configuration — EventOre</title>
   <!-- eventore-seo -->
-  <meta name="description" content="Configure Eventore with application.yml, environment variables, Helm values, Maven profiles, and ADMIN, DEV, or READONLY modes."/>
+  <meta name="description" content="Configure EventOre with application.yml, environment variables, Helm values, Maven profiles, and ADMIN, DEV, or READONLY modes."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
-  <meta name="keywords" content="eventore configuration, helm values, deployment modes readonly"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/configuration.html"/>
   <meta property="og:type" content="article"/>
-  <meta property="og:site_name" content="Eventore"/>
-  <meta property="og:title" content="Configuration — Eventore"/>
-  <meta property="og:description" content="Configure Eventore with application.yml, environment variables, Helm values, Maven profiles, and ADMIN, DEV, or READONLY modes."/>
+  <meta property="og:site_name" content="EventOre"/>
+  <meta property="og:title" content="Configuration — EventOre"/>
+  <meta property="og:description" content="Configure EventOre with application.yml, environment variables, Helm values, Maven profiles, and ADMIN, DEV, or READONLY modes."/>
   <meta property="og:url" content="https://vijayptiwari.github.io/eventore/guide/configuration.html"/>
-  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
-  <meta property="og:image:alt" content="Eventore — unified multi-stream messaging console"/>
+  <meta property="og:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:type" content="image/png"/>
+  <meta name="theme-color" content="#0c111b"/>
+  <meta property="og:image:alt" content="EventOre — unified multi-stream messaging console"/>
   <meta property="og:locale" content="en_US"/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Configuration — Eventore"/>
-  <meta name="twitter:description" content="Configure Eventore with application.yml, environment variables, Helm values, Maven profiles, and ADMIN, DEV, or READONLY modes."/>
-  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.svg"/>
+  <meta name="twitter:title" content="Configuration — EventOre"/>
+  <meta name="twitter:description" content="Configure EventOre with application.yml, environment variables, Helm values, Maven profiles, and ADMIN, DEV, or READONLY modes."/>
+  <meta name="twitter:image" content="https://vijayptiwari.github.io/eventore/assets/og-card.png"/>
   <meta name="twitter:site" content="@vijayptiwari"/>
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/configuration.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/index.html"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Configuration","item":"https://vijayptiwari.github.io/eventore/guide/configuration.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/configuration.html#article","headline":"Configuration — Eventore","description":"Configure Eventore with application.yml, environment variables, Helm values, Maven profiles, and ADMIN, DEV, or READONLY modes.","url":"https://vijayptiwari.github.io/eventore/guide/configuration.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/configuration.html","publisher":{"@type":"Organization","name":"Eventore"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","@id":"https://vijayptiwari.github.io/eventore/guide/configuration.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vijayptiwari.github.io/eventore/"},{"@type":"ListItem","position":2,"name":"Documentation","item":"https://vijayptiwari.github.io/eventore/guide/index.html"},{"@type":"ListItem","position":3,"name":"Configuration","item":"https://vijayptiwari.github.io/eventore/guide/configuration.html"}]},{"@type":"TechArticle","@id":"https://vijayptiwari.github.io/eventore/guide/configuration.html#article","headline":"Configuration — EventOre","description":"Configure EventOre with application.yml, environment variables, Helm values, Maven profiles, and ADMIN, DEV, or READONLY modes.","url":"https://vijayptiwari.github.io/eventore/guide/configuration.html","mainEntityOfPage":"https://vijayptiwari.github.io/eventore/guide/configuration.html","publisher":{"@type":"Organization","name":"EventOre"},"author":{"@type":"Person","name":"Vijay Prakash Tiwari"}}]}</script>
   <!-- /eventore-seo -->
   <script>
 (function () {
@@ -56,12 +59,15 @@
 })();
   </script>
   <link rel="icon" href="../assets/logo-mark.svg" type="image/svg+xml"/>
+<link id="eventore-site-css" rel="stylesheet" href="../css/site.css"/>
+<link id="eventore-brand-css" rel="stylesheet" href="../css/brand.css"/>
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
+<a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="site-header"><div class="site-header-inner"><a class="site-logo" href="../index.html" aria-label="EventOre home"><img src="../assets/logo-light.svg" alt="EventOre" width="190" height="40"/></a><nav class="site-nav" aria-label="Primary"><a href="../product.html">Product</a><a href="../guide/index.html">Documentation</a><a href="../about.html">About</a><a href="https://github.com/vijayptiwari/eventore">GitHub</a><a class="site-nav-cta" href="../guide/getting-started.html">Get started</a></nav></div></header>
   <div class="guide-layout">
     <aside class="guide-sidebar"><nav id="guide-sidebar-nav"></nav></aside>
-    <main>
+    <main id="main">
       <h1 class="page-title">Configuration</h1>
       <p class="page-subtitle">application.yml, environment variables, Helm values, Maven profiles, and deployment modes.</p>
 
@@ -83,7 +89,7 @@
       - KINESIS
     max-publish-bytes: 65536</code></pre>
 
-      <h2>Deployment modes</h2>
+      <figure class="diagram guide-diagram"><img src="../assets/diagrams/configuration-layers.svg" alt="Build, deployment, and connection configuration are separate layers" width="960" height="350" loading="lazy" decoding="async"/><figcaption>Helm values configure the deployment. Broker credentials belong to connection profiles.</figcaption></figure><h2>Deployment modes</h2>
       <table>
         <thead><tr><th>Mode</th><th>Connections</th><th>Subscribe / live</th><th>Publish</th><th>Broker admin</th></tr></thead>
         <tbody>
@@ -101,7 +107,7 @@ EVENTORE_ENABLED_PROTOCOLS=KAFKA,KINESIS
 
 # Spring
 eventore.enabled-protocols=KAFKA,KINESIS</code></pre>
-      <p>Valid values: <code>KAFKA</code>, <code>PULSAR</code>, <code>RABBITMQ</code>, <code>MQTT</code>, <code>JMS</code>, <code>KINESIS</code>, <code>GCP_PUBSUB</code>, <code>AZURE_SERVICEBUS</code>.</p>
+      <p>Valid values: <code>KAFKA</code>, <code>PULSAR</code>, <code>RABBITMQ</code>, <code>MQTT</code>, <code>JMS</code>, <code>KINESIS</code>, <code>GCP_PUBSUB</code>, <code>AZURE_SERVICE_BUS</code>.</p>
 
       <h2>Maven profiles (build time)</h2>
       <table>
@@ -157,7 +163,17 @@ DELETE /api/v1/control/providers/MQTT/register</code></pre>
       <pre><code>GET /api/v1/openapi/catalog</code></pre>
       <p>Per-stream YAML is served under <code>/openapi/streams/{id}-api.yaml</code> when that provider is registered. Streams include <strong>core</strong>, <strong>inspect</strong>, <strong>diagnostics</strong>, <strong>kafka</strong>, and <strong>kinesis</strong>.</p>
 
-      <h2>Diagnostics API</h2>
+      <h2 id="reference">Runtime configuration reference</h2><p>Defaults below come from <code>EventoreProperties</code> and <code>application.yml</code>. Helm uses camelCase values and renders Spring’s kebab-case property names into <code>SPRING_APPLICATION_JSON</code>.</p><dl class="config-list"><dt><code>eventore.deployment-mode</code> · DEV</dt><dd>Sets allowed operations. Helm: <code>eventore.deploymentMode</code>.</dd><dt><code>eventore.enabled-protocols</code> · empty</dt><dd>An empty value selects modules on the classpath. Helm derives this from <code>eventore.streamProviders</code>, whose chart default is <code>[KAFKA]</code>.</dd><dt><code>eventore.subscriptions.max-concurrent</code> · 50</dt><dd>Concurrent subscription limit. Helm: <code>eventore.subscriptions.maxConcurrent</code>.</dd><dt><code>eventore.subscriptions.queue-capacity</code> · 500</dt><dd>Per-subscription buffering capacity. Helm: <code>eventore.subscriptions.queueCapacity</code>. This is not durable broker storage.</dd><dt><code>eventore.dev.max-publish-bytes</code> · 1048576</dt><dd>Dev-mode payload size limit (1 MiB). Helm: <code>eventore.dev.maxPublishBytes</code>.</dd><dt><code>eventore.max-publish-bytes</code> · 10485760</dt><dd>General publish size limit (10 MiB). The bundled chart does not expose a separate value for this property.</dd><dt><code>eventore.connections.persistence.enabled</code> · false</dt><dd>Enable durable profile storage explicitly. Helm’s file path defaults to <code>/data/connections.json</code>.</dd><dt><code>eventore.security.api-token</code> · empty</dt><dd>Empty disables static token authentication. Use a nonempty secret for authenticated deployments.</dd><dt><code>eventore.security.allowed-origins</code> · *</dt><dd>Comma-separated browser origins used for CORS and WebSocket checks. Helm: <code>eventore.security.allowedOrigins</code>.</dd></dl>
+<h2 id="authentication">Authentication and browser configuration</h2><p>The API accepts <code>Authorization: Bearer TOKEN</code> or <code>X-API-Key</code>. The token is shared API authentication, not per-user identity or role-based authorization. Broker credentials are still required in each profile.</p><pre><code>curl http://localhost:8080/api/v1/config -H "Authorization: Bearer YOUR_TOKEN"</code></pre><p>In the console, use <strong>Settings</strong> to enter the token. Avoid embedding it in static frontend configuration. For Helm, reference an existing Kubernetes Secret with <code>eventore.security.apiTokenExistingSecret</code>; see the <a href="deployment.html#kubernetes-walkthrough">deployment example</a>.</p><p>Docker frontend runtime variables are <code>EVENTORE_API_BASE_URL</code> and <code>EVENTORE_WS_URL</code>. Helm equivalents are <code>frontend.env.apiBaseUrl</code> and <code>frontend.env.wsUrl</code>. The default Helm WebSocket URL is <code>wss://[ingress.host]/ws/stream</code>; override it when using an HTTP port-forward.</p>
+<h2 id="spring-file">Run a JAR with explicit Spring configuration</h2><p>Save a dedicated configuration file rather than assuming a Helm values file can be read by Spring:</p><pre><code>eventore:
+  deployment-mode: DEV
+  enabled-protocols: MQTT
+  subscriptions:
+    max-concurrent: 10
+    queue-capacity: 200
+  security:
+    api-token: ${EVENTORE_SECURITY_API_TOKEN}
+    allowed-origins: "http://localhost:5173"</code></pre><p>Set <code>EVENTORE_SECURITY_API_TOKEN</code> in the process environment, then pass the file location when starting the built JAR:</p><pre><code>java -jar backend/eventore-server/target/eventore-server-0.1.0-SNAPSHOT.jar --spring.config.additional-location=file:./eventore-local.yml</code></pre><p>Restart the backend after changing deployment configuration. Verify the effective mode and protocol list with <code>GET /api/v1/config</code>. Changing a connection profile is a separate operation.</p><h2>Diagnostics API</h2>
       <pre><code>GET /api/v1/diagnostics/subscriptions</code></pre>
       <p>Subscription health for the dashboard; requires API token when <code>eventore.security.api-token</code> is set. Documented in <code>diagnostics-api.yaml</code>.</p>
 
