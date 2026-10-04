@@ -24,6 +24,8 @@ services:
     ports: ['127.0.0.1:8080:8080']
     environment:
       SPRING_APPLICATION_JSON: '{"eventore":{"deployment-mode":"DEV","enabled-protocols":"KAFKA,RABBITMQ"}}'
+      LAB_RABBITMQ_USER: eventore
+      LAB_RABBITMQ_PASSWORD: eventore
     depends_on:
       kafka: {condition: service_healthy}
       rabbitmq: {condition: service_healthy}

@@ -11,7 +11,7 @@ async function request(url, method = 'GET', data, headers = {}) {
 }
 await request(rabbit, 'PUT', { durable: true }, rabbitHeaders);
 const source = await request(api + '/connections', 'POST', { name: 'lab-kafka', protocol: 'KAFKA', brokerUrl: 'kafka:9092' });
-const target = await request(api + '/connections', 'POST', { name: 'lab-rabbitmq', protocol: 'RABBITMQ', brokerUrl: 'amqp://rabbitmq:5672', credentials: { username: 'eventore', password: 'eventore' } });
+const target = await request(api + '/connections', 'POST', { name: 'lab-rabbitmq', protocol: 'RABBITMQ', brokerUrl: 'amqp://rabbitmq:5672', credentials: { username: 'env:LAB_RABBITMQ_USER', password: 'env:LAB_RABBITMQ_PASSWORD' } });
 for (const [status, expected] of [['CONFIRMED', true], ['PENDING', false]]) {
   const result = await request(api + '/bridges/test', 'POST', { payload: JSON.stringify({ status }), headers: {}, payloadFilter: 'CONFIRMED', headerTransform: { 'x-origin': 'eventore-lab' }, loopPrevention: true });
   assert.equal(result.passedFilter, expected);

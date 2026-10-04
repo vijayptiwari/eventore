@@ -8,6 +8,7 @@
   <meta name="description" content="Run a local Kafka-to-RabbitMQ bridge with Docker Compose. Create connections, filter orders, verify delivery, and troubleshoot EventOre replication."/>
   <meta name="robots" content="index, follow, max-image-preview:large"/>
   <link rel="canonical" href="https://vijayptiwari.github.io/eventore/guide/kafka-rabbitmq-tutorial.html"/>
+  <link rel="sitemap" type="application/xml" href="https://vijayptiwari.github.io/eventore/sitemap.xml"/>
   <meta property="og:type" content="article"/>
   <meta property="og:site_name" content="EventOre"/>
   <meta property="og:title" content="Kafka to RabbitMQ Bridge Tutorial — EventOre"/>
@@ -75,7 +76,7 @@ curl -u eventore:eventore -X PUT http://localhost:15672/api/queues/%2F/warehouse
   -d '{"name":"lab-kafka","protocol":"KAFKA","brokerUrl":"kafka:9092"}'
 curl -X POST http://localhost:8080/api/v1/connections \
   -H "Content-Type: application/json" \
-  -d '{"name":"lab-rabbitmq","protocol":"RABBITMQ","brokerUrl":"amqp://rabbitmq:5672","credentials":{"username":"eventore","password":"eventore"}}'</code></pre><p>Copy each response's <code>id</code>. Replace <code>SOURCE_ID</code> and <code>TARGET_ID</code> below. Container connections use broker service names; <code>localhost</code> inside EventOre would point back to its own container.</p><h2 id="bridge">3. Start the bridge</h2><pre><code>curl -X POST http://localhost:8080/api/v1/bridges \
+  -d '{"name":"lab-rabbitmq","protocol":"RABBITMQ","brokerUrl":"amqp://rabbitmq:5672","credentials":{"username":"env:LAB_RABBITMQ_USER","password":"env:LAB_RABBITMQ_PASSWORD"}}'</code></pre><p>The connection stores environment-variable references. The Compose file supplies those variables to the backend; do not replace the password reference with plaintext.</p><p>Copy each response's <code>id</code>. Replace <code>SOURCE_ID</code> and <code>TARGET_ID</code> below. Container connections use broker service names; <code>localhost</code> inside EventOre would point back to its own container.</p><h2 id="bridge">3. Start the bridge</h2><pre><code>curl -X POST http://localhost:8080/api/v1/bridges \
   -H "Content-Type: application/json" \
   -d '{"name":"confirmed-orders","sourceConnectionId":"SOURCE_ID","sourceDestination":"orders","targetConnectionId":"TARGET_ID","targetDestination":"warehouse.orders","payloadFilter":"CONFIRMED","headerTransform":{"x-origin":"eventore-lab"},"loopPrevention":true,"autoStart":true}'</code></pre><p>Save the returned bridge <code>id</code>. Confirm <code>stats.state</code> is <code>RUNNING</code>. Allow the Kafka consumer to initialize before publishing; this demonstration does not backfill historical records.</p><h2 id="verify">4. Publish and verify delivery</h2><pre><code>curl -X POST http://localhost:8080/api/v1/connections/SOURCE_ID/publish \
   -H "Content-Type: application/json" \

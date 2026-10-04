@@ -49,13 +49,15 @@ function homeJsonLd() {
       operatingSystem: 'Linux, Windows, macOS, Docker, Kubernetes',
       description:
         'Open-source multi-protocol streaming console with cross-broker replication, PII data masking, OpenTelemetry tracing, DLQ redrive, partition lag heatmap, and MCP AI agent tools.',
-      url: site.repoUrl,
-      downloadUrl: site.repoUrl,
+      url: siteUrl,
+      sameAs: site.repoUrl,
+      downloadUrl: publishedRelease?.url || site.repoUrl + '/releases',
+      releaseNotes: absUrl('releases.html'),
       softwareHelp: absUrl('guide/index.html'),
       featureList: [
         'Multi-protocol federated support for 8 streaming systems (Kafka, RabbitMQ, Pulsar, MQTT, JMS, AWS Kinesis, GCP Pub/Sub, Azure Service Bus)',
         'Cross-Broker Data Replication & Bridging with loop prevention and dry-run tester',
-        'Field-Level Data Masking & PII Redaction with Jackson AST and regex scanners',
+        'Configurable field masking and payload preview tools',
         'OpenTelemetry Distributed Tracing with W3C TraceContext and APM deep links',
         'Visual Partition Lag Heatmap and automated lag skew detection',
         'Dead-Letter Queue (DLQ) Inspector and rate-limited message redrive engine',
@@ -142,6 +144,7 @@ function buildSeoBlock(page) {
   );
   lines.push(
     '  <link rel="canonical" href="' + escapeHtml(canonical) + '"/>',
+    '  <link rel="sitemap" type="application/xml" href="' + escapeHtml(absUrl('sitemap.xml')) + '"/>',
     '  <meta property="og:type" content="' + escapeHtml(page.ogType || 'article') + '"/>',
     '  <meta property="og:site_name" content="' + escapeHtml(site.siteName) + '"/>',
     '  <meta property="og:title" content="' + escapeHtml(page.title) + '"/>',
