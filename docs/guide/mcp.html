@@ -152,6 +152,7 @@
           <tr><td><code>eventore_inspect_consumer_groups</code></td><td>Consumer groups or Pulsar subscriptions</td></tr>
           <tr><td><code>eventore_inspect_lag</code></td><td>Consumer lag (Kafka)</td></tr>
           <tr><td><code>eventore_inspect_search</code></td><td>Topic message search / sample</td></tr>
+          <tr><td><code>eventore_triage_incident</code></td><td>Autonomous incident triage engine (cluster connectivity, partition lag skew, DLQ poison pills &amp; stack traces)</td></tr>
           <tr><td><code>eventore_kafka_publish</code></td><td>Kafka produce with key/partition headers</td></tr>
           <tr><td><code>eventore_kafka_create_topic</code></td><td>Create topic (ADMIN)</td></tr>
           <tr><td><code>eventore_kafka_delete_topic</code></td><td>Delete topic (ADMIN)</td></tr>
@@ -178,6 +179,7 @@
         <li><code>eventore_discover</code> — loads config + control plane + architecture map</li>
         <li><code>eventore_probe_broker</code> — ephemeral probe via <code>eventore_quick_probe</code></li>
         <li><code>eventore_kafka_inspection</code> — cluster → groups → lag → search sequence</li>
+        <li><code>eventore_incident_triage</code> — autonomous multi-fault domain incident triage and root-cause analysis playbook</li>
         <li><code>eventore_control_plane_ops</code> — register / deregister / status checklist</li>
       </ul>
 

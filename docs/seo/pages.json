@@ -272,7 +272,7 @@
       "file": "roadmap.html",
       "path": "roadmap.html",
       "title": "EventOre Roadmap — Upcoming Features",
-      "description": "Explore proposed and deferred EventOre features, including rate limiting, deeper protocol inspection, enterprise identity, and distributed subscriptions.",
+      "description": "Explore planned and proposed EventOre features, including Schema Registry Avro/Protobuf integration, rate limiting, cloud CI emulators, and deeper protocol inspection.",
       "ogType": "website"
     },
     {

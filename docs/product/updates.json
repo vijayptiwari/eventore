@@ -1,9 +1,40 @@
 {
-  "reviewedOn": "2026-10-04",
+  "reviewedOn": "2026-10-06",
   "manifestVersion": "0.2.1",
   "releaseStatus": "Release preparation",
   "source": "https://github.com/vijayptiwari/eventore",
   "milestones": [
+    {
+      "id": "enterprise-ha-triage",
+      "date": "2026-10-06",
+      "title": "Enterprise Identity, Distributed Fan-Out & Autonomous Triage",
+      "features": [
+        [
+          "Enterprise identity & RBAC",
+          "OIDC, OAuth2, and JWT Bearer token authentication with claim mapping to PlatformAdmin, WorkspaceAdmin, Operator, and Viewer roles.",
+          "b387f2a",
+          "guide/configuration.html"
+        ],
+        [
+          "Multi-tenant workspaces",
+          "Workspace isolation with tenant boundaries, dedicated header switcher dropdown, and dynamic workspace CRUD.",
+          "b387f2a",
+          "guide/configuration.html"
+        ],
+        [
+          "Distributed subscription fan-out bus",
+          "High-availability stateless multi-replica clustering via Redis Pub/Sub and Local SPI (Pattern C), enabling seamless cross-pod stream distribution.",
+          "b387f2a",
+          "guide/deployment.html"
+        ],
+        [
+          "Autonomous incident triage MCP tool",
+          "Compound eventore_triage_incident tool and eventore_incident_triage prompt executing multi-domain diagnostics across cluster health, consumer lag skew, and DLQ poison pills.",
+          "b387f2a",
+          "guide/mcp.html"
+        ]
+      ]
+    },
     {
       "id": "bridges-storage",
       "date": "2026-10-04",
@@ -101,6 +132,13 @@
   ],
   "roadmap": [
     {
+      "title": "Schema Registry: Confluent & AWS Glue integration",
+      "status": "Planned",
+      "reference": "REQ-106",
+      "description": "Native wire-format deserialization for Confluent Schema Registry and AWS Glue Schema Registry across Kafka and Pulsar streams.",
+      "source": "docs/REQUIREMENTS.md"
+    },
+    {
       "title": "Per-connection rate limiting",
       "status": "Proposed",
       "reference": "REQ-69",
@@ -113,20 +151,6 @@
       "reference": "REQ-65",
       "description": "Explore richer queue and retained-message inspection while respecting each broker’s semantics and avoiding destructive reads.",
       "source": "docs/REQUIREMENTS.md"
-    },
-    {
-      "title": "Enterprise identity",
-      "status": "Deferred",
-      "reference": "REQ-72",
-      "description": "OIDC/SAML integration is deferred. The current authentication model uses a shared API token rather than per-user enterprise sign-in.",
-      "source": "docs/REQUIREMENTS.md"
-    },
-    {
-      "title": "Distributed subscription state",
-      "status": "Future design",
-      "reference": "HA Pattern C",
-      "description": "Shared subscription routing and cross-pod delivery remain open architecture work. PVCs and sticky sessions alone do not provide full active-active operation.",
-      "source": "docs/HA.md"
     },
     {
       "title": "Live cloud-broker CI coverage",

@@ -3,9 +3,12 @@ EventOre 0.2.1 is the first unified versioned distribution of the console, backe
 ### Included
 
 - Eight messaging providers, live streaming, inspection, and deployment modes.
+- Enterprise identity (OIDC / OAuth2 / JWT Bearer token validation) and multi-tenant workspaces with claim-based RBAC (`PLATFORM_ADMIN`, `WORKSPACE_ADMIN`, `OPERATOR`, `VIEWER`).
+- Distributed subscription registry and cluster message fan-out bus (`SubscriptionDistributionBus` SPI: `LOCAL` and `REDIS` pub/sub) for stateless horizontal multi-replica scaling.
+- Autonomous incident triage MCP tool (`eventore_triage_incident`) and prompt playbook (`eventore_incident_triage`) for automated multi-domain root-cause analysis.
 - Kafka schema workflows, dead-letter inspection, redrive, and replay tools.
-- Message masking, trace-context integration, consumer lag visualization, and bridging.
-- Connection persistence options and expanded user, configuration, deployment, and troubleshooting guides.
+- Message masking, trace-context integration, consumer lag visualization, and cross-broker bridging.
+- Externalized connection persistence options (file, JDBC with optimistic locking, Kubernetes CRD) and expanded user, configuration, deployment, and troubleshooting guides.
 - Corrected provider bundle packaging, with CI verifying included providers and their administration delegates for all ten published variants.
 
 ### Install
@@ -27,7 +30,7 @@ Provider-qualified backend tags prevent different provider bundles from overwrit
 
 ### Adoption notes
 
-Back up connection profiles and review deployment values before upgrading. Provider capabilities differ; static API-token authentication is not enterprise identity. Subscriptions remain process-local, so multiple replicas alone do not provide full active-active operation. Cloud SDK paths are covered by mocked tests; validate cloud deployments in your own environment.
+Back up connection profiles and review deployment values before upgrading. Provider capabilities differ; choose between static API-token authentication or enterprise OIDC/JWT Bearer tokens. For multi-replica Kubernetes clusters, enable Redis cluster fan-out mode (`eventore.cluster.mode: REDIS`) and externalized JDBC or CRD connection stores for stateless active-active scaling. Cloud SDK paths are covered by mocked tests; validate cloud deployments in your own environment.
 
 This release is published only after backend, broker integration, frontend, live browser, MCP, version-consistency, image, and chart publishing jobs succeed.
 
