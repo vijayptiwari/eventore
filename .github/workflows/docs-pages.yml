@@ -45,6 +45,7 @@ jobs:
 
       - name: Validate documentation links and SEO
         run: |
+          node --test docs/scripts/build-product.test.mjs
           node docs/scripts/check-links.mjs
           node docs/scripts/check-seo.mjs
 

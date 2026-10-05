@@ -105,6 +105,35 @@ class JwtTokenValidatorTest {
     }
 
     @Test
+    void rejectsMissingVerificationSecret() throws Exception {
+        String jwt = createSignedJwt("{\"exp\":4102444800}", SECRET);
+        assertThatThrownBy(() -> validator.validateToken(jwt, "", null, null))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("secret is required");
+    }
+
+    @Test
+    void rejectsMissingRequiredClaims() throws Exception {
+        String jwt = createSignedJwt("{\"exp\":4102444800}", SECRET);
+        assertThatThrownBy(() -> validator.validateToken(jwt, SECRET, "issuer", null))
+                .hasMessageContaining("issuer mismatch");
+        assertThatThrownBy(() -> validator.validateToken(jwt, SECRET, null, "audience"))
+                .hasMessageContaining("audience mismatch");
+        String noExpiry = createSignedJwt("{\"sub\":\"alice\"}", SECRET);
+        assertThatThrownBy(() -> validator.validateToken(noExpiry, SECRET, null, null))
+                .hasMessageContaining("expiration is required");
+    }
+
+    @Test
+    void rejectsUnsupportedAlgorithm() throws Exception {
+        String jwt = createSignedJwt("{\"exp\":4102444800}", SECRET);
+        String header = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("{\"alg\":\"none\"}".getBytes(StandardCharsets.UTF_8));
+        String forged = header + jwt.substring(jwt.indexOf('.'));
+        assertThatThrownBy(() -> validator.validateToken(forged, SECRET, null, null))
+                .hasMessageContaining("Only HS256");
+    }
+
+    @Test
     void rejectsIssuerMismatch() throws Exception {
         long exp = Instant.now().plusSeconds(3600).getEpochSecond();
         String payload = "{\"sub\":\"usr_iss\",\"iss\":\"https://other.com\",\"exp\":" + exp + "}";

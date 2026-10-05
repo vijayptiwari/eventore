@@ -1,39 +1,40 @@
 {
   "reviewedOn": "2026-10-06",
   "manifestVersion": "0.3.0",
-  "releaseStatus": "Release preparation",
+  "releaseStatus": "0.3.0 in development",
   "source": "https://github.com/vijayptiwari/eventore",
   "milestones": [
     {
       "id": "enterprise-ha-triage",
       "date": "2026-10-06",
-      "title": "Enterprise Identity, Distributed Fan-Out & Autonomous Triage",
+      "title": "Identity, workspace and cluster foundations; incident triage preview",
       "features": [
         [
-          "Enterprise identity & RBAC",
-          "OIDC, OAuth2, and JWT Bearer token authentication with claim mapping to PlatformAdmin, WorkspaceAdmin, Operator, and Viewer roles.",
+          "HS256 JWT authentication foundation",
+          "Development implementation validates shared-secret JWTs and extracts identity claims. OIDC discovery, JWKS and enterprise sign-in are not implemented.",
           "b387f2a",
-          "guide/configuration.html"
+          "guide/configuration.html#authentication"
         ],
         [
-          "Multi-tenant workspaces",
-          "Workspace isolation with tenant boundaries, dedicated header switcher dropdown, and dynamic workspace CRUD.",
+          "Workspace catalog and selector",
+          "In-memory workspace metadata and a browser selector. Connections, bridges and streams are not isolated by workspace; this is not a tenant security boundary.",
           "b387f2a",
-          "guide/configuration.html"
+          "guide/configuration.html#workspaces"
         ],
         [
-          "Distributed subscription fan-out bus",
-          "High-availability stateless multi-replica clustering via Redis Pub/Sub and Local SPI (Pattern C), enabling seamless cross-pod stream distribution.",
+          "Local subscription distribution interface",
+          "Local fan-out and cluster status are implemented. The Redis class has no Redis transport or shared subscription registry; cross-pod delivery remains unfinished.",
           "b387f2a",
           "guide/deployment.html"
         ],
         [
-          "Autonomous incident triage MCP tool",
-          "Compound eventore_triage_incident tool and eventore_incident_triage prompt executing multi-domain diagnostics across cluster health, consumer lag skew, and DLQ poison pills.",
+          "Incident triage MCP preview",
+          "A compound diagnostic tool and prompt collect broker, lag and DLQ information using fixed heuristics. Unsupported or failed checks can be skipped; results do not establish root cause or complete health.",
           "b387f2a",
           "guide/mcp.html"
         ]
-      ]
+      ],
+      "releaseVersion": null
     },
     {
       "id": "bridges-storage",
@@ -52,7 +53,8 @@
           "affb02a",
           "guide/connection-stores.html"
         ]
-      ]
+      ],
+      "releaseVersion": "0.2.1"
     },
     {
       "id": "inspection-observability",
@@ -77,7 +79,8 @@
           "77a87c4",
           "guide/data-masking.html"
         ]
-      ]
+      ],
+      "releaseVersion": "0.2.1"
     },
     {
       "id": "recovery-schemas",
@@ -108,7 +111,8 @@
           "3ad4f74",
           "guide/kafka.html"
         ]
-      ]
+      ],
+      "releaseVersion": "0.2.1"
     },
     {
       "id": "contracts-testing",
@@ -127,17 +131,11 @@
           "61a157e",
           "guide/architecture.html"
         ]
-      ]
+      ],
+      "releaseVersion": "0.2.1"
     }
   ],
   "roadmap": [
-    {
-      "title": "Schema Registry: Confluent & AWS Glue integration",
-      "status": "Planned",
-      "reference": "REQ-106",
-      "description": "Native wire-format deserialization for Confluent Schema Registry and AWS Glue Schema Registry across Kafka and Pulsar streams.",
-      "source": "docs/REQUIREMENTS.md"
-    },
     {
       "title": "Per-connection rate limiting",
       "status": "Proposed",
@@ -151,6 +149,20 @@
       "reference": "REQ-65",
       "description": "Explore richer queue and retained-message inspection while respecting each broker’s semantics and avoiding destructive reads.",
       "source": "docs/REQUIREMENTS.md"
+    },
+    {
+      "title": "Enterprise identity",
+      "status": "In progress",
+      "reference": "REQ-72",
+      "description": "HS256 JWT and workspace metadata foundations exist in development. OIDC discovery/JWKS, enterprise sign-in and connection-level workspace authorization remain unfinished.",
+      "source": "docs/REQUIREMENTS.md"
+    },
+    {
+      "title": "Distributed subscription state",
+      "status": "Future design",
+      "reference": "HA Pattern C",
+      "description": "Shared subscription routing and cross-pod delivery remain open architecture work. PVCs and sticky sessions alone do not provide full active-active operation.",
+      "source": "docs/HA.md"
     },
     {
       "title": "Live cloud-broker CI coverage",

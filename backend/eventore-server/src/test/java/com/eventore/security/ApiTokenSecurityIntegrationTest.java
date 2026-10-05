@@ -69,7 +69,7 @@ class ApiTokenSecurityIntegrationTest {
     }
 
     @Test
-    void authMeAllowsValidJwtBearerToken() throws Exception {
+    void authMeRejectsForgedJwtInStaticTokenMode() throws Exception {
         long exp = java.time.Instant.now().plusSeconds(3600).getEpochSecond();
         String header = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString("{\"alg\":\"none\",\"typ\":\"JWT\"}".getBytes());
         String payload = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
@@ -78,9 +78,7 @@ class ApiTokenSecurityIntegrationTest {
         String jwt = header + "." + payload + "." + fakeSig;
 
         mockMvc.perform(get("/api/v1/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
-                .andExpect(status().isOk())
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.userId").value("usr-jwt-1"))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.isJwt").value(true));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

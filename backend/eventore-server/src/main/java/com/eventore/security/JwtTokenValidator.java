@@ -52,10 +52,18 @@ public class JwtTokenValidator {
             throw new IllegalArgumentException("Malformed JWT structure; expected 3 segments");
         }
 
-        // 1. Verify HMAC-SHA256 signature if secretKey configured
-        if (secretKey != null && !secretKey.isBlank()) {
-            verifySignature(parts[0], parts[1], parts[2], secretKey);
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new IllegalArgumentException("JWT signing secret is required");
         }
+        try {
+            JsonNode header = objectMapper.readTree(Base64.getUrlDecoder().decode(parts[0]));
+            if (!"HS256".equals(header.path("alg").asText())) {
+                throw new IllegalArgumentException("Only HS256 JWT signatures are supported");
+            }
+        } catch (java.io.IOException e) {
+            throw new IllegalArgumentException("Invalid JWT header", e);
+        }
+        verifySignature(parts[0], parts[1], parts[2], secretKey);
 
         // 2. Decode payload JSON
         JsonNode payload;
@@ -69,6 +77,9 @@ public class JwtTokenValidator {
         long nowEpochSec = Instant.now().getEpochSecond();
 
         // 3. Expiration validation (with 60-second clock skew allowance)
+        if (!payload.path("exp").isIntegralNumber() || payload.path("exp").asLong() <= 0) {
+            throw new IllegalArgumentException("JWT expiration is required");
+        }
         if (payload.has("exp")) {
             long exp = payload.get("exp").asLong();
             if (exp > 0 && exp + 60 < nowEpochSec) {
@@ -85,16 +96,16 @@ public class JwtTokenValidator {
         }
 
         // 5. Issuer check
-        if (expectedIssuer != null && !expectedIssuer.isBlank() && payload.has("iss")) {
-            String iss = payload.get("iss").asText();
+        if (expectedIssuer != null && !expectedIssuer.isBlank()) {
+            String iss = payload.path("iss").asText();
             if (!expectedIssuer.equals(iss)) {
                 throw new IllegalArgumentException("JWT issuer mismatch: expected '" + expectedIssuer + "', got '" + iss + "'");
             }
         }
 
         // 6. Audience check
-        if (expectedAudience != null && !expectedAudience.isBlank() && payload.has("aud")) {
-            JsonNode audNode = payload.get("aud");
+        if (expectedAudience != null && !expectedAudience.isBlank()) {
+            JsonNode audNode = payload.path("aud");
             boolean audMatch = false;
             if (audNode.isArray()) {
                 for (JsonNode item : audNode) {

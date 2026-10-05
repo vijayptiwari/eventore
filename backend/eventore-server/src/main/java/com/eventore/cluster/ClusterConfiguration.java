@@ -23,12 +23,7 @@ public class ClusterConfiguration {
             ObjectMapper objectMapper) {
         EventoreProperties.Cluster cluster = properties.getCluster();
         if (cluster.getMode() == EventoreProperties.Cluster.Mode.REDIS) {
-            log.info("Initializing Distributed Redis SubscriptionDistributionBus (node={}, channel={})",
-                    cluster.getNodeId(), cluster.getChannel());
-            return new RedisSubscriptionDistributionBus(
-                    cluster.getNodeId(),
-                    cluster.getChannel(),
-                    objectMapper);
+            throw new IllegalStateException("REDIS cluster mode is not implemented. Use LOCAL with a single backend replica.");
         }
 
         log.info("Initializing Local Standalone SubscriptionDistributionBus (node={})", cluster.getNodeId());

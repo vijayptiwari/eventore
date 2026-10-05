@@ -1,37 +1,24 @@
-EventOre 0.3.0 is a major feature release introducing enterprise identity, multi-tenant workspaces, distributed cluster streaming, and autonomous incident triage AI tooling.
+# EventOre 0.3.0 — release preparation
 
-### Included
+0.3.0 is the development target and is not yet published. Install the latest verified release, [0.2.1](https://github.com/vijayptiwari/eventore/releases/tag/v0.2.1), until a successful release pipeline publishes new artifacts.
 
-- Eight messaging providers, live streaming, inspection, and deployment modes.
-- Enterprise identity (OIDC / OAuth2 / JWT Bearer token validation) and multi-tenant workspaces with claim-based RBAC (`PLATFORM_ADMIN`, `WORKSPACE_ADMIN`, `OPERATOR`, `VIEWER`).
-- Distributed subscription registry and cluster message fan-out bus (`SubscriptionDistributionBus` SPI: `LOCAL` and `REDIS` pub/sub) for stateless horizontal multi-replica scaling.
-- Autonomous incident triage MCP tool (`eventore_triage_incident`) and prompt playbook (`eventore_incident_triage`) for automated multi-domain root-cause analysis.
-- Kafka schema workflows, dead-letter inspection, redrive, and replay tools.
-- Message masking, trace-context integration, consumer lag visualization, and cross-broker bridging.
-- Externalized connection persistence options (file, JDBC with optimistic locking, Kubernetes CRD) and expanded user, configuration, deployment, and troubleshooting guides.
-- Corrected provider bundle packaging, with CI verifying included providers and their administration delegates for all ten published variants.
+## Changes since 0.2.1
 
-### Install
+- HS256 JWT identity validation and claim extraction; authentication now requires signature verification and expiration, with configured issuer/audience checks.
+- In-memory workspace catalog and console selector.
+- Local subscription distribution interface and node status API.
+- MCP incident triage tool and prompt using broker, lag and DLQ diagnostics.
+- Replication routing and error handling fixes, empty-connection UX, schema and replay guides.
 
-```sh
-helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.3.0
-```
+## Implementation limits
 
-Review deployment values before exposing the installation: the default mode is Dev, API authentication is disabled until configured, and ingress requires environment-specific settings. The website's deployment guide provides an authenticated single-replica example.
+- JWT support uses a shared HS256 secret. OIDC discovery, JWKS, OAuth2 login and enterprise SSO are not implemented.
+- Workspaces are metadata, not tenant isolation. Broker operations do not enforce the extracted user roles or workspace selection.
+- The Redis bus is a scaffold without a network transport. Subscriptions remain process-local; use a single backend replica. Shared connection persistence does not supply active-active streaming.
+- Triage uses fixed heuristics and can omit failed or unsupported checks. It provides investigation hints, not autonomous remediation or a complete health verdict.
 
-### Versioned artifacts
+## Release status and versioning
 
-- Backend: `ghcr.io/vijayptiwari/eventore-backend:0.3.0-<provider>`; for example `0.3.0-kafka`, `0.3.0-mqtt`, `0.3.0-kafka-kinesis`, or `0.3.0-all`.
-- Frontend: `ghcr.io/vijayptiwari/eventore-frontend:0.3.0`.
-- MCP: `ghcr.io/vijayptiwari/eventore-mcp:0.3.0`.
-- Helm: `eventore` and `eventore-mcp`, version `0.3.0`. Chart archives and SHA-256 checksums are attached.
+The root VERSION file tracks the development target across backend, frontend, MCP, OpenAPI and Helm manifests. Published website metadata is synchronized separately from a GitHub Release with uploaded chart archives and SHA256SUMS. No 0.3.0 download or install target is advertised before publication.
 
-Provider-qualified backend tags prevent different provider bundles from overwriting one another. Chart image defaults follow the chart's application version. Development builds use separate Git-SHA image tags and prerelease chart versions.
-
-### Adoption notes
-
-Back up connection profiles and review deployment values before upgrading. Provider capabilities differ; choose between static API-token authentication or enterprise OIDC/JWT Bearer tokens. For multi-replica Kubernetes clusters, enable Redis cluster fan-out mode (`eventore.cluster.mode: REDIS`) and externalized JDBC or CRD connection stores for stateless active-active scaling. Cloud SDK paths are covered by mocked tests; validate cloud deployments in your own environment.
-
-This release is published only after backend, broker integration, frontend, live browser, MCP, version-consistency, image, and chart publishing jobs succeed.
-
-Version 0.2.0 was an unsuccessful release attempt and is not an adoption target. Its tag is retained for traceability; use 0.2.1.
+Before publishing, run backend, frontend, MCP, browser, version-consistency and packaging checks. Review the implementation limits above before adoption. Version 0.2.0 was an unsuccessful packaging attempt; 0.2.1 remains the published adoption target.

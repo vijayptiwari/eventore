@@ -49,29 +49,27 @@ public class ApiTokenFilter extends OncePerRequestFilter {
         try {
             String provided = extractToken(request);
             if (provided != null) {
-                // 1. Check if token is JWT format
-                if (jwtTokenValidator.isJwtFormat(provided)) {
+                String expected = properties.getSecurity().getApiToken();
+                if (!expected.isBlank() && constantTimeEquals(expected, provided)) {
+                    SecurityContextHolder.setPrincipal(UserPrincipal.staticTokenUser());
+                    chain.doFilter(request, response);
+                    return;
+                }
+                if (properties.getSecurity().isJwtEnabled() && jwtTokenValidator.isJwtFormat(provided)) {
+                    UserPrincipal principal;
                     try {
-                        UserPrincipal principal = jwtTokenValidator.validateToken(
+                        principal = jwtTokenValidator.validateToken(
                                 provided,
                                 properties.getSecurity().getJwtSecret(),
                                 properties.getSecurity().getJwtIssuer(),
                                 properties.getSecurity().getJwtAudience());
-                        SecurityContextHolder.setPrincipal(principal);
-                        chain.doFilter(request, response);
-                        return;
-                    } catch (Exception e) {
+                    } catch (IllegalArgumentException e) {
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                        response.getWriter().write("{\"error\":\"Invalid or expired JWT token: " + e.getMessage() + "\"}");
+                        response.getWriter().write("{\"error\":\"Invalid or expired JWT token\"}");
                         return;
                     }
-                }
-
-                // 2. Check static API token
-                String expected = properties.getSecurity().getApiToken();
-                if (!expected.isBlank() && constantTimeEquals(expected, provided)) {
-                    SecurityContextHolder.setPrincipal(UserPrincipal.staticTokenUser());
+                    SecurityContextHolder.setPrincipal(principal);
                     chain.doFilter(request, response);
                     return;
                 }

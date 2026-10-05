@@ -6,16 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-## [0.3.0] — 2026-10-06
-
-Enterprise identity, multi-tenant workspaces, distributed cluster fan-out, and autonomous AI incident triage. [Release notes and downloads](https://github.com/vijayptiwari/eventore/releases/tag/v0.3.0).
+Development target: **0.3.0**. No 0.3.0 release has been published; the latest published release is [0.2.1](https://github.com/vijayptiwari/eventore/releases/tag/v0.2.1).
 
 ### Added
 
-- **Enterprise Identity & OIDC / OAuth2 / JWT Validation (REQ-103)**: Added `JwtTokenValidator` with constant-time HMAC-SHA256 signature verification, clock-skew allowance, not-before validation, issuer and audience assertions, and claim extraction (`roles`, `groups`, `realm_access.roles`, `scope`). `UserPrincipal` and thread-local `SecurityContextHolder` integrated with `ApiTokenFilter` for seamless fallback between static token and OIDC. Exposes `GET /api/v1/auth/me`.
-- **Multi-Tenant Workspaces & Role-Based Access Control (REQ-104)**: Defined `UserRole` (`PLATFORM_ADMIN`, `WORKSPACE_ADMIN`, `OPERATOR`, `VIEWER`) and `WorkspaceManager` service with tenancy boundaries and CRUD endpoints (`GET/POST/DELETE /api/v1/workspaces`). Frontend `useAuthAndWorkspaces` hook and `WorkspaceHeaderControls` topbar selector allow instant workspace switching and role-aware workspace creation.
-- **Distributed Subscription Registry & Message Fan-Out Bus (REQ-102 / Pattern C)**: Implemented `SubscriptionDistributionBus` SPI with `LocalSubscriptionDistributionBus` (standalone default) and `RedisSubscriptionDistributionBus` (distributed Redis pub/sub over `eventore:cluster:stream-fanout` with automatic local failover and peer discovery). Enables horizontal multi-replica Kubernetes clustering without ingress session stickiness. Added telemetry endpoint `GET /api/v1/cluster/status` and live cluster badge in UI.
-- **Autonomous Incident Triage MCP Tooling & Diagnostic Playbook (REQ-113)**: Built `eventore_triage_incident` compound tool and `eventore_incident_triage` prompt executing multi-domain root-cause analysis across cluster connectivity latency, partition lag skew, and DLQ poison pills with exception stack trace extraction.
+- HS256 JWT validation and identity claim extraction with an authentication identity endpoint. OIDC discovery, JWKS and enterprise login are not implemented.
+- In-memory workspace catalog, workspace management endpoints and console selector. Workspace selection does not isolate broker connections, bridges or streams, and roles are not enforced across broker operations.
+- Local subscription distribution interface and cluster status endpoint. The Redis implementation is a scaffold without network transport or a shared subscription registry; active-active HA is not delivered.
+- MCP incident triage tool and prompt combining broker inspection, consumer lag and DLQ samples with fixed heuristics. Failed or unsupported checks can be omitted, so the verdict is not a complete health assessment.
+- Replication routing/error handling and empty-connection UX fixes, plus schema and replay guides.
+
+### Fixed
+
+- Require a configured signing secret and HS256 algorithm for JWT validation; reject missing expiration and missing configured issuer/audience claims. Static-token authentication no longer accepts forged JWTs.
+- Separate development version from verified published release metadata, installation examples, SEO and feature history.
 
 ## [0.2.1] — 2026-10-04
 

@@ -48,7 +48,7 @@ function homeJsonLd() {
       softwareVersion: publishedRelease?.version,
       operatingSystem: 'Linux, Windows, macOS, Docker, Kubernetes',
       description:
-        'Open-source multi-protocol streaming console with enterprise identity (OIDC/JWT), multi-tenant workspaces, distributed clustering fan-out, cross-broker replication, PII data masking, OpenTelemetry tracing, DLQ redrive, partition lag heatmap, and MCP AI agent tools.',
+        'Open-source multi-protocol streaming console with cross-broker replication, PII data masking, OpenTelemetry tracing, DLQ redrive, partition lag heatmap, and MCP AI agent tools.',
       url: siteUrl,
       sameAs: site.repoUrl,
       downloadUrl: publishedRelease?.url || site.repoUrl + '/releases',
@@ -56,16 +56,13 @@ function homeJsonLd() {
       softwareHelp: absUrl('guide/index.html'),
       featureList: [
         'Multi-protocol federated support for 8 streaming systems (Kafka, RabbitMQ, Pulsar, MQTT, JMS, AWS Kinesis, GCP Pub/Sub, Azure Service Bus)',
-        'Enterprise Identity & OIDC/JWT Bearer Token Authentication with Claim-Based RBAC',
-        'Multi-Tenant Workspaces with Tenant Boundary Isolation and Topbar Switcher',
-        'Distributed Subscription Registry & Cross-Pod Message Fan-Out Bus (Redis Pub/Sub & Local SPI)',
         'Cross-Broker Data Replication & Bridging with loop prevention and dry-run tester',
         'Configurable field masking and payload preview tools',
         'OpenTelemetry Distributed Tracing with W3C TraceContext and APM deep links',
         'Visual Partition Lag Heatmap and automated lag skew detection',
         'Dead-Letter Queue (DLQ) Inspector and rate-limited message redrive engine',
         'Externalized Connection Stores: PostgreSQL JDBC with optimistic locking and Kubernetes CRDs',
-        'Model Context Protocol (MCP) server with Autonomous Incident Triage compound tools for AI agent integration'
+        'Model Context Protocol (MCP) server for Cursor, Claude, and AI agent integration'
       ],
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     },

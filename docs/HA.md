@@ -1,6 +1,6 @@
 # High Availability & Multi-Replica Guidance
 
-EventOre **0.1.x** supports **single-replica** backends by default. Multi-replica deploys require **PVC persistence** and **ingress session affinity** (Wave 3 Pattern B).
+EventOre **0.2.1** supports **single-replica** backends by default. Multi-replica deploys require **PVC persistence** and **ingress session affinity** (Wave 3 Pattern B).
 
 ## Current limitations
 
@@ -47,43 +47,32 @@ EventOre **0.1.x** supports **single-replica** backends by default. Multi-replic
 
 3. Accept that validation history and in-flight subscriptions remain pod-local until Pattern C.
 
-**Semantics:** `emptyDir` survives container restart inside a pod only. `pvc` survives pod delete/recreate when the claim is retained. For true multi-replica connection sharing, use `ReadWriteMany` storage or an external store (future).
+**Semantics:** `emptyDir` survives container restart inside a pod only. `pvc` survives pod delete/recreate when the claim is retained. A shared file volume does not coordinate concurrent writers. JDBC connection persistence is available, but does not distribute live subscriptions. See the connection-store guide before choosing storage.
 
-### Pattern C — Externalized State & Distributed Fan-Out (Delivered)
+### Pattern C — Distributed subscriptions (unfinished)
 
-Pattern C enables fully horizontal, stateless multi-replica deployments:
-
-1. **Externalized Connection Stores**:
-   - `JDBC` store with PostgreSQL/relational backend and distributed optimistic locking via row versioning (`eventore.connections.store-type: JDBC`).
-   - `K8S_CRD` store keeping connection profiles as Kubernetes manifests (`kind: EventoreConnection`).
-
-2. **Distributed Subscription Registry & Message Fan-Out Bus**:
-   - `SubscriptionDistributionBus` SPI broadcasts stream frames across pods over Redis Pub/Sub (`eventore:cluster:stream-fanout`).
-   - Configure in `application.yml`:
-     ```yaml
-     eventore:
-       cluster:
-         mode: REDIS           # LOCAL (standalone) | REDIS (multi-replica)
-         redis-host: redis-master.default.svc.cluster.local
-         redis-port: 6379
-         channel: eventore:cluster:stream-fanout
-     ```
-   - Pods subscribing to any broker automatically publish stream frames to the cluster bus; any connected WebSocket or SSE client on any pod receives the messages without ingress session affinity.
-   - Automatic local fallback protects against transient Redis disconnects.
-
-3. **Enterprise Identity & Multi-Tenancy**:
-   - OIDC / OAuth2 / JWT Bearer token validation with HMAC-SHA256 verification and claim-based RBAC (`PLATFORM_ADMIN`, `WORKSPACE_ADMIN`, `OPERATOR`, `VIEWER`).
-   - Multi-tenant workspace isolation with dynamic tenant CRUD and UI header switcher.
+- File, JDBC and CRD-directory connection stores exist. The CRD store uses a directory of manifests, not a live Kubernetes API controller.
+- Shared subscription routing and cross-pod SSE/WebSocket delivery are **not implemented**.
+- Connection persistence alone does not provide active-active streaming or failover.
 
 ## Helm checklist
 
-- [ ] `replicaCount: 1` when running standalone Pattern A
-- [ ] For multi-replica Pattern B without Redis: set `volumeType: pvc` (RWX) and enable `ingress.sessionAffinity`
-- [ ] For multi-replica Pattern C: set `eventore.cluster.mode: REDIS`, configure Redis host/port, and set `eventore.connections.storeType: JDBC`
+- [ ] `replicaCount: 1` unless Pattern B is fully configured
+- [ ] Read `NOTES.txt` after install for multi-replica warnings
+- [ ] Set `volumeType: pvc` when persistence must survive pod reschedule
+- [ ] Enable `ingress.sessionAffinity` when `replicaCount > 1` and using nginx ingress
+- [ ] Do not enable PDB with `minAvailable: 1` on 2 replicas without understanding SSE stickiness
 - [ ] When `networkPolicy.enabled`, add TLS broker ports via `networkPolicy.extraBrokerPorts` (e.g. `5671`, `9094`)
 
-## HA Status Matrix
+## Blockers for full HA
 
-1. **Distributed subscription registry & cross-pod fan-out**: Delivered via `RedisSubscriptionDistributionBus` SPI.
-2. **Externalized connection storage**: Delivered via `JdbcConnectionProfileStore` (with optimistic locking) and `K8sCrdConnectionProfileStore`.
-3. **Enterprise identity across replicas**: Delivered via `JwtTokenValidator` with OIDC/OAuth2/JWT bearer claims and multi-tenant workspaces.
+1. No distributed subscription registry
+2. No cross-pod SSE fan-out
+3. No leader-elected connection writer for file persistence on RWO volumes shared across pods
+4. No OIDC/session layer for operator identity across replicas
+
+**Next backlog:** Wave 4 items in `docs/REQUIREMENTS.md` (REQ-61+, live E2E, OIDC).
+
+## 0.3.0 development status
+
+The new subscription distribution interface and local bus do not complete Pattern C. RedisSubscriptionDistributionBus currently serializes frames and dispatches locally; no Redis client, network subscription or shared subscription registry exists. Selecting REDIS now fails startup explicitly instead of reporting a working cluster. JWT and workspace metadata also do not provide tenant isolation. Keep single-replica deployments as the supported default.
