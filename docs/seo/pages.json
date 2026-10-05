@@ -58,6 +58,22 @@
       "ogType": "article"
     },
     {
+      "file": "guide/schema-registry.html",
+      "path": "guide/schema-registry.html",
+      "title": "Schema Registry & Serialization — EventOre",
+      "description": "Integrate Confluent, Apicurio, and local Schema Registries in EventOre with automatic Avro/JSON decoding, template generation, and schema-aware validation.",
+      "keywords": "confluent schema registry ui, avro schema viewer, kafka avro decoder, schema governance event streaming, apicurio schema registry, schema aware publishing",
+      "ogType": "article"
+    },
+    {
+      "file": "guide/replay.html",
+      "path": "guide/replay.html",
+      "title": "Time-Travel Message Replay & Offset Rewind — EventOre",
+      "description": "Rewind consumer offsets and replay historical stream messages by timestamp, offset, or partition with EventOre's time-travel streaming engine.",
+      "keywords": "kafka message replay, time travel event streaming, offset rewind kafka, replay by timestamp, kafka consumer seek, stream inspection historical",
+      "ogType": "article"
+    },
+    {
       "file": "guide/tracing.html",
       "path": "guide/tracing.html",
       "title": "OpenTelemetry Distributed Tracing — EventOre",

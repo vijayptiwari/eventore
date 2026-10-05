@@ -93,6 +93,16 @@ export default function BridgeWizardDialog({ open, onClose, initialBridge, onSav
     setFormError(null);
   }, [open, initialBridge, connections]);
 
+  useEffect(() => {
+    if (!open || initialBridge || connections.length === 0) return;
+    if (!sourceConnectionId && connections[0]?.id) {
+      setSourceConnectionId(connections[0].id);
+    }
+    if (!targetConnectionId) {
+      setTargetConnectionId(connections[1]?.id || connections[0]?.id || '');
+    }
+  }, [open, connections, initialBridge, sourceConnectionId, targetConnectionId]);
+
   const addRule = () => {
     setRules((prev) => [
       ...prev,
@@ -113,10 +123,14 @@ export default function BridgeWizardDialog({ open, onClose, initialBridge, onSav
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!name.trim()) throw new Error('Pipeline name is required');
-      if (!sourceConnectionId) throw new Error('Source connection is required');
-      if (!sourceDestination.trim()) throw new Error('Source destination is required');
-      if (!targetConnectionId) throw new Error('Target connection is required');
-      if (!targetDestination.trim()) throw new Error('Target destination is required');
+      if (!sourceConnectionId) throw new Error('Source connection is required. Please select a configured connection.');
+      if (!sourceDestination.trim()) throw new Error('Source destination (topic or queue) is required');
+      if (!targetConnectionId) throw new Error('Target connection is required. Please select a configured connection.');
+      if (!targetDestination.trim()) throw new Error('Target destination (topic or queue) is required');
+
+      if (sourceConnectionId === targetConnectionId && sourceDestination.trim() === targetDestination.trim()) {
+        throw new Error('Self-loop prevented: Source and target destinations cannot be identical on the same connection.');
+      }
 
       // convert rule rows to headerTransform map
       const headerTransform: Record<string, string> = {};
@@ -217,6 +231,40 @@ export default function BridgeWizardDialog({ open, onClose, initialBridge, onSav
         {formError && (
           <div className="stream-error" style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '6px' }}>
             {formError}
+          </div>
+        )}
+
+        {connections.length === 0 && (
+          <div
+            style={{
+              background: '#451a03',
+              border: '1px solid #b45309',
+              borderRadius: '8px',
+              padding: '0.85rem 1rem',
+              color: '#fef3c7',
+              fontSize: '0.85rem',
+              marginBottom: '1.25rem',
+            }}
+          >
+            <div>
+              <strong>⚠️ No broker connections found:</strong> A replication bridge requires at least one configured broker connection profile (e.g. Kafka, RabbitMQ, Pulsar).
+            </div>
+            <div style={{ marginTop: '0.5rem' }}>
+              <a
+                href="/connections"
+                className="btn-secondary"
+                style={{
+                  display: 'inline-block',
+                  padding: '0.25rem 0.6rem',
+                  fontSize: '0.8rem',
+                  textDecoration: 'none',
+                  color: '#f8fafc',
+                }}
+                onClick={onClose}
+              >
+                Go to Connections →
+              </a>
+            </div>
           </div>
         )}
 
@@ -440,7 +488,11 @@ export default function BridgeWizardDialog({ open, onClose, initialBridge, onSav
             <button type="button" className="btn-secondary" onClick={onClose} disabled={saveMutation.isPending}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={saveMutation.isPending}>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={saveMutation.isPending || connections.length === 0}
+            >
               {saveMutation.isPending ? 'Saving Pipeline...' : initialBridge ? 'Update Pipeline' : 'Create & Launch'}
             </button>
           </div>

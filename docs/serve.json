@@ -54,6 +54,46 @@
       "type": 301
     },
     {
+      "source": "/replication",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/replication/",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/bridges",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/bridges/",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/replication",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/replication/",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/bridges",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/bridges/",
+      "destination": "/guide/replication-bridging.html",
+      "type": 301
+    },
+    {
       "source": "/guide/data-masking",
       "destination": "/guide/data-masking.html",
       "type": 301
@@ -61,6 +101,66 @@
     {
       "source": "/guide/data-masking/",
       "destination": "/guide/data-masking.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/schema-registry",
+      "destination": "/guide/schema-registry.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/schema-registry/",
+      "destination": "/guide/schema-registry.html",
+      "type": 301
+    },
+    {
+      "source": "/schema-registry",
+      "destination": "/guide/schema-registry.html",
+      "type": 301
+    },
+    {
+      "source": "/schema-registry/",
+      "destination": "/guide/schema-registry.html",
+      "type": 301
+    },
+    {
+      "source": "/schemas",
+      "destination": "/guide/schema-registry.html",
+      "type": 301
+    },
+    {
+      "source": "/schemas/",
+      "destination": "/guide/schema-registry.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/replay",
+      "destination": "/guide/replay.html",
+      "type": 301
+    },
+    {
+      "source": "/guide/replay/",
+      "destination": "/guide/replay.html",
+      "type": 301
+    },
+    {
+      "source": "/replay",
+      "destination": "/guide/replay.html",
+      "type": 301
+    },
+    {
+      "source": "/replay/",
+      "destination": "/guide/replay.html",
+      "type": 301
+    },
+    {
+      "source": "/time-travel",
+      "destination": "/guide/replay.html",
+      "type": 301
+    },
+    {
+      "source": "/time-travel/",
+      "destination": "/guide/replay.html",
       "type": 301
     },
     {

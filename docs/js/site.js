@@ -47,6 +47,8 @@ function initializeEventOreSite() {
   var capabilityLinks = [
     { href: 'replication-bridging.html', label: 'Cross-broker replication' },
     { href: 'data-masking.html', label: 'PII data masking' },
+    { href: 'schema-registry.html', label: 'Schema registry & Avro' },
+    { href: 'replay.html', label: 'Time-travel message replay' },
     { href: 'tracing.html', label: 'Distributed tracing' },
     { href: 'topology-lag.html', label: 'Lag heatmap & topology' },
     { href: 'dlq.html', label: 'DLQ & message redrive' },

@@ -17,6 +17,7 @@ export default function App() {
           <Route path="/browse" element={<BrowsePage />} />
           <Route path="/stream" element={<StreamPage />} />
           <Route path="/bridges" element={<BridgesPage />} />
+          <Route path="/replication" element={<BridgesPage />} />
         </Route>
       </Routes>
     </StreamWorkspaceProvider>

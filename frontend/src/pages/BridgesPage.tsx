@@ -45,7 +45,12 @@ function getProtocolClass(protocol?: ProtocolType): string {
 export default function BridgesPage() {
   const queryClient = useQueryClient();
 
-  const { data: bridges = [], isLoading: bridgesLoading, refetch } = useQuery<ReplicationBridge[]>({
+  const {
+    data: bridges = [],
+    isLoading: bridgesLoading,
+    error: bridgesError,
+    refetch,
+  } = useQuery<ReplicationBridge[]>({
     queryKey: ['bridges'],
     queryFn: api.listBridges,
     refetchInterval: 4000,
@@ -68,6 +73,9 @@ export default function BridgesPage() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [editingBridge, setEditingBridge] = useState<ReplicationBridge | null>(null);
 
+  // Error State for Bridge Actions
+  const [actionError, setActionError] = useState<string | null>(null);
+
   // Tester State
   const [testerOpen, setTesterOpen] = useState(false);
   const [testPayload, setTestPayload] = useState('{\n  "orderId": "ORD-9821",\n  "amount": 250.00,\n  "region": "US-WEST",\n  "status": "COMPLETED"\n}');
@@ -81,17 +89,35 @@ export default function BridgesPage() {
   // Lifecycle Mutations
   const startMutation = useMutation({
     mutationFn: (id: string) => api.startBridge(id),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['bridges'] }),
+    onSuccess: () => {
+      setActionError(null);
+      void queryClient.invalidateQueries({ queryKey: ['bridges'] });
+    },
+    onError: (err: unknown) => {
+      setActionError(err instanceof Error ? err.message : String(err));
+    },
   });
 
   const stopMutation = useMutation({
     mutationFn: (id: string) => api.stopBridge(id),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['bridges'] }),
+    onSuccess: () => {
+      setActionError(null);
+      void queryClient.invalidateQueries({ queryKey: ['bridges'] });
+    },
+    onError: (err: unknown) => {
+      setActionError(err instanceof Error ? err.message : String(err));
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.deleteBridge(id),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['bridges'] }),
+    onSuccess: () => {
+      setActionError(null);
+      void queryClient.invalidateQueries({ queryKey: ['bridges'] });
+    },
+    onError: (err: unknown) => {
+      setActionError(err instanceof Error ? err.message : String(err));
+    },
   });
 
   const testMutation = useMutation({
@@ -325,6 +351,90 @@ export default function BridgesPage() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Error and Notification Banners */}
+      {bridgesError && (
+        <div
+          className="stream-error"
+          style={{
+            marginBottom: '1.25rem',
+            padding: '1rem',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+          }}
+        >
+          <div>
+            <strong>⚠️ Unable to load replication bridges:</strong>{' '}
+            <span>{bridgesError instanceof Error ? bridgesError.message : String(bridgesError)}</span>
+          </div>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => void refetch()}
+            style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {actionError && (
+        <div
+          className="stream-error"
+          style={{
+            marginBottom: '1.25rem',
+            padding: '1rem',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+          }}
+        >
+          <div>
+            <strong>⚠️ Pipeline Action Failed:</strong> <span>{actionError}</span>
+          </div>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => setActionError(null)}
+            style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {connections.length === 0 && !bridgesLoading && (
+        <div
+          style={{
+            background: '#1e293b',
+            border: '1px solid #334155',
+            borderRadius: '8px',
+            padding: '0.85rem 1.25rem',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            color: '#94a3b8',
+            fontSize: '0.85rem',
+          }}
+        >
+          <span>
+            ℹ️ <strong>No broker connections found:</strong> Replication bridges require source and target broker connections to be established first.
+          </span>
+          <a
+            href="/connections"
+            className="btn-secondary"
+            style={{ padding: '0.3rem 0.7rem', fontSize: '0.8rem', textDecoration: 'none', color: '#f8fafc' }}
+          >
+            Manage Connections →
+          </a>
         </div>
       )}
 
