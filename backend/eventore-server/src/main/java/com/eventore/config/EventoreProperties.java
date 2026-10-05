@@ -29,6 +29,15 @@ public class EventoreProperties {
     private DataPlane dataPlane = new DataPlane();
     private Masking masking = new Masking();
     private Tracing tracing = new Tracing();
+    private Cluster cluster = new Cluster();
+
+    public Cluster getCluster() {
+        return cluster;
+    }
+
+    public void setCluster(Cluster cluster) {
+        this.cluster = cluster != null ? cluster : new Cluster();
+    }
 
     public DeploymentMode getDeploymentMode() {
         return deploymentMode;
@@ -70,6 +79,14 @@ public class EventoreProperties {
         private String apiToken = "";
         /** Comma-separated allowed origins for CORS and WebSocket. "*" = all (dev only). */
         private String allowedOrigins = "*";
+        /** Secret key for HMAC-SHA256 JWT signature verification (REQ-103). */
+        private String jwtSecret = "";
+        /** Expected JWT issuer (iss claim). Optional. */
+        private String jwtIssuer = "";
+        /** Expected JWT audience (aud claim). Optional. */
+        private String jwtAudience = "";
+        /** Explicit toggle for JWT verification. */
+        private boolean jwtEnabled = false;
 
         public String getApiToken() {
             return apiToken;
@@ -77,6 +94,38 @@ public class EventoreProperties {
 
         public void setApiToken(String apiToken) {
             this.apiToken = apiToken != null ? apiToken : "";
+        }
+
+        public String getJwtSecret() {
+            return jwtSecret;
+        }
+
+        public void setJwtSecret(String jwtSecret) {
+            this.jwtSecret = jwtSecret != null ? jwtSecret : "";
+        }
+
+        public String getJwtIssuer() {
+            return jwtIssuer;
+        }
+
+        public void setJwtIssuer(String jwtIssuer) {
+            this.jwtIssuer = jwtIssuer != null ? jwtIssuer : "";
+        }
+
+        public String getJwtAudience() {
+            return jwtAudience;
+        }
+
+        public void setJwtAudience(String jwtAudience) {
+            this.jwtAudience = jwtAudience != null ? jwtAudience : "";
+        }
+
+        public boolean isJwtEnabled() {
+            return jwtEnabled || !jwtSecret.isBlank();
+        }
+
+        public void setJwtEnabled(boolean jwtEnabled) {
+            this.jwtEnabled = jwtEnabled;
         }
 
         public String getAllowedOrigins() {
@@ -89,7 +138,7 @@ public class EventoreProperties {
         }
 
         public boolean isAuthEnabled() {
-            return !apiToken.isBlank();
+            return !apiToken.isBlank() || isJwtEnabled();
         }
 
         public String[] allowedOriginsArray() {
@@ -422,6 +471,68 @@ public class EventoreProperties {
             }
             cfg.setInjectOnPublish(this.injectOnPublish);
             return cfg;
+        }
+    }
+
+    public static class Cluster {
+        public enum Mode {
+            LOCAL,
+            REDIS
+        }
+
+        private Mode mode = Mode.LOCAL;
+        private String nodeId = "node-" + java.util.UUID.randomUUID().toString().substring(0, 8);
+        private String channel = "eventore:cluster:stream-fanout";
+        private String redisHost = "localhost";
+        private int redisPort = 6379;
+        private String redisPassword = "";
+
+        public Mode getMode() {
+            return mode;
+        }
+
+        public void setMode(Mode mode) {
+            this.mode = mode != null ? mode : Mode.LOCAL;
+        }
+
+        public String getNodeId() {
+            return nodeId;
+        }
+
+        public void setNodeId(String nodeId) {
+            this.nodeId = nodeId != null && !nodeId.isBlank() ? nodeId : "node-local";
+        }
+
+        public String getChannel() {
+            return channel;
+        }
+
+        public void setChannel(String channel) {
+            this.channel = channel != null && !channel.isBlank() ? channel : "eventore:cluster:stream-fanout";
+        }
+
+        public String getRedisHost() {
+            return redisHost;
+        }
+
+        public void setRedisHost(String redisHost) {
+            this.redisHost = redisHost != null ? redisHost : "localhost";
+        }
+
+        public int getRedisPort() {
+            return redisPort;
+        }
+
+        public void setRedisPort(int redisPort) {
+            this.redisPort = redisPort;
+        }
+
+        public String getRedisPassword() {
+            return redisPassword;
+        }
+
+        public void setRedisPassword(String redisPassword) {
+            this.redisPassword = redisPassword != null ? redisPassword : "";
         }
     }
 }

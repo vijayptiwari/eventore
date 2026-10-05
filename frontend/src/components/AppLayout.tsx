@@ -7,6 +7,7 @@ import { logoLightSrc } from '../config/portalMeta';
 import ApiTokenSettingsDialog from './ApiTokenSettingsDialog';
 import PortalAboutDialog from './PortalAboutDialog';
 import StreamsSidePanel from './StreamsSidePanel';
+import WorkspaceHeaderControls from './WorkspaceHeaderControls';
 
 export default function AppLayout() {
   const queryClient = useQueryClient();
@@ -54,6 +55,7 @@ export default function AppLayout() {
           <NavLink to="/browse">Browse</NavLink>
           <NavLink to="/stream">Live Stream</NavLink>
           <NavLink to="/bridges">Bridges</NavLink>
+          <WorkspaceHeaderControls />
           <button
             type="button"
             className="nav-settings-btn"

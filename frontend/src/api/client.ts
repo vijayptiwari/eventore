@@ -57,6 +57,35 @@ export interface ConnectionProfileResponse {
   hasCredentials?: boolean;
 }
 
+export interface UserPrincipalDto {
+  userId: string;
+  email: string;
+  displayName: string;
+  roles: string[];
+  assignedWorkspaces: string[];
+  currentWorkspaceId: string;
+  isJwt: boolean;
+  isPlatformAdmin: boolean;
+}
+
+export interface WorkspaceDto {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  tags: string[];
+}
+
+export interface ClusterStatusDto {
+  mode: 'LOCAL' | 'REDIS';
+  nodeId: string;
+  activeSubscribers: number;
+  totalBroadcasts: number;
+  totalReceived: number;
+  connectedPeers: number;
+  healthy: boolean;
+}
+
 export interface SchemaMetadata {
   schemaId: number;
   subject?: string;
@@ -449,6 +478,19 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+
+  // P1 Enterprise Identity & Multi-Tenant Workspaces (REQ-103 & REQ-104)
+  getAuthMe: () => request<UserPrincipalDto>('/auth/me'),
+  listWorkspaces: () => request<WorkspaceDto[]>('/workspaces'),
+  getWorkspace: (id: string) => request<WorkspaceDto>(`/workspaces/${encodeURIComponent(id)}`),
+  createWorkspace: (body: Partial<WorkspaceDto>) =>
+    request<WorkspaceDto>('/workspaces', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  // P2 Distributed Subscription Registry & Cluster Bus (REQ-102)
+  getClusterStatus: () => request<ClusterStatusDto>('/cluster/status'),
 };
 
 export function canAction(allowed: string[] | undefined, action: string): boolean {

@@ -67,4 +67,34 @@ class ApiTokenSecurityIntegrationTest {
                                 .header("Sec-WebSocket-Version", "13"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void authMeAllowsValidJwtBearerToken() throws Exception {
+        long exp = java.time.Instant.now().plusSeconds(3600).getEpochSecond();
+        String header = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString("{\"alg\":\"none\",\"typ\":\"JWT\"}".getBytes());
+        String payload = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+                ("{\"sub\":\"usr-jwt-1\",\"email\":\"jwt@acme.com\",\"roles\":[\"PLATFORM_ADMIN\"],\"workspaces\":[\"default\"],\"exp\":" + exp + "}").getBytes());
+        String fakeSig = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString("sig".getBytes());
+        String jwt = header + "." + payload + "." + fakeSig;
+
+        mockMvc.perform(get("/api/v1/auth/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.userId").value("usr-jwt-1"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.isJwt").value(true));
+    }
+
+    @Test
+    void workspacesEndpointReturnsWorkspaces() throws Exception {
+        mockMvc.perform(get("/api/v1/workspaces").header(HttpHeaders.AUTHORIZATION, "Bearer " + TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].id").exists());
+    }
+
+    @Test
+    void clusterStatusEndpointReturnsStatus() throws Exception {
+        mockMvc.perform(get("/api/v1/cluster/status").header(HttpHeaders.AUTHORIZATION, "Bearer " + TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.mode").value("LOCAL"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.healthy").value(true));
+    }
 }

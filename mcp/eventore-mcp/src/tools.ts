@@ -464,4 +464,29 @@ export function registerTools(server: McpServer, client: EventoreClient): void {
       }
     },
   );
+
+  server.tool(
+    'eventore_triage_incident',
+    'Autonomous Incident Triage & Root Cause Analysis (RCA) Engine (REQ-113): Inspects broker cluster health, consumer group partition lag and skews, and dead-letter queues (poison pills & stack traces) to synthesize an actionable Root Cause Analysis report with concrete remediation recommendations.',
+    {
+      connectionId: z.string().describe('ID of the connection profile to triage'),
+      destination: z.string().optional().describe('Specific topic or queue experiencing the incident, if known'),
+      includeDlq: z.boolean().optional().describe('Whether to scan DLQ topics for poison pills and exception stack traces (default true)'),
+      includeConsumerLag: z.boolean().optional().describe('Whether to inspect consumer groups for lagging partitions and skew (default true)'),
+      maxErrors: z.number().optional().describe('Max dead-letter messages to sample for stack trace root cause analysis (default 5)'),
+    },
+    async (args) => {
+      try {
+        const report = await client.triageIncident(args.connectionId, {
+          destination: args.destination,
+          includeDlq: args.includeDlq,
+          includeConsumerLag: args.includeConsumerLag,
+          maxErrors: args.maxErrors,
+        });
+        return inspectToolResult(report);
+      } catch (error) {
+        return inspectToolResultFromError(error);
+      }
+    },
+  );
 }

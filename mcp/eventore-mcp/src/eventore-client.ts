@@ -55,6 +55,58 @@ export interface UnifiedMessage {
   protocol: ProtocolType;
 }
 
+export interface DlqTopicSummary {
+  topic: string;
+  messageCount: number;
+  quarantinedCount?: number;
+  lastErrorMessage?: string;
+  lastFailedTimestamp?: string;
+}
+
+export interface DlqMessageInfo {
+  id: string;
+  topic: string;
+  payload: string;
+  headers?: Record<string, string>;
+  timestamp: string;
+  errorMessage?: string;
+  exceptionClass?: string;
+  stackTraceSnippet?: string;
+}
+
+export interface IncidentTriageOptions {
+  destination?: string;
+  includeDlq?: boolean;
+  includeConsumerLag?: boolean;
+  maxErrors?: number;
+}
+
+export interface IncidentTriageReport {
+  connectionId: string;
+  timestamp: string;
+  verdict: 'HEALTHY' | 'DEGRADED' | 'CRITICAL';
+  summary: string;
+  cluster: {
+    reachable: boolean;
+    latencyMs?: number;
+    details?: unknown;
+  };
+  lagAnalysis?: {
+    totalLag: number;
+    maxLag: number;
+    skewDetected: boolean;
+    unhealthyGroupsCount: number;
+    topLaggingPartitions: Array<{ group: string; topic: string; partition: number; lag: number }>;
+  };
+  dlqAnalysis?: {
+    dlqTopicsFound: number;
+    totalDeadLetters: number;
+    topExceptions: Array<{ exceptionClass: string; count: number; sampleMessage?: string }>;
+    sampleStackTraces: string[];
+  };
+  remediationActions: string[];
+}
+
 export class EventoreClient {
   constructor(
     private readonly baseUrl: string,
@@ -343,5 +395,194 @@ export class EventoreClient {
     }
 
     return messages;
+  }
+
+  listDlqTopics(connectionId: string) {
+    return this.request<DlqTopicSummary[]>(`/connections/${encodeURIComponent(connectionId)}/dlq/topics`);
+  }
+
+  inspectDlqMessages(connectionId: string, topic: string, max = 5) {
+    return this.request<DlqMessageInfo[]>(
+      `/connections/${encodeURIComponent(connectionId)}/dlq/messages?topic=${encodeURIComponent(topic)}&max=${max}`,
+    );
+  }
+
+  async triageIncident(connectionId: string, options: IncidentTriageOptions = {}): Promise<IncidentTriageReport> {
+    const {
+      destination,
+      includeDlq = true,
+      includeConsumerLag = true,
+      maxErrors = 5,
+    } = options;
+
+    const timestamp = new Date().toISOString();
+    const remediationActions: string[] = [];
+    let verdict: 'HEALTHY' | 'DEGRADED' | 'CRITICAL' = 'HEALTHY';
+
+    // 1. Cluster connectivity & health check
+    let clusterReachable = false;
+    let clusterDetails: unknown = null;
+    let clusterLatencyMs = 0;
+    try {
+      const start = Date.now();
+      clusterDetails = await this.inspectCluster(connectionId);
+      clusterLatencyMs = Date.now() - start;
+      clusterReachable = true;
+    } catch (err) {
+      clusterReachable = false;
+      verdict = 'CRITICAL';
+      remediationActions.push(
+        `Broker cluster connection '${connectionId}' is unreachable: ${err instanceof Error ? err.message : String(err)}. Verify network routing, firewall rules, and broker credentials.`,
+      );
+    }
+
+    // 2. Consumer group lag & skew analysis
+    let lagAnalysis: IncidentTriageReport['lagAnalysis'] | undefined;
+    if (includeConsumerLag && clusterReachable) {
+      try {
+        const groups = (await this.inspectConsumerGroups(connectionId)) as any[];
+        let totalLag = 0;
+        let maxLag = 0;
+        const laggingPartitions: Array<{ group: string; topic: string; partition: number; lag: number }> = [];
+        let unhealthyCount = 0;
+
+        if (Array.isArray(groups)) {
+          for (const g of groups) {
+            const groupId = typeof g === 'string' ? g : g.groupId || g.name;
+            if (!groupId) continue;
+            try {
+              const lagDetail = (await this.inspectLag(connectionId, groupId, destination)) as any;
+              const partitions = Array.isArray(lagDetail?.partitions) ? lagDetail.partitions : [];
+              let groupLag = 0;
+              for (const p of partitions) {
+                const currentLag = Number(p.lag || 0);
+                groupLag += currentLag;
+                if (currentLag > 100) {
+                  laggingPartitions.push({
+                    group: groupId,
+                    topic: p.topic || destination || 'unknown',
+                    partition: p.partition ?? 0,
+                    lag: currentLag,
+                  });
+                }
+                if (currentLag > maxLag) maxLag = currentLag;
+              }
+              totalLag += groupLag;
+              if (groupLag > 5000) unhealthyCount++;
+            } catch {
+              // Group lag inspection unsupported on this broker or group empty
+            }
+          }
+        }
+
+        const skewDetected = maxLag > 1000 && laggingPartitions.length > 0;
+        lagAnalysis = {
+          totalLag,
+          maxLag,
+          skewDetected,
+          unhealthyGroupsCount: unhealthyCount,
+          topLaggingPartitions: laggingPartitions.sort((a, b) => b.lag - a.lag).slice(0, 5),
+        };
+
+        if (maxLag > 10000 || totalLag > 50000) {
+          verdict = 'CRITICAL';
+          remediationActions.push(
+            `High consumer lag detected (${totalLag.toLocaleString()} messages). Scale up consumer instances or rebalance partitions.`,
+          );
+        } else if (maxLag > 1000) {
+          if (verdict !== 'CRITICAL') verdict = 'DEGRADED';
+          remediationActions.push(
+            `Partition skew detected on group '${laggingPartitions[0]?.group}' partition ${laggingPartitions[0]?.partition} (lag ${maxLag}). Investigate hot keys or slow partition consumers.`,
+          );
+        }
+      } catch {
+        // Lag inspection skipped or unsupported
+      }
+    }
+
+    // 3. Dead-Letter Queue (DLQ) & poison pill inspection
+    let dlqAnalysis: IncidentTriageReport['dlqAnalysis'] | undefined;
+    if (includeDlq && clusterReachable) {
+      try {
+        const dlqTopics = await this.listDlqTopics(connectionId);
+        let totalDeadLetters = 0;
+        const exceptionCounts = new Map<string, { count: number; sampleMessage?: string }>();
+        const sampleStackTraces: string[] = [];
+
+        if (Array.isArray(dlqTopics)) {
+          for (const dt of dlqTopics) {
+            totalDeadLetters += dt.messageCount || 0;
+            if (dt.messageCount > 0) {
+              const sampleMsgs = await this.inspectDlqMessages(connectionId, dt.topic, maxErrors);
+              if (Array.isArray(sampleMsgs)) {
+                for (const m of sampleMsgs) {
+                  const ex = m.exceptionClass || 'UnknownException';
+                  const existing = exceptionCounts.get(ex) || { count: 0 };
+                  existing.count++;
+                  if (!existing.sampleMessage && m.errorMessage) {
+                    existing.sampleMessage = m.errorMessage;
+                  }
+                  exceptionCounts.set(ex, existing);
+                  if (m.stackTraceSnippet && sampleStackTraces.length < 3) {
+                    sampleStackTraces.push(`${ex}: ${m.errorMessage}\n${m.stackTraceSnippet}`);
+                  }
+                }
+              }
+            }
+          }
+
+          const topExceptions = Array.from(exceptionCounts.entries()).map(([ex, v]) => ({
+            exceptionClass: ex,
+            count: v.count,
+            sampleMessage: v.sampleMessage,
+          }));
+
+          dlqAnalysis = {
+            dlqTopicsFound: dlqTopics.length,
+            totalDeadLetters,
+            topExceptions,
+            sampleStackTraces,
+          };
+
+          if (totalDeadLetters > 0) {
+            if (totalDeadLetters > 50) verdict = 'CRITICAL';
+            else if (verdict !== 'CRITICAL') verdict = 'DEGRADED';
+
+            const exNames = topExceptions.map((e) => e.exceptionClass).join(', ');
+            remediationActions.push(
+              `Found ${totalDeadLetters.toLocaleString()} poisoned messages across ${dlqTopics.length} DLQ topics. Active exceptions: ${exNames || 'Payload processing failure'}. Use EventOre DLQ redrive after addressing root cause.`,
+            );
+          }
+        }
+      } catch {
+        // DLQ inspection not available for this connection
+      }
+    }
+
+    if (remediationActions.length === 0) {
+      remediationActions.push('No anomalies detected across cluster health, consumer lag, or dead-letter queues.');
+    }
+
+    const summary =
+      verdict === 'HEALTHY'
+        ? `Cluster '${connectionId}' is healthy with normal latency (${clusterLatencyMs}ms) and no active lag or DLQ anomalies.`
+        : verdict === 'DEGRADED'
+          ? `Cluster '${connectionId}' is degraded: minor consumer lag or quarantined dead-letter messages detected.`
+          : `Critical incident detected on cluster '${connectionId}': high consumer lag, unreachable broker, or severe poison-pill accumulation.`;
+
+    return {
+      connectionId,
+      timestamp,
+      verdict,
+      summary,
+      cluster: {
+        reachable: clusterReachable,
+        latencyMs: clusterLatencyMs,
+        details: clusterDetails,
+      },
+      lagAnalysis,
+      dlqAnalysis,
+      remediationActions,
+    };
   }
 }

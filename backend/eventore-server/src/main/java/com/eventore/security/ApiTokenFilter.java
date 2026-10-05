@@ -21,33 +21,68 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class ApiTokenFilter extends OncePerRequestFilter {
 
     private final EventoreProperties properties;
+    private final JwtTokenValidator jwtTokenValidator;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ApiTokenFilter(EventoreProperties properties, JwtTokenValidator jwtTokenValidator) {
+        this.properties = properties;
+        this.jwtTokenValidator = jwtTokenValidator != null ? jwtTokenValidator : new JwtTokenValidator(null);
+    }
 
     public ApiTokenFilter(EventoreProperties properties) {
-        this.properties = properties;
+        this(properties, null);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        if (!properties.getSecurity().isAuthEnabled()) {
+        String path = request.getRequestURI();
+        if (path.startsWith("/actuator/health")) {
             return true;
         }
-        String path = request.getRequestURI();
-        return path.startsWith("/actuator/health");
+        return !properties.getSecurity().isAuthEnabled();
     }
 
     @Override
     protected void doFilterInternal(
             HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String expected = properties.getSecurity().getApiToken();
-        String provided = extractToken(request);
-        if (provided != null && constantTimeEquals(expected, provided)) {
-            chain.doFilter(request, response);
-            return;
+        try {
+            String provided = extractToken(request);
+            if (provided != null) {
+                // 1. Check if token is JWT format
+                if (jwtTokenValidator.isJwtFormat(provided)) {
+                    try {
+                        UserPrincipal principal = jwtTokenValidator.validateToken(
+                                provided,
+                                properties.getSecurity().getJwtSecret(),
+                                properties.getSecurity().getJwtIssuer(),
+                                properties.getSecurity().getJwtAudience());
+                        SecurityContextHolder.setPrincipal(principal);
+                        chain.doFilter(request, response);
+                        return;
+                    } catch (Exception e) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                        response.getWriter().write("{\"error\":\"Invalid or expired JWT token: " + e.getMessage() + "\"}");
+                        return;
+                    }
+                }
+
+                // 2. Check static API token
+                String expected = properties.getSecurity().getApiToken();
+                if (!expected.isBlank() && constantTimeEquals(expected, provided)) {
+                    SecurityContextHolder.setPrincipal(UserPrincipal.staticTokenUser());
+                    chain.doFilter(request, response);
+                    return;
+                }
+            }
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write("{\"error\":\"Missing or invalid API token\"}");
+        } finally {
+            SecurityContextHolder.clear();
         }
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write("{\"error\":\"Missing or invalid API token\"}");
     }
 
     public static String extractToken(HttpServletRequest request) {

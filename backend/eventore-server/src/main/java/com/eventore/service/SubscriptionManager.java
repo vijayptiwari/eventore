@@ -1,5 +1,8 @@
 package com.eventore.service;
 
+import com.eventore.cluster.ClusterStreamFrame;
+import com.eventore.cluster.LocalSubscriptionDistributionBus;
+import com.eventore.cluster.SubscriptionDistributionBus;
 import com.eventore.config.EventoreProperties;
 import com.eventore.connector.ConnectorRegistry;
 import com.eventore.connector.spi.MessageHandler;
@@ -20,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,21 +37,35 @@ public class SubscriptionManager {
     private final EventoreProperties properties;
     private final MetricsService metricsService;
     private final AuditService auditService;
+    private final SubscriptionDistributionBus distributionBus;
     private final Map<String, ActiveSubscription> subscriptions = new ConcurrentHashMap<>();
     /** Per-connection locks so connector I/O on one connection never blocks others. */
     private final Map<String, Object> connectionLocks = new ConcurrentHashMap<>();
     /** Atomic reservation counter keeping the max-concurrent cap exact across connections. */
     private final AtomicInteger subscriptionCount = new AtomicInteger();
 
+    @Autowired
+    public SubscriptionManager(
+            ConnectorRegistry connectorRegistry,
+            EventoreProperties properties,
+            MetricsService metricsService,
+            AuditService auditService,
+            SubscriptionDistributionBus distributionBus) {
+        this.connectorRegistry = connectorRegistry;
+        this.properties = properties;
+        this.metricsService = metricsService;
+        this.auditService = auditService;
+        this.distributionBus = distributionBus != null
+                ? distributionBus
+                : new LocalSubscriptionDistributionBus("local-node");
+    }
+
     public SubscriptionManager(
             ConnectorRegistry connectorRegistry,
             EventoreProperties properties,
             MetricsService metricsService,
             AuditService auditService) {
-        this.connectorRegistry = connectorRegistry;
-        this.properties = properties;
-        this.metricsService = metricsService;
-        this.auditService = auditService;
+        this(connectorRegistry, properties, metricsService, auditService, null);
     }
 
     public String subscribe(
@@ -75,6 +93,24 @@ public class SubscriptionManager {
                         useQueue ? "SSE" : "WS",
                         queue);
 
+                // Register listener with cluster distribution bus for remote cross-pod broadcasts
+                distributionBus.subscribe(subscriptionId, frame -> {
+                    if (frame != null && !distributionBus.getStatus().nodeId().equals(frame.originNodeId())) {
+                        if ("MESSAGE".equals(frame.eventType()) && frame.message() != null) {
+                            StreamEvent ev = StreamEvent.message(subscriptionId, frame.message());
+                            if (queue != null) {
+                                if (!queue.offer(ev)) {
+                                    queue.poll();
+                                    queue.offer(ev);
+                                }
+                            }
+                            eventConsumer.accept(ev);
+                        } else if ("ERROR".equals(frame.eventType())) {
+                            eventConsumer.accept(StreamEvent.error(subscriptionId, frame.detail()));
+                        }
+                    }
+                });
+
                 MessageHandler handler = new MessageHandler() {
                     @Override
                     public void onMessage(UnifiedMessage message) {
@@ -92,6 +128,14 @@ public class SubscriptionManager {
                             }
                         }
                         eventConsumer.accept(event);
+
+                        // Broadcast frame across the cluster distribution bus for multi-pod replicas
+                        distributionBus.publish(ClusterStreamFrame.of(
+                                subscriptionId,
+                                distributionBus.getStatus().nodeId(),
+                                "MESSAGE",
+                                message,
+                                null));
                     }
 
                     @Override
@@ -117,6 +161,7 @@ public class SubscriptionManager {
                             useQueue ? "SSE" : "WS");
                     return subscriptionId;
                 } catch (Exception e) {
+                    distributionBus.unsubscribe(subscriptionId);
                     log.error(
                             "Subscribe failed for connection {} destination {}",
                             profile.getId(),
@@ -134,6 +179,7 @@ public class SubscriptionManager {
     }
 
     public void unsubscribe(String subscriptionId) {
+        distributionBus.unsubscribe(subscriptionId);
         ActiveSubscription active = subscriptions.remove(subscriptionId);
         if (active != null) {
             synchronized (lockFor(active.profile().getId())) {
@@ -186,6 +232,7 @@ public class SubscriptionManager {
         synchronized (lockFor(connectionId)) {
             subscriptions.entrySet().removeIf(entry -> {
                 if (entry.getValue().profile().getId().equals(connectionId)) {
+                    distributionBus.unsubscribe(entry.getKey());
                     entry.getValue().close();
                     subscriptionCount.decrementAndGet();
                     metricsService.decrementSubscriptions();

@@ -80,11 +80,12 @@ The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV
 | JMS | `eventore_jms_list_destinations`, `eventore_jms_destination_detail` |
 | Pulsar | `eventore_pulsar_list_topics`, `eventore_pulsar_subscription_backlog` |
 
-### Operator diagnostics (1)
+### Operator diagnostics & autonomous incident triage (2)
 
 | Tool | Description |
 |------|-------------|
 | `eventore_diagnostics_subscriptions` | Active subscription health snapshot |
+| `eventore_triage_incident` | Autonomous incident triage & RCA (REQ-113): multi-signal evaluation of cluster health, consumer group partition lag/skew, and DLQ poison pills |
 
 ## Resources
 
@@ -98,7 +99,7 @@ The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV
 | `eventore://connections` | Live connections |
 | `eventore://protocol-guides` | Static hints (8 protocol types) |
 
-## Prompts (10)
+## Prompts (11)
 
 | Prompt | Purpose |
 |--------|---------|
@@ -112,6 +113,7 @@ The MCP process **never** opens broker connections. Deployment mode (ADMIN / DEV
 | `eventore_jms_inspection` | Queues and topics |
 | `eventore_pulsar_inspection` | Topics → subscriptions → backlog |
 | `eventore_control_plane_ops` | Register / deregister / status checklist |
+| `eventore_incident_triage` | Autonomous incident triage & root cause analysis (REQ-113) |
 
 ## Configuration
 

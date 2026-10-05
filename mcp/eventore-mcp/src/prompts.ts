@@ -288,4 +288,36 @@ export function registerPrompts(server: McpServer, client: EventoreClient): void
       );
     },
   );
+
+  server.prompt(
+    'eventore_incident_triage',
+    'Playbook: Autonomous Incident Triage & Root Cause Analysis (REQ-113). Rapidly investigates cluster reachability, partition lag/skew, and dead-letter queue exceptions to formulate root-cause remediation.',
+    {
+      connectionId: z.string().describe('Connection profile experiencing degraded performance or errors'),
+      destination: z.string().optional().describe('Specific topic or queue under incident (optional)'),
+      maxErrors: z.number().optional().describe('Max sample DLQ errors to inspect for stack traces (default 5)'),
+    },
+    async (args) => {
+      return promptText(
+        [
+          'Autonomous Incident Triage & RCA Sequence (REQ-113):',
+          '',
+          `1. Execute automated compound triage tool:`,
+          `   Tool: eventore_triage_incident`,
+          `   Arguments: ${JSON.stringify(args, null, 2)}`,
+          '',
+          '2. The triage tool automatically analyzes 3 fault domains:',
+          '   - Broker cluster connectivity & latency',
+          '   - Consumer group partition lag & partition skews',
+          '   - Dead-Letter Queues (DLQ), poison pills, and exception stack traces',
+          '',
+          '3. Once the report is generated, synthesize findings into an incident response format:',
+          '   - Verdict & Severity: HEALTHY | DEGRADED | CRITICAL',
+          '   - Fault Domain: Network / Broker vs Consumer Processing vs Schema / Serialization Poison Pill',
+          '   - Impact Assessment: Total unconsumed backlog and poisoned message count',
+          '   - Remediation Plan: Immediate operational actions (scale consumers, repartition, or DLQ redrive)',
+        ].join('\n'),
+      );
+    },
+  );
 }
