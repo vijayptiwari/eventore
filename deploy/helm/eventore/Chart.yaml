@@ -2,5 +2,5 @@ apiVersion: v2
 name: eventore
 description: Multi-protocol streaming console for Kafka, MQTT, JMS, Pulsar, and RabbitMQ
 type: application
-version: 0.2.1
-appVersion: "0.2.1"
+version: 0.3.0
+appVersion: "0.3.0"

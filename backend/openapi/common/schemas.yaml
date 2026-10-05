@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Eventore common schemas
-  version: 0.2.1
+  version: 0.3.0
 components:
   parameters:
     connectionId:

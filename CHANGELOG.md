@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-10-06
+
+Enterprise identity, multi-tenant workspaces, distributed cluster fan-out, and autonomous AI incident triage. [Release notes and downloads](https://github.com/vijayptiwari/eventore/releases/tag/v0.3.0).
+
+### Added
+
+- **Enterprise Identity & OIDC / OAuth2 / JWT Validation (REQ-103)**: Added `JwtTokenValidator` with constant-time HMAC-SHA256 signature verification, clock-skew allowance, not-before validation, issuer and audience assertions, and claim extraction (`roles`, `groups`, `realm_access.roles`, `scope`). `UserPrincipal` and thread-local `SecurityContextHolder` integrated with `ApiTokenFilter` for seamless fallback between static token and OIDC. Exposes `GET /api/v1/auth/me`.
+- **Multi-Tenant Workspaces & Role-Based Access Control (REQ-104)**: Defined `UserRole` (`PLATFORM_ADMIN`, `WORKSPACE_ADMIN`, `OPERATOR`, `VIEWER`) and `WorkspaceManager` service with tenancy boundaries and CRUD endpoints (`GET/POST/DELETE /api/v1/workspaces`). Frontend `useAuthAndWorkspaces` hook and `WorkspaceHeaderControls` topbar selector allow instant workspace switching and role-aware workspace creation.
+- **Distributed Subscription Registry & Message Fan-Out Bus (REQ-102 / Pattern C)**: Implemented `SubscriptionDistributionBus` SPI with `LocalSubscriptionDistributionBus` (standalone default) and `RedisSubscriptionDistributionBus` (distributed Redis pub/sub over `eventore:cluster:stream-fanout` with automatic local failover and peer discovery). Enables horizontal multi-replica Kubernetes clustering without ingress session stickiness. Added telemetry endpoint `GET /api/v1/cluster/status` and live cluster badge in UI.
+- **Autonomous Incident Triage MCP Tooling & Diagnostic Playbook (REQ-113)**: Built `eventore_triage_incident` compound tool and `eventore_incident_triage` prompt executing multi-domain root-cause analysis across cluster connectivity latency, partition lag skew, and DLQ poison pills with exception stack trace extraction.
+
 ## [0.2.1] — 2026-10-04
 
 First published unified release. [Release notes and chart downloads](https://github.com/vijayptiwari/eventore/releases/tag/v0.2.1).

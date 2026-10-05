@@ -91,7 +91,7 @@ docker compose -f docker/docker-compose.stack.yml up -d --build</code></pre><p>O
       <h3>1. Build and run the backend</h3>
       <pre><code>cd backend
 mvn -DskipTests package
-java -jar eventore-server/target/eventore-server-0.2.1.jar</code></pre>
+java -jar eventore-server/target/eventore-server-0.3.0.jar</code></pre>
       <p>The API listens on <code>http://localhost:8080</code>. Swagger UI: <code>/swagger-ui.html</code>.</p>
 
       <h3>2. Build and run the frontend</h3>
@@ -126,14 +126,14 @@ npm run dev</code></pre>
 
       <h2>Quick start (published images)</h2>
       <p>Pick stream providers in Helm; the chart pulls the matching GHCR backend tag (<code>kafka</code>, <code>kafka-kinesis</code>, etc.). Details: <a href="deployment.html#published-artifacts">Published artifacts</a>.</p>
-      <pre><code>docker pull ghcr.io/vijayptiwari/eventore-backend:0.2.1-kafka
+      <pre><code>docker pull ghcr.io/vijayptiwari/eventore-backend:0.3.0-kafka
 
-helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.2.1 \
+helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.3.0 \
   -f deploy/helm/eventore/values-stream-kafka.yaml</code></pre>
 
       <h2>Slim deployment (Kafka + Kinesis only)</h2>
       <pre><code>mvn -DskipTests -Pkafka-kinesis -P!providers-all -pl eventore-server -am package
-java -jar eventore-server/target/eventore-server-0.2.1.jar \
+java -jar eventore-server/target/eventore-server-0.3.0.jar \
   --spring.profiles.active=kafka-kinesis</code></pre>
       <p>Only Kafka and Kinesis appear in the UI protocol list. See <a href="configuration.html">Configuration</a>.</p>
 

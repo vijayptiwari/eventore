@@ -20,7 +20,7 @@ services:
       timeout: 5s
       retries: 30
   eventore-backend:
-    image: ghcr.io/vijayptiwari/eventore-backend:0.2.1-all
+    image: ghcr.io/vijayptiwari/eventore-backend:0.3.0-all
     ports: ['127.0.0.1:8080:8080']
     environment:
       SPRING_APPLICATION_JSON: '{"eventore":{"deployment-mode":"DEV","enabled-protocols":"KAFKA,RABBITMQ"}}'
@@ -30,7 +30,7 @@ services:
       kafka: {condition: service_healthy}
       rabbitmq: {condition: service_healthy}
   eventore-frontend:
-    image: ghcr.io/vijayptiwari/eventore-frontend:0.2.1
+    image: ghcr.io/vijayptiwari/eventore-frontend:0.3.0
     ports: ['127.0.0.1:8088:80']
     environment:
       EVENTORE_BACKEND_HOST: eventore-backend

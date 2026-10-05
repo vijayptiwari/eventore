@@ -1,4 +1,4 @@
-EventOre 0.2.1 is the first unified versioned distribution of the console, backend providers, MCP server, and Helm charts.
+EventOre 0.3.0 is a major feature release introducing enterprise identity, multi-tenant workspaces, distributed cluster streaming, and autonomous incident triage AI tooling.
 
 ### Included
 
@@ -14,17 +14,17 @@ EventOre 0.2.1 is the first unified versioned distribution of the console, backe
 ### Install
 
 ```sh
-helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.2.1
+helm install eventore oci://ghcr.io/vijayptiwari/charts/eventore --version 0.3.0
 ```
 
 Review deployment values before exposing the installation: the default mode is Dev, API authentication is disabled until configured, and ingress requires environment-specific settings. The website's deployment guide provides an authenticated single-replica example.
 
 ### Versioned artifacts
 
-- Backend: `ghcr.io/vijayptiwari/eventore-backend:0.2.1-<provider>`; for example `0.2.1-kafka`, `0.2.1-mqtt`, `0.2.1-kafka-kinesis`, or `0.2.1-all`.
-- Frontend: `ghcr.io/vijayptiwari/eventore-frontend:0.2.1`.
-- MCP: `ghcr.io/vijayptiwari/eventore-mcp:0.2.1`.
-- Helm: `eventore` and `eventore-mcp`, version `0.2.1`. Chart archives and SHA-256 checksums are attached.
+- Backend: `ghcr.io/vijayptiwari/eventore-backend:0.3.0-<provider>`; for example `0.3.0-kafka`, `0.3.0-mqtt`, `0.3.0-kafka-kinesis`, or `0.3.0-all`.
+- Frontend: `ghcr.io/vijayptiwari/eventore-frontend:0.3.0`.
+- MCP: `ghcr.io/vijayptiwari/eventore-mcp:0.3.0`.
+- Helm: `eventore` and `eventore-mcp`, version `0.3.0`. Chart archives and SHA-256 checksums are attached.
 
 Provider-qualified backend tags prevent different provider bundles from overwriting one another. Chart image defaults follow the chart's application version. Development builds use separate Git-SHA image tags and prerelease chart versions.
 

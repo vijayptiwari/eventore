@@ -5,7 +5,7 @@ info:
     Operator diagnostics for subscription health and connection validation history.
     x-eventore-stream: diagnostics
     x-eventore-scope: operator
-  version: 0.2.1
+  version: 0.3.0
 servers:
   - url: /api/v1
 tags:
