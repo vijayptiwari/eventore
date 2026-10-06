@@ -1,9 +1,46 @@
 {
   "reviewedOn": "2026-10-06",
   "manifestVersion": "0.3.0",
-  "releaseStatus": "0.3.0 in development",
   "source": "https://github.com/vijayptiwari/eventore",
   "milestones": [
+    {
+      "id": "october-audit",
+      "date": "2026-10-06",
+      "title": "October audit: safer operations and more reliable diagnostics",
+      "releaseVersion": null,
+      "features": [
+        [
+          "Authentication and operation permissions",
+          "JWT signatures and expiration are required. Role matching and deployment-mode permissions cover REST and WebSocket operations; workspace resource isolation remains unfinished.",
+          "b147529",
+          "guide/configuration.html#authentication"
+        ],
+        [
+          "Connection persistence safety",
+          "Failed writes preserve live state; migration settings, optimistic versions, missing JDBC configuration and CRD resource-name collisions are handled explicitly.",
+          "b147529",
+          "guide/connection-stores.html"
+        ],
+        [
+          "Schemas, replay and bridge delivery",
+          "Registry caches are isolated, remote errors remain visible, binary Avro round-trips correctly, replay failures surface, and bridge delivery preserves provenance headers.",
+          "b147529",
+          "guide/replication-bridging.html"
+        ],
+        [
+          "Honest diagnostic results",
+          "MCP handles backend lag and DLQ responses correctly, reports failed checks and returns UNKNOWN for incomplete clean assessments. DLQ counts are samples, not queue depth. The console reports partial redrive and absent lag data.",
+          "b147529",
+          "guide/mcp.html"
+        ],
+        [
+          "Release and cluster safeguards",
+          "Published version claims now follow verified release metadata. Unimplemented Redis distribution is rejected rather than appearing to provide cross-pod delivery.",
+          "9e5155f",
+          "guide/deployment.html"
+        ]
+      ]
+    },
     {
       "id": "enterprise-ha-triage",
       "date": "2026-10-06",
@@ -23,18 +60,32 @@
         ],
         [
           "Local subscription distribution interface",
-          "Local fan-out and cluster status are implemented. The Redis class has no Redis transport or shared subscription registry; cross-pod delivery remains unfinished.",
+          "Local fan-out and node status are implemented. Redis mode is rejected at startup because its transport and shared subscription registry are unfinished.",
           "b387f2a",
           "guide/deployment.html"
         ],
         [
           "Incident triage MCP preview",
-          "A compound diagnostic tool and prompt collect broker, lag and DLQ information using fixed heuristics. Failed checks are reported explicitly; incomplete clean assessments return UNKNOWN. DLQ counts describe samples, not queue depth.",
+          "A compound diagnostic tool and prompt collect broker, lag and DLQ information using fixed heuristics. This preview offers investigation hints, not autonomous remediation.",
           "b387f2a",
           "guide/mcp.html"
         ]
       ],
       "releaseVersion": null
+    },
+    {
+      "id": "replication-reliability",
+      "date": "2026-10-05",
+      "title": "Replication routing and connection feedback",
+      "releaseVersion": null,
+      "features": [
+        [
+          "Replication workflow fixes",
+          "Corrected replication routing and error handling, improved the empty-connection experience, and added schema and replay guides.",
+          "0a1f673",
+          "guide/replication-bridging.html"
+        ]
+      ]
     },
     {
       "id": "bridges-storage",
@@ -49,7 +100,7 @@
         ],
         [
           "Externalized connection stores",
-          "File, JDBC, and CRD-backed connection-store implementations, with migration controls. Store selection does not make live subscriptions distributed.",
+          "File and JDBC stores plus a CRD-shaped resource-file store, with migration controls. The CRD implementation does not watch the Kubernetes API. Shared connection persistence does not distribute live subscriptions.",
           "affb02a",
           "guide/connection-stores.html"
         ]
@@ -147,14 +198,14 @@
       "title": "Deeper MQTT and JMS inspection",
       "status": "Proposed",
       "reference": "REQ-65",
-      "description": "Explore richer queue and retained-message inspection while respecting each broker’s semantics and avoiding destructive reads.",
+      "description": "Explore richer queue and retained-message inspection while respecting each brokerâ€™s semantics and avoiding destructive reads.",
       "source": "docs/REQUIREMENTS.md"
     },
     {
       "title": "Enterprise identity",
       "status": "In progress",
       "reference": "REQ-72",
-      "description": "HS256 JWT and workspace metadata foundations exist in development. OIDC discovery/JWKS, enterprise sign-in and connection-level workspace authorization remain unfinished.",
+      "description": "Shared-secret JWT authentication and operation-level role enforcement exist in unreleased development. OIDC discovery, JWKS and enterprise sign-in remain unfinished; workspace metadata does not provide tenant isolation.",
       "source": "docs/REQUIREMENTS.md"
     },
     {

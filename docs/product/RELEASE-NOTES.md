@@ -5,6 +5,11 @@
 ## Changes since 0.2.1
 
 - HS256 JWT identity validation and claim extraction; authentication now requires signature verification and expiration, with configured issuer/audience checks.
+- Operation-level role and deployment-mode enforcement across REST and WebSocket operations.
+- Persistence fixes for failed writes, migration controls, optimistic versions and CRD resource-name collisions.
+- Schema Registry cache isolation, explicit remote errors, binary Avro round-trips and replay failure reporting.
+- Bridge delivery and provenance-header fixes; accurate partial redrive and missing-lag reporting.
+- MCP lag/DLQ response handling and explicit incomplete or failed diagnostic checks.
 - In-memory workspace catalog and console selector.
 - Local subscription distribution interface and node status API.
 - MCP incident triage tool and prompt using broker, lag and DLQ diagnostics.

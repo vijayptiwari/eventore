@@ -272,7 +272,7 @@
       "file": "roadmap.html",
       "path": "roadmap.html",
       "title": "EventOre Roadmap — Upcoming Features",
-      "description": "Explore planned and proposed EventOre features, including Schema Registry Avro/Protobuf integration, rate limiting, cloud CI emulators, and deeper protocol inspection.",
+      "description": "Track open EventOre work: enterprise sign-in, workspace isolation, distributed subscriptions, rate limiting, protocol inspection and deferred cloud CI coverage.",
       "ogType": "website"
     },
     {
