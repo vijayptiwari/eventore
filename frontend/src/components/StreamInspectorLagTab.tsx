@@ -40,7 +40,7 @@ export function computeLagMetrics(lag: LagRow[] | undefined) {
       totalPartitions: 0,
       skew: 0,
       isHighSkew: false,
-      healthStatus: { label: 'HEALTHY', class: 'lag-status-healthy', icon: '●' },
+      healthStatus: { label: 'NO DATA', class: 'lag-status-unknown', icon: '—' },
     };
   }
 

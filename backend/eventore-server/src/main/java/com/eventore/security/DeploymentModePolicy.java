@@ -16,7 +16,6 @@ public class DeploymentModePolicy {
 
     private final EventoreProperties properties;
     private final ControlPlaneRegistry controlPlane;
-    private volatile List<String> cachedAllowedActionStrings;
 
     public DeploymentModePolicy(EventoreProperties properties, ControlPlaneRegistry controlPlane) {
         this.properties = properties;
@@ -28,7 +27,7 @@ public class DeploymentModePolicy {
     }
 
     public List<Action> allowedActions() {
-        return switch (mode()) {
+        return (switch (mode()) {
             case ADMIN -> List.of(
                     Action.MANAGE_CONNECTIONS,
                     Action.BROWSE_DESTINATIONS,
@@ -41,7 +40,7 @@ public class DeploymentModePolicy {
                     Action.SUBSCRIBE,
                     Action.PUBLISH);
             case READONLY -> List.of(Action.BROWSE_DESTINATIONS, Action.SUBSCRIBE);
-        };
+        }).stream().filter(SecurityContextHolder.getPrincipal()::canPerformAction).toList();
     }
 
     public void require(Action action) {
@@ -96,16 +95,6 @@ public class DeploymentModePolicy {
     }
 
     public List<String> allowedActionsAsStrings() {
-        List<String> cached = cachedAllowedActionStrings;
-        if (cached != null) {
-            return cached;
-        }
-        List<String> names = new ArrayList<>();
-        for (Action action : allowedActions()) {
-            names.add(action.name());
-        }
-        cached = List.copyOf(names);
-        cachedAllowedActionStrings = cached;
-        return cached;
+        return allowedActions().stream().map(Action::name).toList();
     }
 }

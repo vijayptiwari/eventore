@@ -270,6 +270,7 @@ public class EventoreProperties {
                 }
             }
             config.setMaskValuesByPattern(maskValues);
+            config.setMaskHeaders(maskHeaders);
             return config;
         }
     }

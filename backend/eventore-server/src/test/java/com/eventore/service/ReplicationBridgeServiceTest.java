@@ -70,7 +70,32 @@ class ReplicationBridgeServiceTest {
         when(connectorRegistry.get(ProtocolType.KAFKA)).thenReturn(kafkaConnector);
         when(connectorRegistry.get(ProtocolType.RABBITMQ)).thenReturn(rabbitConnector);
 
-        service = new ReplicationBridgeService(connectionRegistry, connectorRegistry, subscriptionManager, auditService);
+        service = new ReplicationBridgeService(connectionRegistry, connectorRegistry, subscriptionManager, auditService, mock(com.eventore.security.DeploymentModePolicy.class));
+    }
+
+    @Test
+    void dryRunPreservesLoopMarkersDespiteTransforms() {
+        var result = service.testBridge(new ReplicationTestRequest(
+                Map.of(), "hello",
+                Map.of("remove:x-eventore-bridge-id", "", "x-eventore-replicated", "false"), null, true, "test-bridge"));
+        assertThat(result.transformedHeaders()).containsEntry("x-eventore-bridge-id", "test-bridge");
+        assertThat(result.transformedHeaders()).containsEntry("x-eventore-replicated", "true");
+    }
+
+    @Test
+    void forwardsMessagesDeliveredSynchronouslyDuringSubscribe() {
+        ReplicationBridge bridge = service.createBridge(new ReplicationBridgeRequest(
+                "Immediate", "conn-kafka", "orders", "conn-rabbit", "orders-queue", null, null, true, false));
+        when(subscriptionManager.subscribe(eq(kafkaProfile), any(), any(), eq(false))).thenAnswer(inv -> {
+            Consumer<StreamEvent> callback = inv.getArgument(2);
+            UnifiedMessage message = new UnifiedMessage();
+            message.setPayload("first message");
+            callback.accept(StreamEvent.message("sub", message));
+            return "sub";
+        });
+        service.startBridge(bridge.id());
+        verify(rabbitConnector).publish(eq(rabbitProfile), any());
+        assertThat(service.getBridge(bridge.id()).orElseThrow().stats().totalReplicated()).isEqualTo(1);
     }
 
     @Test

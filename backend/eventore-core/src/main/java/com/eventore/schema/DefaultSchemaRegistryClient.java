@@ -20,11 +20,11 @@ public class DefaultSchemaRegistryClient implements SchemaRegistryClient {
     private static final Logger log = LoggerFactory.getLogger(DefaultSchemaRegistryClient.class);
     private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(4);
 
-    private final Map<Integer, SchemaMetadata> cache = new ConcurrentHashMap<>();
+    private final Map<String, SchemaMetadata> cache = new ConcurrentHashMap<>();
     private final Map<String, SchemaMetadata> subjectCache = new ConcurrentHashMap<>();
     private final AtomicInteger localIdGenerator = new AtomicInteger(1000);
 
-    private final HttpClient httpClient;
+    private volatile HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final String defaultRegistryUrl;
 
@@ -35,7 +35,7 @@ public class DefaultSchemaRegistryClient implements SchemaRegistryClient {
     public DefaultSchemaRegistryClient(String defaultRegistryUrl) {
         this(
                 defaultRegistryUrl,
-                HttpClient.newBuilder().connectTimeout(HTTP_TIMEOUT).build(),
+                null,
                 new ObjectMapper());
     }
 
@@ -53,12 +53,12 @@ public class DefaultSchemaRegistryClient implements SchemaRegistryClient {
 
     @Override
     public Optional<SchemaMetadata> getSchemaById(String registryUrl, int schemaId) {
-        SchemaMetadata cached = cache.get(schemaId);
+        String effectiveUrl = sanitizeUrl(registryUrl != null ? registryUrl : defaultRegistryUrl);
+        SchemaMetadata cached = cache.get(schemaKey(effectiveUrl, schemaId));
         if (cached != null) {
             return Optional.of(cached);
         }
 
-        String effectiveUrl = sanitizeUrl(registryUrl != null ? registryUrl : defaultRegistryUrl);
         if (effectiveUrl == null) {
             return Optional.empty();
         }
@@ -72,14 +72,14 @@ public class DefaultSchemaRegistryClient implements SchemaRegistryClient {
                     .build();
 
             HttpResponse<String> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                    httpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
                 JsonNode json = objectMapper.readTree(response.body());
                 String schemaContent = json.path("schema").asText("");
                 String schemaType = json.path("schemaType").asText("AVRO");
                 SchemaMetadata meta = new SchemaMetadata(schemaId, null, null, schemaType, schemaContent);
-                cache.put(schemaId, meta);
+                cache.put(schemaKey(effectiveUrl, schemaId), meta);
                 return Optional.of(meta);
             } else if (response.statusCode() == 404) {
                 log.debug("Schema ID {} not found in registry at {}", schemaId, effectiveUrl);
@@ -109,14 +109,14 @@ public class DefaultSchemaRegistryClient implements SchemaRegistryClient {
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(effectiveUrl + "/subjects/" + subject + "/versions/latest"))
+                    .uri(URI.create(effectiveUrl + "/subjects/" + java.net.URLEncoder.encode(subject, java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20") + "/versions/latest"))
                     .timeout(HTTP_TIMEOUT)
                     .header("Accept", "application/vnd.schemaregistry.v1+json, application/json")
                     .GET()
                     .build();
 
             HttpResponse<String> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                    httpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
                 JsonNode json = objectMapper.readTree(response.body());
@@ -126,7 +126,7 @@ public class DefaultSchemaRegistryClient implements SchemaRegistryClient {
                 String schemaType = json.path("schemaType").asText("AVRO");
 
                 SchemaMetadata meta = new SchemaMetadata(schemaId, subject, version, schemaType, schemaContent);
-                cache.put(schemaId, meta);
+                cache.put(schemaKey(effectiveUrl, schemaId), meta);
                 subjectCache.put(cacheKey, meta);
                 return Optional.of(meta);
             }
@@ -150,7 +150,7 @@ public class DefaultSchemaRegistryClient implements SchemaRegistryClient {
                         "schemaType", effectiveType));
 
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(effectiveUrl + "/subjects/" + subject + "/versions"))
+                        .uri(URI.create(effectiveUrl + "/subjects/" + java.net.URLEncoder.encode(subject, java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20") + "/versions"))
                         .timeout(HTTP_TIMEOUT)
                         .header("Content-Type", "application/vnd.schemaregistry.v1+json")
                         .header("Accept", "application/vnd.schemaregistry.v1+json, application/json")
@@ -158,24 +158,26 @@ public class DefaultSchemaRegistryClient implements SchemaRegistryClient {
                         .build();
 
                 HttpResponse<String> response =
-                        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                        httpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
                 if (response.statusCode() == 200) {
                     JsonNode json = objectMapper.readTree(response.body());
                     int id = json.path("id").asInt();
                     SchemaMetadata meta = new SchemaMetadata(id, subject, null, effectiveType, schemaContent);
-                    cache.put(id, meta);
+                    cache.put(schemaKey(effectiveUrl, id), meta);
                     subjectCache.put(effectiveUrl + ":" + subject, meta);
                     return meta;
                 }
+                throw new IllegalStateException("Schema registry returned HTTP " + response.statusCode());
             } catch (Exception e) {
-                log.warn("Remote schema registration failed against {}: {}. Falling back to local ID.", effectiveUrl, e.getMessage());
+                if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+                throw new IllegalStateException("Remote schema registration failed", e);
             }
         }
 
         int id = localIdGenerator.incrementAndGet();
         SchemaMetadata localMeta = new SchemaMetadata(id, subject, 1, effectiveType, schemaContent);
-        cache.put(id, localMeta);
+        cache.put(schemaKey(null, id), localMeta);
         subjectCache.put("local:" + subject, localMeta);
         return localMeta;
     }
@@ -184,18 +186,28 @@ public class DefaultSchemaRegistryClient implements SchemaRegistryClient {
     public void registerLocalSchema(int schemaId, String schemaContent, String schemaType) {
         String effectiveType = (schemaType == null || schemaType.isBlank()) ? "AVRO" : schemaType.toUpperCase();
         SchemaMetadata meta = new SchemaMetadata(schemaId, null, null, effectiveType, schemaContent);
-        cache.put(schemaId, meta);
+        cache.put(schemaKey(null, schemaId), meta);
+        localIdGenerator.accumulateAndGet(schemaId, Math::max);
     }
 
     @Override
-    public Map<Integer, SchemaMetadata> getCachedSchemas() {
-        return Collections.unmodifiableMap(cache);
+    public Map<String, SchemaMetadata> getCachedSchemas() {
+        return Collections.unmodifiableMap(new java.util.LinkedHashMap<>(cache));
     }
 
     @Override
     public void clearCache() {
         cache.clear();
         subjectCache.clear();
+    }
+
+    private synchronized HttpClient httpClient() {
+        if (httpClient == null) httpClient = HttpClient.newBuilder().connectTimeout(HTTP_TIMEOUT).build();
+        return httpClient;
+    }
+
+    private static String schemaKey(String registry, int id) {
+        return (registry == null ? "local" : registry) + ":" + id;
     }
 
     private static String sanitizeUrl(String url) {

@@ -43,9 +43,11 @@ export default function StreamInspectorDlqTab({ connectionId, defaultTopic, canP
     mutationFn: (req: DlqRedriveRequest) => api.redriveDlq(connectionId, req),
     onSuccess: (data) => {
       setRedriveStatus(
-        `✓ Redriven ${data.redrivenCount} message(s) to '${data.targetTopic}' successfully!`
+        data.failedCount > 0
+          ? `✗ Redriven ${data.redrivenCount}; ${data.failedCount} failed: ${data.errors.join('; ')}`
+          : `✓ Redriven ${data.redrivenCount} message(s) to '${data.targetTopic}' successfully!`
       );
-      setActiveMessage(null);
+      if (data.failedCount === 0) setActiveMessage(null);
       refetchMessages();
     },
     onError: (err: unknown) => {

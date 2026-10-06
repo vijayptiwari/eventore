@@ -39,7 +39,7 @@ public class ConnectionRegistry {
         return Optional.ofNullable(profiles.get(id));
     }
 
-    public ConnectionProfile save(ConnectionProfile profile) {
+    public synchronized ConnectionProfile save(ConnectionProfile profile) {
         Objects.requireNonNull(profile, "connection profile");
         String id = profile.getId();
         if (id == null || id.isBlank()) {
@@ -48,14 +48,14 @@ public class ConnectionRegistry {
         if (persistence.isEnabled()) {
             ConnectionProfileStore.validatePersistableCredentials(profile);
         }
-        profiles.put(id, profile);
         persistence.save(profile);
+        profiles.put(id, profile);
         return profile;
     }
 
-    public void delete(String id) {
-        profiles.remove(id);
+    public synchronized void delete(String id) {
         persistence.delete(id);
+        profiles.remove(id);
     }
 
     public ConnectionProfileStore getStore() {

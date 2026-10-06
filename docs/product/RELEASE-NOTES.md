@@ -13,9 +13,9 @@
 ## Implementation limits
 
 - JWT support uses a shared HS256 secret. OIDC discovery, JWKS, OAuth2 login and enterprise SSO are not implemented.
-- Workspaces are metadata, not tenant isolation. Broker operations do not enforce the extracted user roles or workspace selection.
+- Workspaces are metadata, not tenant isolation. Operation policies enforce identity roles and deployment mode, but workspace selection does not isolate broker resources.
 - The Redis bus is a scaffold without a network transport. Subscriptions remain process-local; use a single backend replica. Shared connection persistence does not supply active-active streaming.
-- Triage uses fixed heuristics and can omit failed or unsupported checks. It provides investigation hints, not autonomous remediation or a complete health verdict.
+- Triage uses fixed heuristics and reports failed requested checks explicitly. DLQ counts are sample sizes. It provides investigation hints, not autonomous remediation or a complete health verdict.
 
 ## Release status and versioning
 

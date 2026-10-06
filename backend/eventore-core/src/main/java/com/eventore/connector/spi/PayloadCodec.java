@@ -113,7 +113,7 @@ public final class PayloadCodec {
             }
             return new Decoded(
                     Base64.getEncoder().encodeToString(data),
-                    "application/vnd.apache.avro+binary; schemaId=" + schemaId,
+                    "application/vnd.apache.avro+binary; encoding=base64; schemaId=" + schemaId,
                     true,
                     schemaId,
                     "AVRO");

@@ -23,7 +23,7 @@ class WorkspaceAndAuthControllerTest {
     @BeforeEach
     void setUp() {
         workspaceManager = new WorkspaceManager();
-        workspaceController = new WorkspaceController(workspaceManager);
+        workspaceController = new WorkspaceController(workspaceManager, org.mockito.Mockito.mock(com.eventore.security.DeploymentModePolicy.class));
         authController = new AuthController();
     }
 

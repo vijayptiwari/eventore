@@ -42,6 +42,7 @@ public class ReplicationBridgeService {
     private final ConnectorRegistry connectorRegistry;
     private final SubscriptionManager subscriptionManager;
     private final AuditService auditService;
+    private final com.eventore.security.DeploymentModePolicy policy;
 
     private final Map<String, BridgeRuntime> bridges = new ConcurrentHashMap<>();
 
@@ -49,11 +50,13 @@ public class ReplicationBridgeService {
             ConnectionRegistry connectionRegistry,
             ConnectorRegistry connectorRegistry,
             SubscriptionManager subscriptionManager,
-            AuditService auditService) {
+            AuditService auditService,
+            com.eventore.security.DeploymentModePolicy policy) {
         this.connectionRegistry = connectionRegistry;
         this.connectorRegistry = connectorRegistry;
         this.subscriptionManager = subscriptionManager;
         this.auditService = auditService;
+        this.policy = policy;
     }
 
     public List<ReplicationBridge> listBridges() {
@@ -174,6 +177,8 @@ public class ReplicationBridgeService {
     }
 
     public synchronized ReplicationBridge startBridge(String bridgeId) {
+        policy.require(com.eventore.security.Action.SUBSCRIBE);
+        policy.require(com.eventore.security.Action.PUBLISH);
         BridgeRuntime runtime = bridges.get(bridgeId);
         if (runtime == null) {
             throw new IllegalArgumentException("Bridge not found: " + bridgeId);
@@ -186,11 +191,14 @@ public class ReplicationBridgeService {
         ConnectionProfile sourceProfile = connectionRegistry.find(runtime.bridge.sourceConnectionId())
                 .orElseThrow(() -> new IllegalStateException("Source connection missing: " + runtime.bridge.sourceConnectionId()));
 
-        connectionRegistry.find(runtime.bridge.targetConnectionId())
+        ConnectionProfile targetProfile = connectionRegistry.find(runtime.bridge.targetConnectionId())
                 .orElseThrow(() -> new IllegalStateException("Target connection missing: " + runtime.bridge.targetConnectionId()));
+        policy.requireProtocol(sourceProfile.getProtocol());
+        policy.requireProtocol(targetProfile.getProtocol());
 
         SubscribeRequest subReq = new SubscribeRequest();
         subReq.setDestination(runtime.bridge.sourceDestination());
+        runtime.state.set(ReplicationBridgeState.RUNNING);
         try {
             String subscriptionId = subscriptionManager.subscribe(
                     sourceProfile,
@@ -246,7 +254,7 @@ public class ReplicationBridgeService {
         boolean loopDetected = false;
         if (loopPrevention) {
             String existingBridge = headers.get("x-eventore-bridge-id");
-            if (existingBridge != null && (existingBridge.equals(bridgeId) || "true".equalsIgnoreCase(headers.get("x-eventore-replicated")))) {
+            if (bridgeId.equals(existingBridge) || "true".equalsIgnoreCase(headers.get("x-eventore-replicated"))) {
                 loopDetected = true;
             }
         }
@@ -339,6 +347,8 @@ public class ReplicationBridgeService {
             pubReq.setContentType(msg.getContentType() != null ? msg.getContentType() : "text/plain");
 
             // Execute publish
+            policy.requireProtocol(targetProfile.getProtocol());
+            policy.validatePublishSize(com.eventore.connector.spi.PayloadCodec.toBytes(payload, pubReq.getContentType()).length);
             targetConnector.publish(targetProfile, pubReq);
 
             // Record stats
@@ -360,13 +370,6 @@ public class ReplicationBridgeService {
             String sourceDest) {
         Map<String, String> headers = new HashMap<>(original);
 
-        // Core replication provenance headers
-        headers.put("x-eventore-bridge-id", bridgeId);
-        headers.put("x-eventore-replicated", "true");
-        headers.put("x-eventore-source-connection", sourceConn);
-        headers.put("x-eventore-source-destination", sourceDest);
-        headers.put("x-eventore-replicated-at", Instant.now().toString());
-
         // Custom transformation rules (e.g. rename:old->new or key->value)
         if (transformRules != null) {
             for (Map.Entry<String, String> entry : transformRules.entrySet()) {
@@ -386,6 +389,13 @@ public class ReplicationBridgeService {
                 }
             }
         }
+
+        // Core replication provenance headers
+        headers.put("x-eventore-bridge-id", bridgeId);
+        headers.put("x-eventore-replicated", "true");
+        headers.put("x-eventore-source-connection", sourceConn);
+        headers.put("x-eventore-source-destination", sourceDest);
+        headers.put("x-eventore-replicated-at", Instant.now().toString());
 
         return headers;
     }

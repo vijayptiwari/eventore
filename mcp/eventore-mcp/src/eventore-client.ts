@@ -56,20 +56,16 @@ export interface UnifiedMessage {
 }
 
 export interface DlqTopicSummary {
-  topic: string;
-  messageCount: number;
-  quarantinedCount?: number;
-  lastErrorMessage?: string;
-  lastFailedTimestamp?: string;
+  dlqTopic: string;
+  inferredTargetTopic: string;
+  partitionCount: number;
+  detectionReason: string;
 }
 
 export interface DlqMessageInfo {
-  id: string;
-  topic: string;
-  payload: string;
-  headers?: Record<string, string>;
-  timestamp: string;
-  errorMessage?: string;
+  message: UnifiedMessage;
+  originalTopic?: string;
+  failureReason?: string;
   exceptionClass?: string;
   stackTraceSnippet?: string;
 }
@@ -84,7 +80,8 @@ export interface IncidentTriageOptions {
 export interface IncidentTriageReport {
   connectionId: string;
   timestamp: string;
-  verdict: 'HEALTHY' | 'DEGRADED' | 'CRITICAL';
+  verdict: 'HEALTHY' | 'DEGRADED' | 'CRITICAL' | 'UNKNOWN';
+  incompleteChecks: string[];
   summary: string;
   cluster: {
     reachable: boolean;
@@ -417,7 +414,8 @@ export class EventoreClient {
 
     const timestamp = new Date().toISOString();
     const remediationActions: string[] = [];
-    let verdict: 'HEALTHY' | 'DEGRADED' | 'CRITICAL' = 'HEALTHY';
+    const incompleteChecks: string[] = [];
+    let verdict: IncidentTriageReport['verdict'] = 'HEALTHY';
 
     // 1. Cluster connectivity & health check
     let clusterReachable = false;
@@ -452,7 +450,7 @@ export class EventoreClient {
             if (!groupId) continue;
             try {
               const lagDetail = (await this.inspectLag(connectionId, groupId, destination)) as any;
-              const partitions = Array.isArray(lagDetail?.partitions) ? lagDetail.partitions : [];
+              const partitions = Array.isArray(lagDetail) ? lagDetail : [];
               let groupLag = 0;
               for (const p of partitions) {
                 const currentLag = Number(p.lag || 0);
@@ -470,7 +468,7 @@ export class EventoreClient {
               totalLag += groupLag;
               if (groupLag > 5000) unhealthyCount++;
             } catch {
-              // Group lag inspection unsupported on this broker or group empty
+              incompleteChecks.push(`Consumer lag for ${groupId}`);
             }
           }
         }
@@ -496,7 +494,7 @@ export class EventoreClient {
           );
         }
       } catch {
-        // Lag inspection skipped or unsupported
+        incompleteChecks.push('Consumer group inspection');
       }
     }
 
@@ -511,20 +509,20 @@ export class EventoreClient {
 
         if (Array.isArray(dlqTopics)) {
           for (const dt of dlqTopics) {
-            totalDeadLetters += dt.messageCount || 0;
-            if (dt.messageCount > 0) {
-              const sampleMsgs = await this.inspectDlqMessages(connectionId, dt.topic, maxErrors);
+            {
+              const sampleMsgs = await this.inspectDlqMessages(connectionId, dt.dlqTopic, maxErrors);
+              totalDeadLetters += sampleMsgs.length;
               if (Array.isArray(sampleMsgs)) {
                 for (const m of sampleMsgs) {
                   const ex = m.exceptionClass || 'UnknownException';
                   const existing = exceptionCounts.get(ex) || { count: 0 };
                   existing.count++;
-                  if (!existing.sampleMessage && m.errorMessage) {
-                    existing.sampleMessage = m.errorMessage;
+                  if (!existing.sampleMessage && m.failureReason) {
+                    existing.sampleMessage = m.failureReason;
                   }
                   exceptionCounts.set(ex, existing);
                   if (m.stackTraceSnippet && sampleStackTraces.length < 3) {
-                    sampleStackTraces.push(`${ex}: ${m.errorMessage}\n${m.stackTraceSnippet}`);
+                    sampleStackTraces.push(`${ex}: ${m.failureReason}\n${m.stackTraceSnippet}`);
                   }
                 }
               }
@@ -550,20 +548,23 @@ export class EventoreClient {
 
             const exNames = topExceptions.map((e) => e.exceptionClass).join(', ');
             remediationActions.push(
-              `Found ${totalDeadLetters.toLocaleString()} poisoned messages across ${dlqTopics.length} DLQ topics. Active exceptions: ${exNames || 'Payload processing failure'}. Use EventOre DLQ redrive after addressing root cause.`,
+              `Found ${totalDeadLetters.toLocaleString()} sampled dead-letter messages across ${dlqTopics.length} DLQ topics. Active exceptions: ${exNames || 'Payload processing failure'}. Use EventOre DLQ redrive after addressing root cause.`,
             );
           }
         }
       } catch {
-        // DLQ inspection not available for this connection
+        incompleteChecks.push('DLQ inspection');
       }
     }
 
+    if (incompleteChecks.length && verdict === 'HEALTHY') verdict = 'UNKNOWN';
+    if (incompleteChecks.length) remediationActions.push(`Incomplete checks: ${incompleteChecks.join(', ')}. Health is not fully assessed.`);
     if (remediationActions.length === 0) {
       remediationActions.push('No anomalies detected across cluster health, consumer lag, or dead-letter queues.');
     }
 
     const summary =
+      verdict === 'UNKNOWN' ? 'Diagnostics incomplete; health cannot be determined.' :
       verdict === 'HEALTHY'
         ? `Cluster '${connectionId}' is healthy with normal latency (${clusterLatencyMs}ms) and no active lag or DLQ anomalies.`
         : verdict === 'DEGRADED'
@@ -574,6 +575,7 @@ export class EventoreClient {
       connectionId,
       timestamp,
       verdict,
+      incompleteChecks,
       summary,
       cluster: {
         reachable: clusterReachable,

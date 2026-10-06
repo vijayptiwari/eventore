@@ -22,9 +22,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class WorkspaceController {
 
     private final WorkspaceManager workspaceManager;
+    private final com.eventore.security.DeploymentModePolicy policy;
 
-    public WorkspaceController(WorkspaceManager workspaceManager) {
+    public WorkspaceController(WorkspaceManager workspaceManager, com.eventore.security.DeploymentModePolicy policy) {
         this.workspaceManager = workspaceManager;
+        this.policy = policy;
     }
 
     @GetMapping
@@ -43,6 +45,7 @@ public class WorkspaceController {
 
     @PostMapping
     public ResponseEntity<Workspace> createWorkspace(@RequestBody Workspace workspace) {
+        policy.require(com.eventore.security.Action.MANAGE_CONNECTIONS);
         UserPrincipal principal = SecurityContextHolder.getPrincipal();
         Workspace created = workspaceManager.createWorkspace(workspace, principal);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -50,6 +53,7 @@ public class WorkspaceController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWorkspace(@PathVariable("id") String id) {
+        policy.require(com.eventore.security.Action.MANAGE_CONNECTIONS);
         UserPrincipal principal = SecurityContextHolder.getPrincipal();
         if (workspaceManager.deleteWorkspace(id, principal)) {
             return ResponseEntity.noContent().build();

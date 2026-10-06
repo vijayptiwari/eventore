@@ -34,15 +34,22 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
     private static final Logger log = LoggerFactory.getLogger(RabbitMqMessagingInspector.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final HttpClient httpClient;
+    private volatile HttpClient httpClient;
 
     public RabbitMqMessagingInspector() {
-        this(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
+        this(null);
     }
 
     /** Visible for tests so the management HTTP layer can be stubbed deterministically. */
     RabbitMqMessagingInspector(HttpClient httpClient) {
         this.httpClient = httpClient;
+    }
+
+    private synchronized HttpClient httpClient() {
+        if (httpClient == null) {
+            httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+        }
+        return httpClient;
     }
 
     @Override
@@ -165,7 +172,7 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
-            HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> res = httpClient().send(req, HttpResponse.BodyHandlers.ofString());
             if (res.statusCode() >= 400) {
                 throw new IllegalStateException("HTTP " + res.statusCode());
             }
@@ -214,7 +221,7 @@ public class RabbitMqMessagingInspector implements MessagingInspector {
                 .header("Authorization", basicAuth(profile))
                 .GET()
                 .build();
-        HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> res = httpClient().send(req, HttpResponse.BodyHandlers.ofString());
         if (res.statusCode() >= 400) {
             throw new IllegalStateException("HTTP " + res.statusCode() + ": " + res.body());
         }

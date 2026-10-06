@@ -70,6 +70,9 @@ public class ConnectionStoreConfiguration {
                     objectMapper);
         }
 
+        if (enabled && targetType == ConnectionStoreType.JDBC && jdbcStore == null) {
+            throw new IllegalStateException("JDBC connection persistence requires a configured DataSource");
+        }
         if (targetType == ConnectionStoreType.JDBC && jdbcStore != null) {
             initialStore = jdbcStore;
         } else if (targetType == ConnectionStoreType.K8S_CRD) {

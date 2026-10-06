@@ -93,6 +93,10 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
+        Object principal = session.getAttributes().get(com.eventore.security.ApiTokenFilter.PRINCIPAL_ATTRIBUTE);
+        if (principal instanceof com.eventore.security.UserPrincipal user) {
+            com.eventore.security.SecurityContextHolder.setPrincipal(user);
+        }
         try {
             WsCommand command = objectMapper.readValue(message.getPayload(), WsCommand.class);
             WsCommand.validateType(command);
@@ -114,6 +118,8 @@ public class StreamWebSocketHandler extends TextWebSocketHandler {
         } catch (Exception e) {
             log.error("WebSocket command failed for session {}", session.getId(), e);
             send(session, errorFrame(null, null, "Internal error processing command"));
+        } finally {
+            com.eventore.security.SecurityContextHolder.clear();
         }
     }
 

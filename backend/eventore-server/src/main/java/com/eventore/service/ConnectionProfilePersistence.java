@@ -77,7 +77,7 @@ public class ConnectionProfilePersistence implements ConnectionProfileStore {
 
     @Override
     public void save(ConnectionProfile profile) {
-        if (profile == null) {
+        if (profile == null || !isEnabled()) {
             return;
         }
         validatePersistableCredentials(profile);

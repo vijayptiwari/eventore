@@ -72,10 +72,9 @@ public class WorkspaceManager {
         if (principal != null && !principal.hasRole(UserRole.WORKSPACE_ADMIN)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Requires WORKSPACE_ADMIN or PLATFORM_ADMIN role to create workspaces");
         }
-        if (workspaces.containsKey(workspace.id())) {
+        if (workspaces.putIfAbsent(workspace.id(), workspace) != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Workspace already exists: " + workspace.id());
         }
-        workspaces.put(workspace.id(), workspace);
         return workspace;
     }
 

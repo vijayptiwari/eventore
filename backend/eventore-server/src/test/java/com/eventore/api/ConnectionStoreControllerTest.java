@@ -37,7 +37,18 @@ class ConnectionStoreControllerTest {
         this.delegator = new DelegatingConnectionProfileStore(fileStore);
         this.delegator.registerStore(jdbcStore);
         this.registry = new ConnectionRegistry(delegator);
-        this.controller = new ConnectionStoreController(registry);
+        this.controller = new ConnectionStoreController(registry, org.mockito.Mockito.mock(com.eventore.security.DeploymentModePolicy.class));
+    }
+
+    @Test
+    void migrationIsForbiddenInReadonlyMode() {
+        var properties = new com.eventore.config.EventoreProperties();
+        properties.setDeploymentMode(com.eventore.security.DeploymentMode.READONLY);
+        var policy = new com.eventore.security.DeploymentModePolicy(properties, org.mockito.Mockito.mock(com.eventore.controlplane.ControlPlaneRegistry.class));
+        var readonlyController = new ConnectionStoreController(registry, policy);
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> readonlyController.migrate(new ConnectionStoreController.MigrateStoreRequest(ConnectionStoreType.JDBC)));
+        assertEquals(ConnectionStoreType.FILE, delegator.getType());
     }
 
     @Test

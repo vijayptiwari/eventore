@@ -33,7 +33,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .addInterceptors(tokenHandshakeInterceptor());
     }
 
-    private HandshakeInterceptor tokenHandshakeInterceptor() {
+    HandshakeInterceptor tokenHandshakeInterceptor() {
         return new HandshakeInterceptor() {
             @Override
             public boolean beforeHandshake(
@@ -45,10 +45,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
                     return true;
                 }
                 if (request instanceof ServletServerHttpRequest servletRequest) {
-                    String token = ApiTokenFilter.extractToken(servletRequest.getServletRequest());
-                    if (token != null
-                            && ApiTokenFilter.constantTimeEquals(
-                                    properties.getSecurity().getApiToken(), token)) {
+                    Object principal = servletRequest.getServletRequest().getAttribute(ApiTokenFilter.PRINCIPAL_ATTRIBUTE);
+                    if (principal instanceof com.eventore.security.UserPrincipal) {
+                        attributes.put(ApiTokenFilter.PRINCIPAL_ATTRIBUTE, principal);
                         return true;
                     }
                 }

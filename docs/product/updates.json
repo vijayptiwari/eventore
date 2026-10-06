@@ -29,7 +29,7 @@
         ],
         [
           "Incident triage MCP preview",
-          "A compound diagnostic tool and prompt collect broker, lag and DLQ information using fixed heuristics. Unsupported or failed checks can be skipped; results do not establish root cause or complete health.",
+          "A compound diagnostic tool and prompt collect broker, lag and DLQ information using fixed heuristics. Failed checks are reported explicitly; incomplete clean assessments return UNKNOWN. DLQ counts describe samples, not queue depth.",
           "b387f2a",
           "guide/mcp.html"
         ]
@@ -95,7 +95,7 @@
         ],
         [
           "Dead-letter inspection and redrive",
-          "Inspect failed messages and redrive them with controlled throughput.",
+          "Inspect failed messages and republish selected messages or a bounded batch. Redrive does not remove source messages or provide a rate limiter.",
           "b786b56",
           "guide/dlq.html"
         ],

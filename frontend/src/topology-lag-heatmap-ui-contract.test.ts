@@ -9,7 +9,7 @@ describe('REQ-112: Visual Topology & Consumer Lag Heatmap UI and Contract Tests'
       const emptyRes = computeLagMetrics([]);
       expect(emptyRes.totalLag).toBe(0);
       expect(emptyRes.maxLag).toBe(0);
-      expect(emptyRes.healthStatus.label).toBe('HEALTHY');
+      expect(emptyRes.healthStatus.label).toBe('NO DATA');
       expect(emptyRes.isHighSkew).toBe(false);
 
       const undefRes = computeLagMetrics(undefined);

@@ -79,7 +79,7 @@ public class FileConnectionProfileStore implements ConnectionProfileStore {
 
     @Override
     public void save(ConnectionProfile profile) {
-        if (profile == null) {
+        if (profile == null || !isEnabled()) {
             return;
         }
         ConnectionProfileStore.validatePersistableCredentials(profile);

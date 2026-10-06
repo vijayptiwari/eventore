@@ -60,7 +60,7 @@ function homeJsonLd() {
         'Configurable field masking and payload preview tools',
         'OpenTelemetry Distributed Tracing with W3C TraceContext and APM deep links',
         'Visual Partition Lag Heatmap and automated lag skew detection',
-        'Dead-Letter Queue (DLQ) Inspector and rate-limited message redrive engine',
+        'Dead-Letter Queue (DLQ) Inspector and batch message republishing',
         'Externalized Connection Stores: PostgreSQL JDBC with optimistic locking and Kubernetes CRDs',
         'Model Context Protocol (MCP) server for Cursor, Claude, and AI agent integration'
       ],

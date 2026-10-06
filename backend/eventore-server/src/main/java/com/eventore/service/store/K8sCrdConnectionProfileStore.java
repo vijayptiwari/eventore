@@ -88,7 +88,7 @@ public class K8sCrdConnectionProfileStore implements ConnectionProfileStore {
     }
 
     @Override
-    public void save(ConnectionProfile profile) {
+    public synchronized void save(ConnectionProfile profile) {
         if (profile == null || profile.getId() == null || profile.getId().isBlank()) {
             throw new IllegalArgumentException("Connection profile id is required");
         }
@@ -130,6 +130,7 @@ public class K8sCrdConnectionProfileStore implements ConnectionProfileStore {
             }
 
             Path targetFile = crdDirectory.resolve(sanitizeK8sName(profile.getId()) + ".json");
+            verifyFileIdentity(targetFile, profile.getId());
             byte[] bytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(crdNode);
             Files.write(targetFile, bytes);
             log.debug("Persisted Kubernetes CRD manifest for profile '{}' to {}", profile.getId(), targetFile);
@@ -148,12 +149,13 @@ public class K8sCrdConnectionProfileStore implements ConnectionProfileStore {
     }
 
     @Override
-    public void delete(String id) {
+    public synchronized void delete(String id) {
         if (id == null || !isEnabled()) {
             return;
         }
         Path targetFile = crdDirectory.resolve(sanitizeK8sName(id) + ".json");
         try {
+            verifyFileIdentity(targetFile, id);
             Files.deleteIfExists(targetFile);
             log.debug("Deleted Kubernetes CRD manifest for profile '{}'", id);
         } catch (IOException e) {
@@ -231,6 +233,15 @@ public class K8sCrdConnectionProfileStore implements ConnectionProfileStore {
         }
 
         return profile;
+    }
+
+    private void verifyFileIdentity(Path file, String id) throws IOException {
+        if (Files.exists(file)) {
+            ConnectionProfile existing = parseCrdNode(objectMapper.readTree(Files.readAllBytes(file)));
+            if (existing == null || !id.equals(existing.getId())) {
+                throw new IllegalArgumentException("Connection ID collides with an existing CRD filename: " + id);
+            }
+        }
     }
 
     private String sanitizeK8sName(String name) {

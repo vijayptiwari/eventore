@@ -41,7 +41,7 @@ describe('REQ-113 Autonomous Incident Triage MCP Tooling Contract', () => {
     const client = new EventoreClient('http://localhost:8080/api/v1');
     (client as any).inspectCluster = async () => ({ clusterId: 'test-cluster', brokers: 3 });
     (client as any).inspectConsumerGroups = async () => [{ groupId: 'test-group' }];
-    (client as any).inspectLag = async () => ({ partitions: [{ partition: 0, lag: 0 }] });
+    (client as any).inspectLag = async () => [{ partition: 0, lag: 0 }];
     (client as any).listDlqTopics = async () => [];
 
     const report = await client.triageIncident('conn-test-1');
@@ -68,28 +68,28 @@ describe('REQ-113 Autonomous Incident Triage MCP Tooling Contract', () => {
     const client = new EventoreClient('http://localhost:8080/api/v1');
     (client as any).inspectCluster = async () => ({ clusterId: 'kafka-prod' });
     (client as any).inspectConsumerGroups = async () => [{ groupId: 'order-processors' }];
-    (client as any).inspectLag = async () => ({
-      partitions: [
+    (client as any).inspectLag = async () => [
         { topic: 'orders', partition: 0, lag: 50 },
         { topic: 'orders', partition: 1, lag: 12500 }, // High skew
-      ],
-    });
+      ];
     (client as any).listDlqTopics = async () => [
-      { topic: 'orders.DLQ', messageCount: 120 },
+      { dlqTopic: 'orders.DLQ', partitionCount: 1 },
     ];
-    (client as any).inspectDlqMessages = async () => [
+    (client as any).inspectDlqMessages = async (_connection: string, topic: string) => {
+      assert.equal(topic, 'orders.DLQ');
+      return [
       {
         exceptionClass: 'com.fasterxml.jackson.databind.exc.InvalidFormatException',
-        errorMessage: 'Cannot deserialize Instant from String "invalid-timestamp"',
+        failureReason: 'Cannot deserialize Instant from String "invalid-timestamp"',
         stackTraceSnippet: 'at com.fasterxml.jackson.databind.Deserializer.deserialize(Deserializer.java:124)',
       },
-    ];
+    ]; };
 
     const report = await client.triageIncident('conn-skewed', { destination: 'orders' });
     assert.equal(report.verdict, 'CRITICAL');
     assert.equal(report.lagAnalysis?.skewDetected, true);
     assert.equal(report.lagAnalysis?.maxLag, 12500);
-    assert.equal(report.dlqAnalysis?.totalDeadLetters, 120);
+    assert.equal(report.dlqAnalysis?.totalDeadLetters, 1);
     assert.equal(report.dlqAnalysis?.topExceptions[0].exceptionClass, 'com.fasterxml.jackson.databind.exc.InvalidFormatException');
     assert.ok(report.remediationActions.some(r => r.includes('High consumer lag') || r.includes('poisoned messages')));
   });
@@ -97,5 +97,16 @@ describe('REQ-113 Autonomous Incident Triage MCP Tooling Contract', () => {
   it('AC-7: README documents incident triage tooling and prompt', () => {
     assert.match(readmeSource, /eventore_triage_incident/);
     assert.match(readmeSource, /eventore_incident_triage/);
+  });
+
+  it('reports UNKNOWN when requested checks fail', async () => {
+    const client = new EventoreClient('http://localhost:8080/api/v1');
+    client.inspectCluster = async () => ({});
+    client.inspectConsumerGroups = async () => { throw new Error('unsupported'); };
+    client.listDlqTopics = async () => { throw new Error('broker unavailable'); };
+    const report = await client.triageIncident('connection');
+    assert.equal(report.verdict, 'UNKNOWN');
+    assert.equal(report.incompleteChecks.length, 2);
+    assert.doesNotMatch(report.summary, /healthy/);
   });
 });

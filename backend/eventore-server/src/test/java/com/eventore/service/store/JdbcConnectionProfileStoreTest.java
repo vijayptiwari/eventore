@@ -103,6 +103,8 @@ class JdbcConnectionProfileStoreTest {
         rivalProfile.setName("MQTT Updated by Rival Pod");
         rivalStore.save(rivalProfile);
 
+        // Reading diagnostics must not refresh the version of a stale in-memory profile.
+        assertEquals(1, store.getInfo().activeProfileCount());
         // Now the original store instance tries to update with its stale version
         profile.setName("MQTT Overwrite Attempt");
         assertThrows(OptimisticLockingFailureException.class, () -> store.save(profile));

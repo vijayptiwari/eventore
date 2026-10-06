@@ -35,9 +35,9 @@ public interface SchemaRegistryClient {
     void registerLocalSchema(int schemaId, String schemaContent, String schemaType);
 
     /**
-     * Returns an unmodifiable snapshot of cached/registered schemas.
+     * Returns an unmodifiable snapshot keyed by registry URL and schema ID.
      */
-    Map<Integer, SchemaMetadata> getCachedSchemas();
+    Map<String, SchemaMetadata> getCachedSchemas();
 
     /**
      * Clears the schema cache.

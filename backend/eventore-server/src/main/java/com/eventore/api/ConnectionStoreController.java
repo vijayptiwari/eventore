@@ -21,10 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ConnectionStoreController {
 
     private final ConnectionRegistry connectionRegistry;
+    private final com.eventore.security.DeploymentModePolicy policy;
 
     @Autowired
-    public ConnectionStoreController(ConnectionRegistry connectionRegistry) {
+    public ConnectionStoreController(ConnectionRegistry connectionRegistry, com.eventore.security.DeploymentModePolicy policy) {
         this.connectionRegistry = connectionRegistry;
+        this.policy = policy;
     }
 
     @GetMapping
@@ -36,6 +38,7 @@ public class ConnectionStoreController {
     public ResponseEntity<MigrateStoreResponse> migrate(
             @org.springframework.web.bind.annotation.RequestParam(name = "targetType", required = false) ConnectionStoreType targetTypeParam,
             @RequestBody(required = false) MigrateStoreRequest request) {
+        policy.require(com.eventore.security.Action.MANAGE_CONNECTIONS);
         ConnectionStoreType targetType = targetTypeParam != null ? targetTypeParam : (request != null ? request.targetType() : null);
         if (targetType == null) {
             return ResponseEntity.badRequest().body(new MigrateStoreResponse(

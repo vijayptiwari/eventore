@@ -249,7 +249,10 @@ public class JdbcConnectionProfileStore implements ConnectionProfileStore {
         if (isEnabled()) {
             try (Connection conn = dataSource.getConnection()) {
                 dbUrl = conn.getMetaData().getURL();
-                count = loadAll().size();
+                try (Statement statement = conn.createStatement();
+                     ResultSet result = statement.executeQuery("SELECT COUNT(*) FROM " + tableName)) {
+                    if (result.next()) count = result.getInt(1);
+                }
             } catch (Exception ignored) {
             }
         }

@@ -31,6 +31,15 @@ public class MaskingConfig {
     private Set<String> sensitiveFieldPatterns = new HashSet<>(DEFAULT_SENSITIVE_FIELDS);
     private Set<String> sensitiveHeaderPatterns = new HashSet<>(DEFAULT_SENSITIVE_HEADERS);
     private boolean maskValuesByPattern = true;
+    private boolean maskHeaders = true;
+
+    public boolean isMaskHeaders() {
+        return maskHeaders;
+    }
+
+    public void setMaskHeaders(boolean maskHeaders) {
+        this.maskHeaders = maskHeaders;
+    }
     private boolean maskEmails = true;
     private boolean maskCreditCards = true;
     private boolean maskSsns = true;

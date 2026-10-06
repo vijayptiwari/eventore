@@ -23,6 +23,25 @@ class SchemaRegistryClientTest {
             """;
 
     @Test
+    @SuppressWarnings("unchecked")
+    void schemaIdsAreScopedToRegistryAndRemoteErrorsNeverRegisterLocally() throws Exception {
+        java.net.http.HttpClient http = org.mockito.Mockito.mock(java.net.http.HttpClient.class);
+        java.net.http.HttpResponse<String> response = org.mockito.Mockito.mock(java.net.http.HttpResponse.class);
+        org.mockito.Mockito.when(http.send(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.<java.net.http.HttpResponse.BodyHandler<String>>any())).thenReturn(response);
+        org.mockito.Mockito.when(response.statusCode()).thenReturn(200);
+        org.mockito.Mockito.when(response.body()).thenReturn("{\"schema\":\"registry-a\"}", "{\"schema\":\"registry-b\"}");
+        DefaultSchemaRegistryClient client = new DefaultSchemaRegistryClient(null, http, new com.fasterxml.jackson.databind.ObjectMapper());
+        client.registerLocalSchema(7, "local", "AVRO");
+        assertThat(client.getSchemaById("https://a.test", 7).orElseThrow().schemaContent()).isEqualTo("registry-a");
+        assertThat(client.getSchemaById("https://b.test", 7).orElseThrow().schemaContent()).isEqualTo("registry-b");
+        assertThat(client.getSchemaById(7).orElseThrow().schemaContent()).isEqualTo("local");
+        org.mockito.Mockito.when(response.statusCode()).thenReturn(503);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> client.registerSchema("https://a.test", "subject", PRODUCT_SCHEMA, "AVRO"))
+                .isInstanceOf(IllegalStateException.class);
+        assertThat(client.getCachedSchemas()).hasSize(3);
+    }
+
+    @Test
     void localRegistrationAndDecodingThroughPayloadCodec() throws IOException {
         DefaultSchemaRegistryClient client = new DefaultSchemaRegistryClient();
         int schemaId = 101;
@@ -55,7 +74,8 @@ class SchemaRegistryClientTest {
 
         assertThat(decoded.schemaId()).isEqualTo(65541);
         assertThat(decoded.schemaType()).isEqualTo("AVRO");
-        assertThat(decoded.contentType()).startsWith("application/vnd.apache.avro+binary; schemaId=65541");
+        assertThat(decoded.contentType()).startsWith("application/vnd.apache.avro+binary; encoding=base64; schemaId=65541");
         assertThat(decoded.base64()).isTrue();
+        assertThat(PayloadCodec.toBytes(decoded.text(), decoded.contentType())).isEqualTo(wireBytes);
     }
 }

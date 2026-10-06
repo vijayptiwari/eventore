@@ -57,7 +57,7 @@ public class JwtTokenValidator {
         }
         try {
             JsonNode header = objectMapper.readTree(Base64.getUrlDecoder().decode(parts[0]));
-            if (!"HS256".equals(header.path("alg").asText())) {
+            if (header == null || !"HS256".equals(header.path("alg").asText())) {
                 throw new IllegalArgumentException("Only HS256 JWT signatures are supported");
             }
         } catch (java.io.IOException e) {
@@ -74,6 +74,7 @@ public class JwtTokenValidator {
             throw new IllegalArgumentException("Failed to decode JWT payload: " + e.getMessage(), e);
         }
 
+        if (payload == null || !payload.isObject()) throw new IllegalArgumentException("JWT payload must be an object");
         long nowEpochSec = Instant.now().getEpochSecond();
 
         // 3. Expiration validation (with 60-second clock skew allowance)
@@ -82,7 +83,7 @@ public class JwtTokenValidator {
         }
         if (payload.has("exp")) {
             long exp = payload.get("exp").asLong();
-            if (exp > 0 && exp + 60 < nowEpochSec) {
+            if (exp < nowEpochSec - 60) {
                 throw new IllegalArgumentException("JWT token has expired at epoch " + exp);
             }
         }
@@ -222,19 +223,13 @@ public class JwtTokenValidator {
             return null;
         }
         String clean = raw.trim().toLowerCase(Locale.ROOT);
-        if (clean.contains("platform_admin") || clean.contains("superadmin") || clean.equals("admin")) {
-            return UserRole.PLATFORM_ADMIN;
-        }
-        if (clean.contains("workspace_admin")) {
-            return UserRole.WORKSPACE_ADMIN;
-        }
-        if (clean.contains("operator") || clean.contains("publisher")) {
-            return UserRole.OPERATOR;
-        }
-        if (clean.contains("viewer") || clean.contains("reader") || clean.contains("user")) {
-            return UserRole.VIEWER;
-        }
-        return null;
+        return switch (clean) {
+            case "platform_admin", "superadmin", "admin" -> UserRole.PLATFORM_ADMIN;
+            case "workspace_admin" -> UserRole.WORKSPACE_ADMIN;
+            case "operator", "publisher" -> UserRole.OPERATOR;
+            case "viewer", "reader", "user" -> UserRole.VIEWER;
+            default -> null;
+        };
     }
 
     private Set<String> extractWorkspaces(JsonNode payload) {

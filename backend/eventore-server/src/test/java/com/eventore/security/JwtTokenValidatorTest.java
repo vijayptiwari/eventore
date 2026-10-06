@@ -105,6 +105,12 @@ class JwtTokenValidatorTest {
     }
 
     @Test
+    void roleNamesMustMatchExactly() throws Exception {
+        String jwt = createSignedJwt("{\"exp\":4102444800,\"roles\":[\"not_platform_admin\",\"external_operator_group\"]}", SECRET);
+        assertThat(validator.validateToken(jwt, SECRET, null, null).roles()).containsExactly(UserRole.VIEWER);
+    }
+
+    @Test
     void rejectsMissingVerificationSecret() throws Exception {
         String jwt = createSignedJwt("{\"exp\":4102444800}", SECRET);
         assertThatThrownBy(() -> validator.validateToken(jwt, "", null, null))

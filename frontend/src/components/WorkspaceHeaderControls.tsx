@@ -28,14 +28,15 @@ export default function WorkspaceHeaderControls() {
     setIsSubmitting(true);
     setErrorMsg(null);
     try {
+      const workspaceId = newId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
       await api.createWorkspace({
-        id: newId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-'),
+        id: workspaceId,
         name: newName.trim(),
         description: newDesc.trim(),
         tags: ['custom'],
       });
       await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      setActiveWorkspaceId(newId.trim().toLowerCase());
+      setActiveWorkspaceId(workspaceId);
       setCreateOpen(false);
       setNewId('');
       setNewName('');

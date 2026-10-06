@@ -80,7 +80,7 @@ public final class DataMasker {
      * Masks headers matching sensitive header patterns.
      */
     public static Map<String, String> maskHeaders(Map<String, String> headers, MaskingConfig config) {
-        if (headers == null || headers.isEmpty() || config == null || !config.isEnabled()) {
+        if (headers == null || headers.isEmpty() || config == null || !config.isEnabled() || !config.isMaskHeaders()) {
             return headers != null ? new HashMap<>(headers) : new HashMap<>();
         }
 

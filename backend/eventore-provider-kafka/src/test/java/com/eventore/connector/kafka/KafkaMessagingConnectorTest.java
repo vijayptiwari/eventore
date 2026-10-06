@@ -246,6 +246,19 @@ class KafkaMessagingConnectorTest {
     }
 
     @Test
+    void schemaEncodingFailureDoesNotPublishPlainText() {
+        var profile = StreamTestFixtures.profile(ProtocolType.KAFKA, "localhost:9092");
+        var request = new PublishRequest();
+        request.setDestination("orders");
+        request.setPayload("invalid");
+        request.setHeaders(Map.of("x-eventore-schema-id", "missing"));
+        try (MockedConstruction<KafkaProducer> producers = mockConstruction(KafkaProducer.class)) {
+            assertThrows(IllegalStateException.class, () -> connector.publish(profile, request));
+            assertTrue(producers.constructed().isEmpty());
+        }
+    }
+
+    @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
     void applyReplaySeekHandlesAllModes() {
         KafkaMessagingConnector connector = new KafkaMessagingConnector();

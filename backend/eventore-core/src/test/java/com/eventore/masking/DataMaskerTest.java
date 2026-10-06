@@ -12,6 +12,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class DataMaskerTest {
+    @org.junit.jupiter.api.Test
+    void disablingHeaderMaskingDoesNotDisablePayloadMasking() {
+        MaskingConfig config = MaskingConfig.defaultConfig();
+        config.setMaskHeaders(false);
+        org.assertj.core.api.Assertions.assertThat(DataMasker.maskHeaders(java.util.Map.of("authorization", "token"), config))
+                .containsEntry("authorization", "token");
+        org.assertj.core.api.Assertions.assertThat(DataMasker.maskPayload("{\"password\":\"secret\"}", "application/json", config))
+                .contains("[REDACTED]").doesNotContain("secret");
+    }
 
     @Test
     @DisplayName("Masks sensitive fields in nested JSON payloads")

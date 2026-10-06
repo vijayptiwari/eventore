@@ -228,10 +228,10 @@ public class KafkaMessagingConnector implements MessagingConnector {
                         }
                     }
                 }
-                default -> log.debug("Unknown replayMode: {}", mode);
+                default -> throw new IllegalArgumentException("Unknown replayMode: " + mode);
             }
         } catch (Exception e) {
-            log.warn("Failed to apply replay seek for mode {}: {}", mode, e.getMessage());
+            throw new IllegalArgumentException("Failed to apply replay seek for mode " + mode, e);
         }
     }
 
@@ -302,25 +302,21 @@ public class KafkaMessagingConnector implements MessagingConnector {
     public void publish(ConnectionProfile profile, PublishRequest request) {
         // KafkaProducer is thread-safe; one cached instance per connection profile,
         // closed in close(connectionId).
-        KafkaProducer<String, byte[]> producer = producers.computeIfAbsent(
-                profile.getId(),
-                id -> new KafkaProducer<>(KafkaClientSupport.producerProps(profile)));
         try {
             byte[] bytes;
             String schemaIdHeader = extractSchemaIdHeader(request);
             String registryUrl = resolveRegistryUrl(profile);
-            if (schemaIdHeader != null) {
+            if (schemaIdHeader != null && !PayloadCodec.isBase64(request.getContentType())) {
                 try {
                     int schemaId = Integer.parseInt(schemaIdHeader.trim());
                     Optional<SchemaMetadata> metaOpt = schemaRegistryClient.getSchemaById(registryUrl, schemaId);
                     if (metaOpt.isPresent() && "AVRO".equalsIgnoreCase(metaOpt.get().schemaType())) {
                         bytes = AvroPayloadDecoder.encodeJson(schemaId, request.getPayload(), metaOpt.get().schemaContent());
                     } else {
-                        bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+                        throw new IllegalArgumentException("AVRO schema not found for ID " + schemaId);
                     }
                 } catch (Exception e) {
-                    log.warn("Failed to encode payload with schema ID {}, falling back to standard encoding: {}", schemaIdHeader, e.getMessage());
-                    bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
+                    throw new IllegalArgumentException("Failed to encode payload with schema ID " + schemaIdHeader, e);
                 }
             } else {
                 bytes = PayloadCodec.toBytes(request.getPayload(), request.getContentType());
@@ -328,6 +324,9 @@ public class KafkaMessagingConnector implements MessagingConnector {
 
             String key = request.getHeaders() != null ? request.getHeaders().get("key") : null;
             Integer partition = parsePartitionHeader(request);
+            KafkaProducer<String, byte[]> producer = producers.computeIfAbsent(
+                    profile.getId(),
+                    id -> new KafkaProducer<>(KafkaClientSupport.producerProps(profile)));
             ProducerRecord<String, byte[]> record = partition != null
                     ? new ProducerRecord<>(request.getDestination(), partition, key, bytes)
                     : new ProducerRecord<>(request.getDestination(), key, bytes);

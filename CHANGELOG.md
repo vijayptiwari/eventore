@@ -11,12 +11,23 @@ Development target: **0.3.0**. No 0.3.0 release has been published; the latest p
 ### Added
 
 - HS256 JWT validation and identity claim extraction with an authentication identity endpoint. OIDC discovery, JWKS and enterprise login are not implemented.
-- In-memory workspace catalog, workspace management endpoints and console selector. Workspace selection does not isolate broker connections, bridges or streams, and roles are not enforced across broker operations.
+- In-memory workspace catalog, workspace management endpoints and console selector. Workspace selection does not isolate broker connections, bridges or streams, and operation permissions now intersect identity roles with deployment mode.
 - Local subscription distribution interface and cluster status endpoint. The Redis implementation is a scaffold without network transport or a shared subscription registry; active-active HA is not delivered.
-- MCP incident triage tool and prompt combining broker inspection, consumer lag and DLQ samples with fixed heuristics. Failed or unsupported checks can be omitted, so the verdict is not a complete health assessment.
+- MCP incident triage tool and prompt combining broker inspection, consumer lag and DLQ samples with fixed heuristics. Failed requested checks are reported explicitly; otherwise-clean incomplete assessments return UNKNOWN. DLQ counts describe samples, not queue depth.
 - Replication routing/error handling and empty-connection UX fixes, plus schema and replay guides.
 
 ### Fixed
+
+- October audit: enforce user roles in operation policies, carry validated identities into WebSocket commands, and match role names exactly.
+- Restrict storage/workspace mutations in ReadOnly mode; preserve live connection state when persistence fails; reject disabled migration targets and missing JDBC configuration.
+- Keep JDBC diagnostics from resetting optimistic-lock versions; protect CRD files from normalized-ID collisions; accept ephemeral credentials when file persistence is disabled.
+- Scope schema caches by registry, encode subject paths, and surface remote registration errors without silently creating local schemas.
+- Preserve unresolved Avro binary payloads on republish, reject schema encoding and replay-seek errors, and validate Kafka requests before opening a producer.
+- Forward messages arriving during bridge startup, preserve loop-prevention headers, and enforce target protocol and payload-size limits.
+- Correct MCP triage to use backend lag and DLQ contracts; report incomplete checks and label DLQ counts as samples. Surface DLQ inspection failures instead of returning empty success.
+- Honor the configured header-masking toggle independently of payload masking.
+- Initialize Schema Registry and RabbitMQ HTTP clients only when used, so application startup and security checks do not allocate unused network clients.
+- Show partial DLQ redrive failures, preserve failed edits, select normalized workspace IDs, and show NO DATA for empty lag results.
 
 - Require a configured signing secret and HS256 algorithm for JWT validation; reject missing expiration and missing configured issuer/audience claims. Static-token authentication no longer accepts forged JWTs.
 - Separate development version from verified published release metadata, installation examples, SEO and feature history.

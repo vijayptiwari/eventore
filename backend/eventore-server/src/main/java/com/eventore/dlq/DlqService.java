@@ -74,12 +74,14 @@ public class DlqService {
      * Lists detected Dead Letter Queue topics for a connection.
      */
     public List<DlqTopicSummary> listDlqTopics(String connectionId) {
+        policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = requireProfile(connectionId);
+        policy.requireProtocol(profile.getProtocol());
         String customPattern = profile.property("dlqPattern");
 
         MessagingInspector inspector = inspectorRegistry.get(profile.getProtocol());
         if (inspector == null) {
-            return List.of();
+            throw new UnsupportedOperationException("DLQ inspection is not supported for this protocol");
         }
 
         List<TopicDetail> topics;
@@ -87,7 +89,7 @@ public class DlqService {
             topics = inspector.listTopics(profile, null);
         } catch (Exception e) {
             log.warn("Failed to list topics for connection {}: {}", connectionId, e.getMessage());
-            return List.of();
+            throw new IllegalStateException("Failed to list DLQ topics", e);
         }
 
         List<DlqTopicSummary> dlqSummaries = new ArrayList<>();
@@ -105,10 +107,12 @@ public class DlqService {
      * Inspects messages within a DLQ topic and annotates error diagnostics.
      */
     public List<DlqMessageInfo> inspectDlqMessages(String connectionId, String dlqTopic, Integer maxMessages) {
+        policy.require(Action.BROWSE_DESTINATIONS);
         ConnectionProfile profile = requireProfile(connectionId);
+        policy.requireProtocol(profile.getProtocol());
         MessagingInspector inspector = inspectorRegistry.get(profile.getProtocol());
         if (inspector == null) {
-            return List.of();
+            throw new UnsupportedOperationException("DLQ inspection is not supported for this protocol");
         }
 
         MessageSearchRequest req = new MessageSearchRequest();
@@ -121,7 +125,7 @@ public class DlqService {
             messages = inspector.searchMessages(profile, req);
         } catch (Exception e) {
             log.warn("Failed to search messages in DLQ topic {} for connection {}: {}", dlqTopic, connectionId, e.getMessage());
-            return List.of();
+            throw new IllegalStateException("Failed to inspect DLQ messages", e);
         }
 
         List<DlqMessageInfo> infos = new ArrayList<>();

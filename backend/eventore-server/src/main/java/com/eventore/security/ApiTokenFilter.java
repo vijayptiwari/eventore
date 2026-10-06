@@ -20,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class ApiTokenFilter extends OncePerRequestFilter {
 
+    public static final String PRINCIPAL_ATTRIBUTE = ApiTokenFilter.class.getName() + ".principal";
     private final EventoreProperties properties;
     private final JwtTokenValidator jwtTokenValidator;
 
@@ -52,6 +53,7 @@ public class ApiTokenFilter extends OncePerRequestFilter {
                 String expected = properties.getSecurity().getApiToken();
                 if (!expected.isBlank() && constantTimeEquals(expected, provided)) {
                     SecurityContextHolder.setPrincipal(UserPrincipal.staticTokenUser());
+                    request.setAttribute(PRINCIPAL_ATTRIBUTE, UserPrincipal.staticTokenUser());
                     chain.doFilter(request, response);
                     return;
                 }
@@ -70,6 +72,7 @@ public class ApiTokenFilter extends OncePerRequestFilter {
                         return;
                     }
                     SecurityContextHolder.setPrincipal(principal);
+                    request.setAttribute(PRINCIPAL_ATTRIBUTE, principal);
                     chain.doFilter(request, response);
                     return;
                 }

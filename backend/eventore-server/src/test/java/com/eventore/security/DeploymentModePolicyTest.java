@@ -32,6 +32,20 @@ class DeploymentModePolicyTest {
     }
 
     @Test
+    void permissionsArePerRequestAndNeverCachedAcrossUsers() {
+        props.setDeploymentMode(DeploymentMode.ADMIN);
+        try {
+            SecurityContextHolder.setPrincipal(UserPrincipal.devUser());
+            assertTrue(policy.allowedActionsAsStrings().contains("PUBLISH"));
+            SecurityContextHolder.setPrincipal(new UserPrincipal("reader", "", "", java.util.Set.of(UserRole.VIEWER), java.util.Set.of("default"), "default", true));
+            assertThrows(ResponseStatusException.class, () -> policy.require(Action.PUBLISH));
+            assertEquals(java.util.List.of("BROWSE_DESTINATIONS", "SUBSCRIBE"), policy.allowedActionsAsStrings());
+        } finally {
+            SecurityContextHolder.clear();
+        }
+    }
+
+    @Test
     void readonlyDisallowsPublish() {
         props.setDeploymentMode(DeploymentMode.READONLY);
         assertThrows(ResponseStatusException.class, () -> policy.require(Action.PUBLISH));

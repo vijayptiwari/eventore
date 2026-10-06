@@ -79,6 +79,18 @@ class K8sCrdConnectionProfileStoreTest {
     }
 
     @Test
+    void normalizedIdsCannotOverwriteOrDeleteAnotherProfile() {
+        ConnectionProfile original = new ConnectionProfile();
+        original.setId("Orders");
+        store.save(original);
+        ConnectionProfile collision = new ConnectionProfile();
+        collision.setId("orders");
+        assertThrows(IllegalArgumentException.class, () -> store.save(collision));
+        assertThrows(IllegalArgumentException.class, () -> store.delete("orders"));
+        assertTrue(store.loadAll().containsKey("Orders"));
+    }
+
+    @Test
     void deleteRemovesCrdManifest() {
         ConnectionProfile profile = new ConnectionProfile();
         profile.setId("conn-temp");

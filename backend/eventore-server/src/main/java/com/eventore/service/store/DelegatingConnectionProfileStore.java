@@ -62,6 +62,10 @@ public class DelegatingConnectionProfileStore implements ConnectionProfileStore 
             return activeStore.loadAll().size();
         }
 
+        if (!target.isEnabled()) {
+            throw new IllegalArgumentException("Target store is disabled: " + targetType);
+        }
+
         Map<String, ConnectionProfile> profiles = activeStore.loadAll();
         log.info("Migrating {} profile(s) from {} to {}", profiles.size(), activeStore.getType(), targetType);
         target.saveAll(profiles);
@@ -86,17 +90,17 @@ public class DelegatingConnectionProfileStore implements ConnectionProfileStore 
     }
 
     @Override
-    public void save(ConnectionProfile profile) {
+    public synchronized void save(ConnectionProfile profile) {
         activeStore.save(profile);
     }
 
     @Override
-    public void saveAll(Map<String, ConnectionProfile> profiles) {
+    public synchronized void saveAll(Map<String, ConnectionProfile> profiles) {
         activeStore.saveAll(profiles);
     }
 
     @Override
-    public void delete(String id) {
+    public synchronized void delete(String id) {
         activeStore.delete(id);
     }
 

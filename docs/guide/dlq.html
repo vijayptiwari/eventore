@@ -91,7 +91,7 @@
         <li><strong>In-Place Payload &amp; Header Editor:</strong> Syntax-highlighted JSON editor allows operators to fix typos or missing fields directly in the browser with JSON schema validation.</li>
         <li><strong>Dry-Run Redrive:</strong> Simulates destination publishing and schema validation before committing the redrive transaction.</li>
         <li><strong>Target Destination Selection:</strong> Redrive back to the original source topic, a designated staging retry topic, or a newly configured target broker.</li>
-        <li><strong>Bulk Replay:</strong> Replay hundreds of messages simultaneously with rate-limiting throttling (e.g. 50 msgs/sec) to prevent overwhelming downstream microservices.</li>
+        <li><strong>Bulk Replay:</strong> Republish a bounded batch of sampled messages. Redrive does not remove source messages and does not currently throttle requests; use small batches and verify downstream capacity.</li>
         <li><strong>Audit Logging:</strong> Every redrive action records who initiated the replay, timestamp, original vs edited payload diff, and target receipt confirmation.</li>
       </ul>
 
